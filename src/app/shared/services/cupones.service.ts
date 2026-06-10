@@ -1,0 +1,29 @@
+import { Observable } from 'rxjs';
+
+// ─── tipos ────────────────────────────────────────────────────
+export type CuponTipo = 'porcentaje' | 'monto' | 'monto_fijo';
+
+export type Cupon = {
+  id: string;
+  codigo: string;
+  tipo: CuponTipo | string;
+  valor: number | string;
+  fecha_expiracion: string;
+  usos_maximos: number | null;
+  usos_actuales: number;
+  activo: boolean;
+  created_at: string;
+};
+
+export type ValidarCuponResponse = {
+  valido: boolean;
+  cupon?: Cupon;
+  mensaje?: string;
+};
+
+/** Ver `ciudades.service.ts` para la nota de arquitectura. */
+export abstract class CuponesService {
+  abstract list(): Observable<Cupon[]>;
+  abstract getById(id: string): Observable<Cupon>;
+  abstract validar(codigo: string): Observable<ValidarCuponResponse>;
+}
