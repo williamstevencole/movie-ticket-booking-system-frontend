@@ -1,51 +1,17 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import {
   LucideDynamicIcon,
-  // sidebar
-  LucideLayoutDashboard,
-  LucideClapperboard,
-  LucideFilm,
-  LucideTags,
-  LucideBuilding2,
-  LucideArmchair,
-  LucideSofa,
-  LucideBanknote,
-  LucideTicket,
-  LucideCreditCard,
-  LucideGift,
-  LucideClipboardList,
-  LucideUndo2,
-  LucideChartColumn,
-  LucideUsers,
-  LucideNotebookText,
-  // topbar / actions / user-row
   LucidePlus,
   LucideDownload,
-  LucideLogOut,
-  // stat deltas
   LucideTrendingUp,
   LucideTrendingDown,
-  // quick actions
   LucideDollarSign,
   LucideFileText,
   type LucideIconInput,
 } from '@lucide/angular';
 import { AuthService } from '../../shared/services/auth.service';
-
-interface SideLink {
-  label: string;
-  icon: LucideIconInput;
-  count?: number;
-  on?: boolean;
-  urgent?: boolean;
-}
-
-interface SideSection {
-  title: string;
-  links: SideLink[];
-}
+import { AdminSidebarComponent } from '../../shared/components/admin-sidebar.component';
 
 interface Stat {
   label: string;
@@ -74,55 +40,17 @@ interface QuickAction {
   standalone: true,
   imports: [
     CommonModule,
+    AdminSidebarComponent,
     LucideDynamicIcon,
     LucidePlus,
     LucideDownload,
-    LucideLogOut,
     LucideTrendingUp,
     LucideTrendingDown,
   ],
   template: `
     <div class="admin-body">
-      <!-- SIDEBAR -->
-      <aside class="admin-side">
-        <div class="brand-row">
-          <span class="mark">C</span>
-          <div>
-            <div class="nm">Cinetario</div>
-            <div class="sub">OPERADORES</div>
-          </div>
-        </div>
+      <app-admin-sidebar />
 
-        @for (sec of sidebar; track sec.title) {
-          <div class="side-section">
-            <div class="h">{{ sec.title }}</div>
-            @for (link of sec.links; track link.label) {
-              <a class="side-link" [class.on]="link.on" [class.urgent]="link.urgent">
-                <span class="side-link-l">
-                  <svg [lucideIcon]="link.icon" [size]="18"></svg>
-                  <span>{{ link.label }}</span>
-                </span>
-                @if (link.count !== undefined) {
-                  <span class="count">{{ link.count }}</span>
-                }
-              </a>
-            }
-          </div>
-        }
-
-        <div class="user-row">
-          <span class="avatar">{{ initials() }}</span>
-          <div>
-            <div class="nm">{{ user()?.nombre }}</div>
-            <div class="role">{{ (role() ?? '').toUpperCase() }}</div>
-          </div>
-          <button class="logout" (click)="logout()" title="Cerrar sesión" aria-label="Cerrar sesión">
-            <svg lucideLogOut [size]="16"></svg>
-          </button>
-        </div>
-      </aside>
-
-      <!-- MAIN -->
       <main class="admin-main">
         <div class="admin-topbar">
           <div>
@@ -209,23 +137,11 @@ interface QuickAction {
 })
 export class AdminHomeComponent {
   private auth = inject(AuthService);
-  private router = inject(Router);
 
   readonly user = this.auth.user;
-  readonly role = this.auth.role;
 
   firstName(): string {
     return this.user()?.nombre?.split(' ')[0] ?? 'admin';
-  }
-
-  initials(): string {
-    const name = this.user()?.nombre ?? '?';
-    return name
-      .split(' ')
-      .filter((p) => p.length > 0)
-      .slice(0, 2)
-      .map((p) => p[0]!.toUpperCase())
-      .join('');
   }
 
   greeting(): string {
@@ -234,58 +150,6 @@ export class AdminHomeComponent {
     if (h < 19) return 'Buenas tardes';
     return 'Buenas noches';
   }
-
-  logout() {
-    this.auth.logoutRemote().subscribe({
-      next: () => this.finishLogout(),
-      error: () => this.finishLogout(),
-    });
-  }
-
-  private finishLogout() {
-    this.auth.clearSession();
-    this.router.navigate(['/login']);
-  }
-
-  // ─── sidebar (data-driven con iconos Lucide)
-  readonly sidebar: SideSection[] = [
-    {
-      title: 'Programación',
-      links: [
-        { label: 'Dashboard', icon: LucideLayoutDashboard, on: true },
-        { label: 'Funciones', icon: LucideClapperboard, count: 14 },
-        { label: 'Películas', icon: LucideFilm, count: 28 },
-        { label: 'Géneros & idiomas', icon: LucideTags },
-      ],
-    },
-    {
-      title: 'Infraestructura',
-      links: [
-        { label: 'Cines', icon: LucideBuilding2, count: 2 },
-        { label: 'Salas', icon: LucideArmchair, count: 11 },
-        { label: 'Tipos de asiento', icon: LucideSofa },
-        { label: 'Precios por cine', icon: LucideBanknote },
-      ],
-    },
-    {
-      title: 'Comercial',
-      links: [
-        { label: 'Reservas', icon: LucideTicket, count: 487 },
-        { label: 'Pagos', icon: LucideCreditCard },
-        { label: 'Cupones', icon: LucideGift, count: 6 },
-        { label: 'Políticas cancelación', icon: LucideClipboardList },
-        { label: 'Reembolsos', icon: LucideUndo2, count: 3, urgent: true },
-      ],
-    },
-    {
-      title: 'Sistema',
-      links: [
-        { label: 'Reportes', icon: LucideChartColumn },
-        { label: 'Usuarios & roles', icon: LucideUsers },
-        { label: 'Bitácora', icon: LucideNotebookText },
-      ],
-    },
-  ];
 
   readonly stats: Stat[] = [
     { label: 'Funciones hoy', value: '14', delta: '+2 vs ayer', deltaType: 'up' },
