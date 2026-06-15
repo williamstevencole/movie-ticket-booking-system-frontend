@@ -1,10 +1,5 @@
 import { Ciudad } from '../../shared/services/ciudades.service';
 
-/**
- * Lista de ciudades para desarrollo. Coincide con la lista del seed del
- * backend (`api/prisma/seed/ciudades.ts`) para que el flujo end-to-end
- * funcione igual cuando cambies a HTTP real.
- */
 export const MOCK_CIUDADES: Ciudad[] = [
   { id: '1', nombre: 'Guatemala', created_at: '2026-01-01T00:00:00Z' },
   { id: '2', nombre: 'San Pedro Sula', created_at: '2026-01-01T00:00:00Z' },

@@ -1,6 +1,5 @@
 import { Observable } from 'rxjs';
 
-// ─── tipos ────────────────────────────────────────────────────
 export type Sala = {
   id: string;
   nombre: string;
@@ -31,7 +30,6 @@ export type ListCinesQuery = {
   id_ciudad?: number | string;
 };
 
-/** Ver `ciudades.service.ts` para la nota de arquitectura. */
 export abstract class CinesService {
   abstract list(query?: ListCinesQuery): Observable<CinesPage>;
   abstract getById(id: string): Observable<Cine>;

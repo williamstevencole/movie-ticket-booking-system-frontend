@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
-import { delay } from 'rxjs/operators';
 import {
   Cine,
   CinesPage,
@@ -8,8 +7,6 @@ import {
   ListCinesQuery,
 } from '../../shared/services/cines.service';
 import { MOCK_CINES } from '../data/cines.mock';
-
-const SIMULATED_LATENCY_MS = 180;
 
 @Injectable()
 export class MockCinesService extends CinesService {
@@ -30,7 +27,7 @@ export class MockCinesService extends CinesService {
       total: data.length,
       page: query?.page ?? 1,
       limit: query?.limit ?? data.length,
-    }).pipe(delay(SIMULATED_LATENCY_MS));
+    });
   }
 
   override getById(id: string): Observable<Cine> {
@@ -38,6 +35,6 @@ export class MockCinesService extends CinesService {
     if (!cine) {
       return throwError(() => ({ status: 404, error: { message: 'Cine no encontrado' } }));
     }
-    return of(cine).pipe(delay(SIMULATED_LATENCY_MS));
+    return of(cine);
   }
 }

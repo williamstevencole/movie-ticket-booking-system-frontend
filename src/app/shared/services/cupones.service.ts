@@ -1,6 +1,5 @@
 import { Observable } from 'rxjs';
 
-// ─── tipos ────────────────────────────────────────────────────
 export type CuponTipo = 'porcentaje' | 'monto' | 'monto_fijo';
 
 export type Cupon = {
@@ -21,7 +20,6 @@ export type ValidarCuponResponse = {
   mensaje?: string;
 };
 
-/** Ver `ciudades.service.ts` para la nota de arquitectura. */
 export abstract class CuponesService {
   abstract list(): Observable<Cupon[]>;
   abstract getById(id: string): Observable<Cupon>;
