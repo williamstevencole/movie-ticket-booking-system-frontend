@@ -152,7 +152,11 @@ export class AdminSidebarComponent {
           routerLink: '/admin',
           exact: true,
         },
-        { label: 'Funciones', icon: LucideClapperboard, count: 14 },
+        {
+          label: 'Funciones',
+          icon: LucideClapperboard,
+          routerLink: '/admin/funciones',
+        },
         {
           label: 'Películas',
           icon: LucideFilm,

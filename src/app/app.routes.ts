@@ -87,5 +87,37 @@ export const routes: Routes = [
         (m) => m.AdminPeliculaFormComponent,
       ),
   },
+  {
+    path: 'admin/funciones',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/funciones/listado/funciones.component').then(
+        (m) => m.AdminFuncionesComponent,
+      ),
+  },
+  {
+    path: 'admin/funciones/crear',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/funciones/form/funcion-form.component').then(
+        (m) => m.AdminFuncionFormComponent,
+      ),
+  },
+  {
+    path: 'admin/funciones/:id/editar',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/funciones/form/funcion-form.component').then(
+        (m) => m.AdminFuncionFormComponent,
+      ),
+  },
+  {
+    path: 'admin/funciones/:id/cancelar',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/funciones/cancelar/cancelar-funcion.component').then(
+        (m) => m.AdminCancelarFuncionComponent,
+      ),
+  },
   { path: '**', redirectTo: '' },
 ];
