@@ -1,119 +1,187 @@
-import { LatLng } from '../../shared/utils/geo.util';
+import { Funcion } from '../../shared/services/funciones.service';
 
-export type FuncionHorario = {
-  id: string;
-  hora: string;
-  asientosLibres: number;
-  capacidad: number;
-};
+function atToday(hour: number, min = 0): string {
+  const d = new Date();
+  d.setHours(hour, min, 0, 0);
+  return d.toISOString();
+}
 
-export type FuncionSala = {
-  id: string;
-  nombre: string;
-  tipo: string;
-  feats: { label: string; vip?: boolean }[];
-  precioDesde: number;
-  horarios: FuncionHorario[];
-};
+function relDay(days: number, hour: number, min = 0): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  d.setHours(hour, min, 0, 0);
+  return d.toISOString();
+}
 
-export type FuncionCine = {
-  id: string;
-  nombre: string;
-  direccion: string;
-  ciudad: string;
-  coords: LatLng;
-  iconLetter: string;
-  iconColor?: string;
-  salas: FuncionSala[];
-};
-
-export const MOCK_FUNCIONES: FuncionCine[] = [
+export const MOCK_FUNCIONES: Funcion[] = [
+  // ── HOY ───────────────────────────────────────────
   {
-    id: 'tgu-1',
-    nombre: 'Multiplaza',
-    direccion: 'Boulevard Morazán',
-    ciudad: 'Tegucigalpa',
-    coords: { lat: 14.0723, lng: -87.1921 },
-    iconLetter: 'M',
-    salas: [
-      {
-        id: 's1',
-        nombre: 'Sala 1 · 2D',
-        tipo: '2D',
-        feats: [{ label: 'Estándar' }, { label: '96 butacas' }],
-        precioDesde: 120,
-        horarios: [
-          { id: 'f1', hora: '17:00', asientosLibres: 68, capacidad: 96 },
-          { id: 'f2', hora: '20:00', asientosLibres: 42, capacidad: 96 },
-        ],
-      },
-      {
-        id: 's4',
-        nombre: 'Sala 4 · VIP',
-        tipo: 'VIP',
-        feats: [
-          { label: 'VIP', vip: true },
-          { label: 'Reclinable' },
-          { label: 'Servicio en sala' },
-        ],
-        precioDesde: 180,
-        horarios: [
-          { id: 'f3', hora: '18:30', asientosLibres: 14, capacidad: 48 },
-          { id: 'f4', hora: '21:30', asientosLibres: 6, capacidad: 48 },
-        ],
-      },
-    ],
+    id: 'f-1',
+    id_pelicula: 'p-1',
+    id_cine: 'gua-1',
+    id_sala: 'gua-1-s1',
+    fecha_inicio: atToday(14, 30),
+    precio_base: 65,
+    estado: 'programada',
+    boletos_vendidos: 142,
+    created_at: '2026-05-20T10:00:00Z',
   },
   {
-    id: 'tgu-2',
-    nombre: 'Mall Galerías',
-    direccion: 'Lomas del Mayab',
-    ciudad: 'Tegucigalpa',
-    coords: { lat: 14.0891, lng: -87.1844 },
-    iconLetter: 'G',
-    iconColor: 'orange',
-    salas: [
-      {
-        id: 's2',
-        nombre: 'Sala 2 · 2D',
-        tipo: '2D',
-        feats: [{ label: 'Estándar' }, { label: '120 butacas' }],
-        precioDesde: 110,
-        horarios: [
-          { id: 'f5', hora: '16:00', asientosLibres: 82, capacidad: 120 },
-          { id: 'f6', hora: '19:15', asientosLibres: 35, capacidad: 120 },
-          { id: 'f7', hora: '22:00', asientosLibres: 0, capacidad: 120 },
-        ],
-      },
-    ],
+    id: 'f-2',
+    id_pelicula: 'p-2',
+    id_cine: 'gua-1',
+    id_sala: 'gua-1-s2',
+    fecha_inicio: atToday(15, 0),
+    precio_base: 65,
+    estado: 'programada',
+    boletos_vendidos: 87,
+    created_at: '2026-05-20T10:00:00Z',
   },
   {
-    id: 'tgu-3',
-    nombre: 'Las Cascadas',
-    direccion: 'Boulevard Centroamérica',
-    ciudad: 'Tegucigalpa',
-    coords: { lat: 14.0588, lng: -87.2102 },
-    iconLetter: 'C',
-    salas: [
-      {
-        id: 's1',
-        nombre: 'Sala 1 · 2D',
-        tipo: '2D',
-        feats: [{ label: 'Estándar' }, { label: '88 butacas' }],
-        precioDesde: 115,
-        horarios: [
-          { id: 'f8', hora: '15:30', asientosLibres: 55, capacidad: 88 },
-          { id: 'f9', hora: '18:45', asientosLibres: 20, capacidad: 88 },
-        ],
-      },
-    ],
+    id: 'f-3',
+    id_pelicula: 'p-5',
+    id_cine: 'gua-1',
+    id_sala: 'gua-1-s3',
+    fecha_inicio: atToday(16, 15),
+    precio_base: 55,
+    estado: 'programada',
+    boletos_vendidos: 96,
+    created_at: '2026-05-21T10:00:00Z',
   },
-];
+  {
+    id: 'f-4',
+    id_pelicula: 'p-1',
+    id_cine: 'gua-2',
+    id_sala: 'gua-2-s1',
+    fecha_inicio: atToday(19, 0),
+    precio_base: 75,
+    estado: 'programada',
+    boletos_vendidos: 178,
+    created_at: '2026-05-21T10:00:00Z',
+  },
+  {
+    id: 'f-5',
+    id_pelicula: 'p-3',
+    id_cine: 'gua-2',
+    id_sala: 'gua-2-s2',
+    fecha_inicio: atToday(20, 45),
+    precio_base: 85,
+    estado: 'programada',
+    boletos_vendidos: 211,
+    created_at: '2026-05-21T10:00:00Z',
+  },
+  {
+    id: 'f-6',
+    id_pelicula: 'p-8',
+    id_cine: 'gua-3',
+    id_sala: 'gua-3-s1',
+    fecha_inicio: atToday(18, 30),
+    precio_base: 60,
+    estado: 'programada',
+    boletos_vendidos: 64,
+    created_at: '2026-05-22T10:00:00Z',
+  },
+  {
+    id: 'f-7',
+    id_pelicula: 'p-6',
+    id_cine: 'sps-1',
+    id_sala: 'sps-1-s1',
+    fecha_inicio: atToday(21, 0),
+    precio_base: 70,
+    estado: 'programada',
+    boletos_vendidos: 39,
+    created_at: '2026-05-22T10:00:00Z',
+  },
 
-export const MOCK_CINES_CITY_BAR = [
-  { id: 'todos', nombre: 'Todos' },
-  { id: 'tgu-1', nombre: 'Multiplaza' },
-  { id: 'tgu-2', nombre: 'Mall Galerías' },
-  { id: 'tgu-3', nombre: 'Las Cascadas' },
-  { id: 'tgu-4', nombre: 'Citymall' },
+  // ── MAÑANA ────────────────────────────────────────
+  {
+    id: 'f-8',
+    id_pelicula: 'p-3',
+    id_cine: 'gua-1',
+    id_sala: 'gua-1-s4',
+    fecha_inicio: relDay(1, 17, 0),
+    precio_base: 75,
+    estado: 'programada',
+    boletos_vendidos: 12,
+    created_at: '2026-05-22T10:00:00Z',
+  },
+  {
+    id: 'f-9',
+    id_pelicula: 'p-1',
+    id_cine: 'gua-1',
+    id_sala: 'gua-1-s5',
+    fecha_inicio: relDay(1, 20, 15),
+    precio_base: 75,
+    estado: 'programada',
+    boletos_vendidos: 8,
+    created_at: '2026-05-22T10:00:00Z',
+  },
+  {
+    id: 'f-10',
+    id_pelicula: 'p-5',
+    id_cine: 'gua-2',
+    id_sala: 'gua-2-s3',
+    fecha_inicio: relDay(1, 14, 0),
+    precio_base: 55,
+    estado: 'programada',
+    boletos_vendidos: 21,
+    created_at: '2026-05-22T10:00:00Z',
+  },
+  {
+    id: 'f-11',
+    id_pelicula: 'p-2',
+    id_cine: 'sps-1',
+    id_sala: 'sps-1-s2',
+    fecha_inicio: relDay(1, 19, 45),
+    precio_base: 70,
+    estado: 'programada',
+    boletos_vendidos: 4,
+    created_at: '2026-05-23T10:00:00Z',
+  },
+  {
+    id: 'f-12',
+    id_pelicula: 'p-8',
+    id_cine: 'tgu-1',
+    id_sala: 'tgu-1-s1',
+    fecha_inicio: relDay(2, 16, 30),
+    precio_base: 80,
+    estado: 'programada',
+    boletos_vendidos: 0,
+    created_at: '2026-05-23T10:00:00Z',
+  },
+  {
+    id: 'f-13',
+    id_pelicula: 'p-3',
+    id_cine: 'ssv-1',
+    id_sala: 'ssv-1-s1',
+    fecha_inicio: relDay(3, 18, 0),
+    precio_base: 65,
+    estado: 'programada',
+    boletos_vendidos: 0,
+    created_at: '2026-05-23T10:00:00Z',
+  },
+
+  // ── HISTÓRICO / CANCELADA ─────────────────────────
+  {
+    id: 'f-14',
+    id_pelicula: 'p-7',
+    id_cine: 'gua-1',
+    id_sala: 'gua-1-s6',
+    fecha_inicio: relDay(-2, 20, 0),
+    precio_base: 65,
+    estado: 'finalizada',
+    boletos_vendidos: 89,
+    created_at: '2026-04-30T10:00:00Z',
+  },
+  {
+    id: 'f-15',
+    id_pelicula: 'p-4',
+    id_cine: 'gua-2',
+    id_sala: 'gua-2-s4',
+    fecha_inicio: relDay(-5, 19, 30),
+    precio_base: 65,
+    estado: 'cancelada',
+    boletos_vendidos: 47,
+    created_at: '2026-04-28T10:00:00Z',
+  },
 ];

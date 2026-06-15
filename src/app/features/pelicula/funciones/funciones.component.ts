@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { MOCK_FUNCIONES } from '../../../mocks/data/funciones.mock';
+import { MOCK_FUNCIONES } from '../../../mocks/data/pelicula-funciones.mock';
 import { DayStripComponent } from '../../cartelera/day-strip/day-strip.component';
 import { DistanciaCineComponent } from './distancia-cine/distancia-cine.component';
 import { HorarioChipComponent } from './horario-chip/horario-chip.component';

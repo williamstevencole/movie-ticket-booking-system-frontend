@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { FuncionHorario } from '../../../../mocks/data/funciones.mock';
+import { FuncionHorario } from '../../../../mocks/data/pelicula-funciones.mock';
 
 @Component({
   selector: 'app-horario-chip',

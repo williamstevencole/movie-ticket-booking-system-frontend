@@ -1,6 +1,6 @@
 import { Component, input, output, signal, OnInit, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { MOCK_CINES_CITY_BAR } from '../../../mocks/data/funciones.mock';
+import { MOCK_CINES_CITY_BAR } from '../../../mocks/data/pelicula-funciones.mock';
 
 const STORAGE_KEY = 'cinetario_cine_filtro';
 
