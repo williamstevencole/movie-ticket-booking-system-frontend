@@ -1,16 +1,17 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { roleGuard } from './core/auth/role.guard';
-import { locationGuard } from './core/auth/location.guard';
-import { rootRedirect } from './core/auth/root-redirect';
 
 export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    canActivate: [rootRedirect],
-    children: [],
+    loadComponent: () =>
+      import('./features/cartelera/home/home.component').then(
+        (m) => m.CarteleraHomeComponent,
+      ),
   },
+  { path: 'cartelera', redirectTo: '', pathMatch: 'full' },
   {
     path: 'login',
     loadComponent: () =>
@@ -46,16 +47,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'cartelera',
-    canActivate: [authGuard, locationGuard],
-    loadComponent: () =>
-      import('./features/cartelera/home/home.component').then(
-        (m) => m.CarteleraHomeComponent,
-      ),
-  },
-  {
     path: 'buscar',
-    canActivate: [authGuard, locationGuard],
     loadComponent: () =>
       import('./features/busqueda/resultados/resultados.component').then(
         (m) => m.BusquedaResultadosComponent,
@@ -63,7 +55,6 @@ export const routes: Routes = [
   },
   {
     path: 'pelicula/:id',
-    canActivate: [authGuard, locationGuard],
     loadComponent: () =>
       import('./features/pelicula/detalle/detalle.component').then(
         (m) => m.PeliculaDetalleComponent,
@@ -76,7 +67,7 @@ export const routes: Routes = [
   },
   {
     path: 'cuenta',
-    canActivate: [authGuard, locationGuard],
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./features/account-shell/account-shell.component').then(
         (m) => m.AccountShellComponent,
