@@ -1,0 +1,105 @@
+.proximamente {
+  padding: var(--s7) 0;
+}
+
+.section-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--s5);
+  margin-bottom: var(--s5);
+
+  h2 {
+    font-size: clamp(24px, 3vw, 32px);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    margin: 0;
+  }
+
+  .link {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--red);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+
+    &:hover { text-decoration: underline; }
+  }
+}
+
+.prox-strip {
+  display: flex;
+  gap: var(--s4);
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-2) transparent;
+}
+
+.prox-card {
+  min-width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.prox-card .poster {
+  aspect-ratio: 2 / 3;
+  border-radius: var(--r);
+  overflow: hidden;
+  position: relative;
+  background: var(--surface);
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.6) 100%);
+    pointer-events: none;
+  }
+}
+
+/* Map poster-N → global gradient palette */
+.poster-1 { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #b91c1c 100%); }
+.poster-2 { background: linear-gradient(135deg, #082f49 0%, #0c4a6e 50%, #f59e0b 100%); }
+.poster-3 { background: linear-gradient(135deg, #831843 0%, #be185d 50%, #fb923c 100%); }
+.poster-4 { background: linear-gradient(135deg, #14532d 0%, #15803d 50%, #fbbf24 100%); }
+
+.poster-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--s3) var(--s3) var(--s3);
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  z-index: 1;
+}
+
+.badge {
+  position: absolute;
+  top: var(--s2);
+  left: var(--s2);
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  border-radius: 4px;
+  z-index: 2;
+
+  &.new  { background: var(--red);    color: white; }
+  &.vip  { background: var(--orange); color: white; }
+  &.last { background: var(--ink);    color: white; }
+}
+
+.prox-date {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  padding-left: 2px;
+}

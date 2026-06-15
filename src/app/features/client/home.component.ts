@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import {
   LucideMapPin,
-  LucideStar,
-  LucidePlay,
   LucideLogOut,
   LucideSearch,
   LucideArrowRight,
@@ -15,6 +13,9 @@ import {
 import { AuthService } from '../../shared/services/auth.service';
 import { Cupon, CuponesService } from '../../shared/services/cupones.service';
 import { LocationService } from '../../shared/services/location.service';
+import { HeroCarouselComponent } from '../../shared/components/cartelera/hero-carousel.component';
+import { ProximamenteComponent } from '../../shared/components/cartelera/proximamente.component';
+
 
 interface Pelicula {
   titulo: string;
@@ -38,14 +39,14 @@ interface CuponPreview extends Cupon {
     CommonModule,
     RouterLink,
     LucideMapPin,
-    LucideStar,
-    LucidePlay,
     LucideLogOut,
     LucideSearch,
     LucideArrowRight,
     LucideTicket,
     LucideCopy,
     LucideCheck,
+    HeroCarouselComponent,
+    ProximamenteComponent,
   ],
   template: `
     <!-- HEADER -->
@@ -82,39 +83,7 @@ interface CuponPreview extends Cupon {
     </header>
 
     <!-- HERO -->
-    <section class="hero">
-      <div class="hero-inner">
-        <div class="hero-info">
-          <span class="hero-badge">
-            <svg lucideStar [size]="14"></svg>
-            ESTRENO HOY
-          </span>
-          <h1>La hora del lobo</h1>
-          <div class="hero-meta">
-            <span>Drama</span><span class="sep">·</span>
-            <span>118 min</span><span class="sep">·</span>
-            <span>VOSE</span><span class="sep">·</span>
-            <span>+13</span>
-            <span class="sep">·</span>
-            <span class="rating">
-              <svg lucideStar [size]="14" class="star-fill"></svg>
-              4.6 / 5
-            </span>
-          </div>
-          <p>Lina Soualem firma su primer largometraje. Una odisea sonora en el norte congelado.</p>
-          <div class="hero-cta">
-            <button class="btn btn-primary btn-lg">
-              <svg lucidePlay [size]="18"></svg>
-              <span>Comprar boletos</span>
-            </button>
-          </div>
-        </div>
-        <div class="hero-poster poster-1">
-          <span class="poster-badge">ESTRENO</span>
-          <span class="poster-title">La hora del lobo</span>
-        </div>
-      </div>
-    </section>
+    <app-hero-carousel></app-hero-carousel>
 
     <!-- WELCOME -->
     <div class="welcome">
@@ -182,6 +151,9 @@ interface CuponPreview extends Cupon {
         }
       </div>
     </section>
+
+    <!-- PROXIMAMENTE -->
+    <app-proximamente></app-proximamente>
 
     <!-- CARTELERA -->
     <main class="wrap">
