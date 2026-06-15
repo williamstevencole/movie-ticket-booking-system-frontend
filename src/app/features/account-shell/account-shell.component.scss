@@ -48,12 +48,15 @@
 .acc-nav a {
   display: flex;
   align-items: center;
+  gap: 10px;
   padding: 10px 12px;
   font-size: 14px;
   border-radius: 8px;
   color: var(--text);
   text-decoration: none;
 }
+.acc-nav a svg { flex-shrink: 0; opacity: 0.8; }
+.acc-nav a.on svg { opacity: 1; }
 .acc-nav a:hover { background: var(--bg-soft); }
 .acc-nav a.on {
   background: var(--red-soft);

@@ -1,12 +1,31 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import {
+  LucideBell,
+  LucideCreditCard,
+  LucideGift,
+  LucideShield,
+  LucideTicket,
+  LucideUser,
+} from '@lucide/angular';
 import { AuthService } from '../../shared/services/auth.service';
 import { AppbarComponent } from '../../shared/components/appbar/appbar.component';
 
 @Component({
   selector: 'app-account-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, AppbarComponent],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    AppbarComponent,
+    LucideTicket,
+    LucideUser,
+    LucideCreditCard,
+    LucideGift,
+    LucideShield,
+    LucideBell,
+  ],
   templateUrl: './account-shell.component.html',
   styleUrl: './account-shell.component.scss',
 })
@@ -16,7 +35,7 @@ export class AccountShellComponent {
   readonly user = this.auth.user;
 
   readonly nav = [
-    { label: 'Cartelera', route: '/cartelera' },
+    { label: 'Cartelera', route: '/' },
     { label: 'Próximos estrenos' },
     { label: 'Promociones' },
     { label: 'Cines' },
