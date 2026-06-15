@@ -9,13 +9,13 @@ import {
   LucideTicket,
   LucideCopy,
   LucideCheck,
+  LucideChevronDown,
 } from '@lucide/angular';
 import { AuthService } from '../../shared/services/auth.service';
 import { Cupon, CuponesService } from '../../shared/services/cupones.service';
 import { LocationService } from '../../shared/services/location.service';
 import { HeroCarouselComponent } from '../../shared/components/cartelera/hero-carousel.component';
 import { ProximamenteComponent } from '../../shared/components/cartelera/proximamente.component';
-
 
 interface Pelicula {
   titulo: string;
@@ -45,6 +45,9 @@ interface CuponPreview extends Cupon {
     LucideTicket,
     LucideCopy,
     LucideCheck,
+    LucideMapPin,      
+    LucideArrowRight,
+    LucideChevronDown,
     HeroCarouselComponent,
     ProximamenteComponent,
   ],
@@ -52,7 +55,9 @@ interface CuponPreview extends Cupon {
     <!-- HEADER -->
     <header class="appbar">
       <div class="appbar-inner">
-        <a class="brand" routerLink="/cartelera"><span class="mark">C</span>Cinetario</a>
+        <a class="brand" routerLink="/cartelera"
+          ><span class="mark">C</span>Cinetario</a
+        >
         <nav class="appnav">
           <a routerLink="/cartelera" class="on">Cartelera</a>
           <a>Próximos estrenos</a>
@@ -67,14 +72,21 @@ interface CuponPreview extends Cupon {
           </button>
           <a class="citychip" routerLink="/elegir-cine" title="Cambiar cine">
             <svg lucideMapPin [size]="14"></svg>
-            <span class="citychip-name">{{ cinemaName() ?? 'Elegí un cine' }}</span>
+            <span class="citychip-name">{{
+              cinemaName() ?? 'Elegí un cine'
+            }}</span>
             @if (cityName(); as city) {
               <span class="citychip-city">· {{ city }}</span>
             }
           </a>
           <div class="user">
             <span class="avatar">{{ initials() }}</span>
-            <button class="logout" (click)="logout()" title="Cerrar sesión" aria-label="Cerrar sesión">
+            <button
+              class="logout"
+              (click)="logout()"
+              title="Cerrar sesión"
+              aria-label="Cerrar sesión"
+            >
               <svg lucideLogOut [size]="16"></svg>
             </button>
           </div>
@@ -85,10 +97,33 @@ interface CuponPreview extends Cupon {
     <!-- HERO -->
     <app-hero-carousel></app-hero-carousel>
 
+    <!-- CITY BAR -->
+    <div class="city-bar">
+      <div class="wrap">
+        <div class="city-selector">
+          <div class="dropdown-trigger">
+            <svg lucideMapPin [size]="16" class="icon-pin"></svg>
+            <span class="label">Cine:</span>
+            <span class="current-city">San Pedro Sula (Multiplaza)</span>
+            <svg lucideChevronDown [size]="14" class="icon-arrow"></svg>
+          </div>
+
+          <div class="dropdown-menu">
+            <ul class="dropdown-list">
+              <li class="dropdown-item active">San Pedro Sula (Multiplaza)</li>
+              <li class="dropdown-item">Tegucigalpa (Cascadas)</li>
+              <li class="dropdown-item">La Ceiba</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- WELCOME -->
     <div class="welcome">
       <div class="wrap">
-        Bienvenido, <strong>{{ userName() }}</strong> — esta es la cartelera de tu ciudad para hoy.
+        Bienvenido, <strong>{{ userName() }}</strong> — esta es la cartelera de
+        tu ciudad para hoy.
       </div>
     </div>
 
@@ -114,16 +149,25 @@ interface CuponPreview extends Cupon {
               <div class="mc-left">
                 <div class="mc-value">
                   @if (c.porcentaje) {
-                    <span class="num">{{ c.valor }}</span><span class="sym">%</span>
+                    <span class="num">{{ c.valor }}</span
+                    ><span class="sym">%</span>
                   } @else {
-                    <span class="sym pre">L</span><span class="num">{{ c.valor }}</span>
+                    <span class="sym pre">L</span
+                    ><span class="num">{{ c.valor }}</span>
                   }
                 </div>
-                <div class="mc-tag">{{ c.porcentaje ? 'Descuento' : 'Monto fijo' }}</div>
+                <div class="mc-tag">
+                  {{ c.porcentaje ? 'Descuento' : 'Monto fijo' }}
+                </div>
               </div>
               <div class="mc-right">
                 <div class="mc-code">{{ c.codigo }}</div>
-                <button class="mc-copy" (click)="copy(c)" [class.copied]="c.copiado" [attr.aria-label]="'Copiar código ' + c.codigo">
+                <button
+                  class="mc-copy"
+                  (click)="copy(c)"
+                  [class.copied]="c.copiado"
+                  [attr.aria-label]="'Copiar código ' + c.codigo"
+                >
                   @if (c.copiado) {
                     <svg lucideCheck [size]="13"></svg>
                     <span>Copiado</span>
@@ -169,9 +213,15 @@ interface CuponPreview extends Cupon {
         @for (p of peliculas; track p.titulo) {
           <article class="movie-card">
             <div class="poster" [class]="p.poster">
-              @if (p.tag === 'estreno') { <span class="badge new">ESTRENO</span> }
-              @if (p.tag === 'vip') { <span class="badge vip">VIP</span> }
-              @if (p.tag === 'ultima') { <span class="badge last">ÚLT. SEM</span> }
+              @if (p.tag === 'estreno') {
+                <span class="badge new">ESTRENO</span>
+              }
+              @if (p.tag === 'vip') {
+                <span class="badge vip">VIP</span>
+              }
+              @if (p.tag === 'ultima') {
+                <span class="badge last">ÚLT. SEM</span>
+              }
               <span class="poster-title">{{ p.titulo }}</span>
             </div>
             <div class="body">
@@ -196,7 +246,9 @@ interface CuponPreview extends Cupon {
 
     <footer class="appfoot">
       <div class="wrap">
-        © 2026 Cinetario · sesión como <strong>{{ user()?.email }}</strong> ({{ role() }})
+        © 2026 Cinetario · sesión como <strong>{{ user()?.email }}</strong> ({{
+          role()
+        }})
       </div>
     </footer>
   `,
@@ -229,10 +281,7 @@ export class ClientHomeComponent implements OnInit {
             if (!c.activo) return false;
             const exp = new Date(c.fecha_expiracion);
             if (exp.getTime() < today.getTime()) return false;
-            if (
-              c.usos_maximos !== null &&
-              c.usos_actuales >= c.usos_maximos
-            )
+            if (c.usos_maximos !== null && c.usos_actuales >= c.usos_maximos)
               return false;
             return true;
           })
@@ -310,7 +359,12 @@ export class ClientHomeComponent implements OnInit {
       idioma: 'VOSE',
       poster: 'poster-1',
       tag: 'estreno',
-      funciones: [{ hora: '15:00' }, { hora: '18:30' }, { hora: '21:30' }, { hora: '23:45' }],
+      funciones: [
+        { hora: '15:00' },
+        { hora: '18:30' },
+        { hora: '21:30' },
+        { hora: '23:45' },
+      ],
     },
     {
       titulo: 'El faro al sur',
@@ -318,7 +372,11 @@ export class ClientHomeComponent implements OnInit {
       duracion: '126m',
       idioma: 'ESP',
       poster: 'poster-2',
-      funciones: [{ hora: '14:30' }, { hora: '18:00' }, { hora: '21:15', full: true }],
+      funciones: [
+        { hora: '14:30' },
+        { hora: '18:00' },
+        { hora: '21:15', full: true },
+      ],
     },
     {
       titulo: 'Ciudades de papel',
@@ -343,7 +401,11 @@ export class ClientHomeComponent implements OnInit {
       idioma: 'VOSE',
       poster: 'poster-5',
       tag: 'ultima',
-      funciones: [{ hora: '16:15' }, { hora: '19:00', full: true }, { hora: '22:00' }],
+      funciones: [
+        { hora: '16:15' },
+        { hora: '19:00', full: true },
+        { hora: '22:00' },
+      ],
     },
     {
       titulo: 'Nadadores de agosto',
