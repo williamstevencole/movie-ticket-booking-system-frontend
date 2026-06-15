@@ -24,6 +24,20 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'olvide-password',
+    loadComponent: () =>
+      import('./features/auth/password/olvide-password.component').then(
+        (m) => m.OlvidePasswordComponent,
+      ),
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./features/auth/password/reset-password.component').then(
+        (m) => m.ResetPasswordComponent,
+      ),
+  },
+  {
     path: 'elegir-cine',
     canActivate: [authGuard],
     loadComponent: () =>

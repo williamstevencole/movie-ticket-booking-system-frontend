@@ -81,7 +81,7 @@ import { homeAfterLogin } from '../../core/auth/role-redirect';
             <div class="field">
               <label for="password">
                 Contraseña
-                <a class="forgot" href="#">¿La olvidaste?</a>
+                <a class="forgot" routerLink="/olvide-password">¿La olvidaste?</a>
               </label>
               <div class="pw-wrap">
                 <input
