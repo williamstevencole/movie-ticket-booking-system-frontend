@@ -63,5 +63,29 @@ export const routes: Routes = [
         (m) => m.AdminCiudadesComponent,
       ),
   },
+  {
+    path: 'admin/peliculas',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/peliculas/listado/peliculas.component').then(
+        (m) => m.AdminPeliculasComponent,
+      ),
+  },
+  {
+    path: 'admin/peliculas/crear',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/peliculas/form/pelicula-form.component').then(
+        (m) => m.AdminPeliculaFormComponent,
+      ),
+  },
+  {
+    path: 'admin/peliculas/:id/editar',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/peliculas/form/pelicula-form.component').then(
+        (m) => m.AdminPeliculaFormComponent,
+      ),
+  },
   { path: '**', redirectTo: '' },
 ];
