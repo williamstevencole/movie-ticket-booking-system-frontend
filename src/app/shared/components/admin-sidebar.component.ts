@@ -153,7 +153,11 @@ export class AdminSidebarComponent {
           exact: true,
         },
         { label: 'Funciones', icon: LucideClapperboard, count: 14 },
-        { label: 'Películas', icon: LucideFilm, count: 28 },
+        {
+          label: 'Películas',
+          icon: LucideFilm,
+          routerLink: '/admin/peliculas',
+        },
         { label: 'Géneros & idiomas', icon: LucideTags },
       ],
     },
