@@ -6,6 +6,7 @@ import { CuponesService } from '../../shared/services/cupones.service';
 import { PeliculasService } from '../../shared/services/peliculas.service';
 import { GenerosService } from '../../shared/services/generos.service';
 import { IdiomasService } from '../../shared/services/idiomas.service';
+import { FuncionesService } from '../../shared/services/funciones.service';
 
 import { MockCiudadesService } from '../../mocks/services/ciudades.mock.service';
 import { MockCinesService } from '../../mocks/services/cines.mock.service';
@@ -13,6 +14,7 @@ import { MockCuponesService } from '../../mocks/services/cupones.mock.service';
 import { MockPeliculasService } from '../../mocks/services/peliculas.mock.service';
 import { MockGenerosService } from '../../mocks/services/generos.mock.service';
 import { MockIdiomasService } from '../../mocks/services/idiomas.mock.service';
+import { MockFuncionesService } from '../../mocks/services/funciones.mock.service';
 
 export const dataProviders: Provider[] = [
   { provide: CiudadesService, useClass: MockCiudadesService },
@@ -21,4 +23,5 @@ export const dataProviders: Provider[] = [
   { provide: PeliculasService, useClass: MockPeliculasService },
   { provide: GenerosService, useClass: MockGenerosService },
   { provide: IdiomasService, useClass: MockIdiomasService },
+  { provide: FuncionesService, useClass: MockFuncionesService },
 ];
