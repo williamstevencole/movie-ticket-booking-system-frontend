@@ -7,11 +7,6 @@ function daysFromNow(days: number): string {
   return d.toISOString();
 }
 
-/**
- * Cupones mock: mezcla de activos, próximos a vencer y vencidos para que
- * la UI muestre las distintas variantes (estado normal, alerta naranja,
- * sección "vencidos o agotados").
- */
 export const MOCK_CUPONES: Cupon[] = [
   {
     id: '1',
@@ -29,7 +24,7 @@ export const MOCK_CUPONES: Cupon[] = [
     codigo: 'VERANO20',
     tipo: 'porcentaje',
     valor: 20,
-    fecha_expiracion: daysFromNow(5), // pronto a vencer
+    fecha_expiracion: daysFromNow(5),
     usos_maximos: 500,
     usos_actuales: 423,
     activo: true,
@@ -73,7 +68,7 @@ export const MOCK_CUPONES: Cupon[] = [
     codigo: 'NAVIDAD30',
     tipo: 'porcentaje',
     valor: 30,
-    fecha_expiracion: daysFromNow(-12), // vencido
+    fecha_expiracion: daysFromNow(-12),
     usos_maximos: 1000,
     usos_actuales: 967,
     activo: true,
