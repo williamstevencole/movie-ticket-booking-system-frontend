@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -18,7 +18,20 @@ import {
   Genero,
   GenerosService,
 } from '../../../../shared/services/generos.service';
+import {
+  Cine,
+  CinesService,
+} from '../../../../shared/services/cines.service';
+import {
+  Ciudad,
+  CiudadesService,
+} from '../../../../shared/services/ciudades.service';
+import {
+  Funcion,
+  FuncionesService,
+} from '../../../../shared/services/funciones.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
+import { PagerComponent } from '../../../../shared/components/pager.component';
 
 type Toast = { kind: 'ok' | 'err'; text: string } | null;
 type EstadoFiltro = 'todas' | 'activa' | 'inactiva';
@@ -33,6 +46,7 @@ type EstadoFiltro = 'todas' | 'activa' | 'inactiva';
     DatePipe,
     DecimalPipe,
     AdminSidebarComponent,
+    PagerComponent,
     LucidePlus,
     LucideSearch,
     LucidePencil,
@@ -70,7 +84,7 @@ type EstadoFiltro = 'todas' | 'activa' | 'inactiva';
                 type="text"
                 placeholder="Buscar por título…"
                 [ngModel]="searchTerm()"
-                (ngModelChange)="searchTerm.set($event)"
+                (ngModelChange)="onSearchChange($event)"
               />
             </label>
 
@@ -78,25 +92,36 @@ type EstadoFiltro = 'todas' | 'activa' | 'inactiva';
               <button
                 class="filter-chip"
                 [class.on]="estadoFiltro() === 'todas'"
-                (click)="estadoFiltro.set('todas')"
+                (click)="setEstado('todas')"
                 role="tab"
-                [attr.aria-selected]="estadoFiltro() === 'todas'"
               >Todas</button>
               <button
                 class="filter-chip"
                 [class.on]="estadoFiltro() === 'activa'"
-                (click)="estadoFiltro.set('activa')"
+                (click)="setEstado('activa')"
                 role="tab"
-                [attr.aria-selected]="estadoFiltro() === 'activa'"
               >Activas</button>
               <button
                 class="filter-chip"
                 [class.on]="estadoFiltro() === 'inactiva'"
-                (click)="estadoFiltro.set('inactiva')"
+                (click)="setEstado('inactiva')"
                 role="tab"
-                [attr.aria-selected]="estadoFiltro() === 'inactiva'"
               >Inactivas</button>
             </div>
+
+            <select class="select-filter" [value]="idCiudad()" (change)="onCiudadChange($event)">
+              <option value="">Todas las ciudades</option>
+              @for (c of ciudades(); track c.id) {
+                <option [value]="c.id">{{ c.nombre }}</option>
+              }
+            </select>
+
+            <select class="select-filter" [value]="idCine()" (change)="onCineChange($event)">
+              <option value="">{{ idCiudad() ? 'Todos los cines de la ciudad' : 'Todos los cines' }}</option>
+              @for (c of cinesEnCiudad(); track c.id) {
+                <option [value]="c.id">{{ c.nombre }}</option>
+              }
+            </select>
 
             <span class="result-count tnum">
               {{ filtered().length }} de {{ peliculas().length }}
@@ -104,7 +129,7 @@ type EstadoFiltro = 'todas' | 'activa' | 'inactiva';
           </section>
 
           <section class="card">
-            @if (filtered().length === 0) {
+            @if (paged().length === 0) {
               <div class="empty">
                 <span class="empty-mark">
                   <svg lucideFilm [size]="22"></svg>
@@ -136,7 +161,7 @@ type EstadoFiltro = 'todas' | 'activa' | 'inactiva';
                     </tr>
                   </thead>
                   <tbody>
-                    @for (p of filtered(); track p.id) {
+                    @for (p of paged(); track p.id) {
                       <tr>
                         <td class="col-poster">
                           <div class="poster">
@@ -198,6 +223,12 @@ type EstadoFiltro = 'todas' | 'activa' | 'inactiva';
                   </tbody>
                 </table>
               </div>
+
+              <app-pager
+                [value]="{ page: page(), pageSize: pageSize(), total: filtered().length }"
+                (pageChange)="page.set($event)"
+                (pageSizeChange)="onPageSizeChange($event)"
+              />
             }
           </section>
         </div>
@@ -215,12 +246,22 @@ type EstadoFiltro = 'todas' | 'activa' | 'inactiva';
 export class AdminPeliculasComponent {
   private peliculasSvc = inject(PeliculasService);
   private generosSvc = inject(GenerosService);
+  private cinesSvc = inject(CinesService);
+  private ciudadesSvc = inject(CiudadesService);
+  private funcionesSvc = inject(FuncionesService);
   private router = inject(Router);
 
   readonly peliculas = signal<Pelicula[]>([]);
   readonly generos = signal<Genero[]>([]);
+  readonly cines = signal<Cine[]>([]);
+  readonly ciudades = signal<Ciudad[]>([]);
+  readonly funciones = signal<Funcion[]>([]);
   readonly searchTerm = signal('');
   readonly estadoFiltro = signal<EstadoFiltro>('todas');
+  readonly idCiudad = signal<string>('');
+  readonly idCine = signal<string>('');
+  readonly page = signal(1);
+  readonly pageSize = signal(10);
   readonly togglingId = signal<string | null>(null);
   readonly toast = signal<Toast>(null);
 
@@ -243,25 +284,92 @@ export class AdminPeliculasComponent {
     () => this.peliculas().filter((p) => p.estado === 'activa').length,
   );
 
+  readonly cinesEnCiudad = computed(() => {
+    const ciudadId = this.idCiudad();
+    if (!ciudadId) return this.cines();
+    return this.cines().filter((c) => c.id_ciudad === ciudadId);
+  });
+
+  readonly peliculasEnCine = computed(() => {
+    const idCine = this.idCine();
+    const idCiudad = this.idCiudad();
+    if (!idCine && !idCiudad) return null;
+
+    const cinesValidos = idCine
+      ? new Set([idCine])
+      : new Set(this.cinesEnCiudad().map((c) => c.id));
+
+    const ids = new Set<string>();
+    for (const f of this.funciones()) {
+      if (cinesValidos.has(f.id_cine)) ids.add(f.id_pelicula);
+    }
+    return ids;
+  });
+
   readonly filtered = computed(() => {
     const t = this.searchTerm().trim().toLowerCase();
     const estado = this.estadoFiltro();
+    const enCine = this.peliculasEnCine();
     return this.peliculas().filter((p) => {
       if (estado !== 'todas' && p.estado !== estado) return false;
       if (t && !p.titulo.toLowerCase().includes(t)) return false;
+      if (enCine && !enCine.has(p.id)) return false;
       return true;
     });
+  });
+
+  readonly paged = computed(() => {
+    const all = this.filtered();
+    const start = (this.page() - 1) * this.pageSize();
+    return all.slice(start, start + this.pageSize());
   });
 
   constructor() {
     this.refresh();
     this.generosSvc.list().subscribe((g) => this.generos.set(g));
+    this.cinesSvc.list().subscribe((p) => this.cines.set(p.data));
+    this.ciudadesSvc.list().subscribe((c) => this.ciudades.set(c));
+    this.funcionesSvc.list().subscribe((f) => this.funciones.set(f));
 
     const navState = this.router.getCurrentNavigation()?.extras?.state
       ?? history.state;
     if (navState?.toast) {
       this.showToast('ok', String(navState.toast));
     }
+
+    effect(() => {
+      const total = this.filtered().length;
+      const maxPage = Math.max(1, Math.ceil(total / this.pageSize()));
+      if (this.page() > maxPage) this.page.set(maxPage);
+    });
+  }
+
+  setEstado(e: EstadoFiltro) {
+    this.estadoFiltro.set(e);
+    this.page.set(1);
+  }
+
+  onCiudadChange(ev: Event) {
+    const val = (ev.target as HTMLSelectElement).value;
+    this.idCiudad.set(val);
+    this.idCine.set('');
+    this.page.set(1);
+  }
+
+  onCineChange(ev: Event) {
+    const val = (ev.target as HTMLSelectElement).value;
+    this.idCine.set(val);
+    this.page.set(1);
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize.set(size);
+    this.page.set(1);
+  }
+
+  onSearchChange(value: string) {
+    this.searchTerm.set(value);
+    this.page.set(1);
   }
 
   generosDePelicula(p: Pelicula): string[] {

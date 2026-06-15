@@ -135,6 +135,27 @@
   color: var(--bg);
 }
 
+.select-filter {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: var(--r);
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 140ms var(--ease);
+  min-width: 180px;
+}
+.select-filter:hover { border-color: var(--text-3); }
+.select-filter:focus {
+  outline: none;
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-soft);
+}
+
 .result-count {
   font-size: 13px;
   color: var(--text-3);
