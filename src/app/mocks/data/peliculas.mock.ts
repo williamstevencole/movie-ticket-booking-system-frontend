@@ -1,0 +1,138 @@
+import { Pelicula } from '../../shared/services/peliculas.service';
+
+function daysFromNow(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString();
+}
+
+export const MOCK_PELICULAS: Pelicula[] = [
+  {
+    id: 'p-1',
+    titulo: 'Tormenta sobre el Pacífico',
+    sinopsis:
+      'Un piloto retirado debe volver a los cielos cuando una tormenta sin precedentes amenaza una isla del Pacífico Sur.',
+    duracion_min: 128,
+    fecha_estreno: daysFromNow(-21),
+    id_generos: ['g-1', 'g-2'],
+    id_idioma: 'i-3',
+    clasificacion: 'PG-13',
+    poster_url: null,
+    estado: 'activa',
+    funciones_programadas: 12,
+    boletos_vendidos: 1843,
+    created_at: '2026-04-12T10:00:00Z',
+  },
+  {
+    id: 'p-2',
+    titulo: 'Cartas a mi yo de mañana',
+    sinopsis:
+      'Una joven escritora encuentra una caja de cartas escritas por su yo del futuro y comienza a cuestionar cada decisión.',
+    duracion_min: 112,
+    fecha_estreno: daysFromNow(-7),
+    id_generos: ['g-5', 'g-8'],
+    id_idioma: 'i-1',
+    clasificacion: 'PG',
+    poster_url: null,
+    estado: 'activa',
+    funciones_programadas: 9,
+    boletos_vendidos: 967,
+    created_at: '2026-04-28T10:00:00Z',
+  },
+  {
+    id: 'p-3',
+    titulo: 'El Reino de Niebla',
+    sinopsis:
+      'En un mundo donde la niebla devora ciudades, un grupo de exploradores busca el último refugio iluminado.',
+    duracion_min: 142,
+    fecha_estreno: daysFromNow(2),
+    id_generos: ['g-7', 'g-2', 'g-11'],
+    id_idioma: 'i-4',
+    clasificacion: 'PG-13',
+    poster_url: null,
+    estado: 'activa',
+    funciones_programadas: 6,
+    boletos_vendidos: 421,
+    created_at: '2026-05-10T10:00:00Z',
+  },
+  {
+    id: 'p-4',
+    titulo: 'Risas en la 5ta avenida',
+    sinopsis:
+      'Tres comediantes en quiebra unen fuerzas para grabar el especial que cambie sus carreras… o las hunda para siempre.',
+    duracion_min: 96,
+    fecha_estreno: daysFromNow(-45),
+    id_generos: ['g-4'],
+    id_idioma: 'i-3',
+    clasificacion: 'R',
+    poster_url: null,
+    estado: 'inactiva',
+    funciones_programadas: 0,
+    boletos_vendidos: 312,
+    created_at: '2026-03-22T10:00:00Z',
+  },
+  {
+    id: 'p-5',
+    titulo: 'Pequeños monstruos',
+    sinopsis:
+      'Una pareja de monstruos suburbanos descubre que sus hijos son humanos — y deben adaptarse antes de la fiesta de cumpleaños.',
+    duracion_min: 88,
+    fecha_estreno: daysFromNow(-3),
+    id_generos: ['g-3', 'g-6', 'g-4'],
+    id_idioma: 'i-1',
+    clasificacion: 'A',
+    poster_url: null,
+    estado: 'activa',
+    funciones_programadas: 14,
+    boletos_vendidos: 2104,
+    created_at: '2026-04-30T10:00:00Z',
+  },
+  {
+    id: 'p-6',
+    titulo: 'Sangre en el viñedo',
+    sinopsis:
+      'Un detective sin licencia investiga la muerte de un magnate del vino durante la vendimia más sangrienta del valle.',
+    duracion_min: 118,
+    fecha_estreno: daysFromNow(9),
+    id_generos: ['g-9', 'g-5'],
+    id_idioma: 'i-6',
+    clasificacion: 'R',
+    poster_url: null,
+    estado: 'activa',
+    funciones_programadas: 4,
+    boletos_vendidos: 198,
+    created_at: '2026-05-18T10:00:00Z',
+  },
+  {
+    id: 'p-7',
+    titulo: 'Última función',
+    sinopsis:
+      'Un proyeccionista descubre que la película que está reproduciendo cambia el destino de todos los que la ven.',
+    duracion_min: 105,
+    fecha_estreno: daysFromNow(-90),
+    id_generos: ['g-10', 'g-9'],
+    id_idioma: 'i-4',
+    clasificacion: 'R',
+    poster_url: null,
+    estado: 'inactiva',
+    funciones_programadas: 0,
+    boletos_vendidos: 547,
+    created_at: '2026-02-14T10:00:00Z',
+  },
+  {
+    id: 'p-8',
+    titulo: 'Cantando hacia el sol',
+    sinopsis:
+      'Una banda escolar viaja por el país en una furgoneta destartalada en busca del concurso de talentos más improbable.',
+    duracion_min: 124,
+    fecha_estreno: daysFromNow(-14),
+    id_generos: ['g-12', 'g-4', 'g-5'],
+    id_idioma: 'i-3',
+    clasificacion: 'PG',
+    poster_url: null,
+    estado: 'activa',
+    funciones_programadas: 7,
+    boletos_vendidos: 731,
+    created_at: '2026-04-20T10:00:00Z',
+  },
+];
