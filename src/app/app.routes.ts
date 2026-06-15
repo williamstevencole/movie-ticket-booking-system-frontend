@@ -55,5 +55,13 @@ export const routes: Routes = [
         (m) => m.AdminHomeComponent,
       ),
   },
+  {
+    path: 'admin/ciudades',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/ciudades/ciudades.component').then(
+        (m) => m.AdminCiudadesComponent,
+      ),
+  },
   { path: '**', redirectTo: '' },
 ];
