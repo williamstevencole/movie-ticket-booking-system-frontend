@@ -1,0 +1,92 @@
+:host { display: block; }
+
+.film-hero {
+  background: var(--ink);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.film-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1000px 500px at 70% 20%, oklch(0.3 0.16 27 / 0.4) 0%, transparent 60%),
+    radial-gradient(800px 400px at 0% 90%, oklch(0.3 0.1 240 / 0.25) 0%, transparent 60%);
+}
+.film-hero-inner {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--s8);
+  padding: var(--s8) var(--s6);
+  max-width: 1280px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 880px) {
+  .film-hero-inner { grid-template-columns: 1fr; padding: var(--s7) var(--s6); }
+}
+.poster {
+  aspect-ratio: 2/3;
+  border-radius: var(--r-lg);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  max-width: 320px;
+  position: relative;
+}
+.film-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s3);
+  margin-bottom: var(--s4);
+  align-items: center;
+}
+.pill {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+.pill.red { background: var(--red); }
+.film-hero h1 {
+  font-size: clamp(36px, 5.5vw, 60px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin: 0 0 var(--s3);
+  color: white;
+}
+.film-syn {
+  color: #d6d3d1;
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 64ch;
+  margin: 0 0 var(--s5);
+}
+.film-attrs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s4);
+  margin-bottom: var(--s6);
+}
+@media (max-width: 680px) {
+  .film-attrs { grid-template-columns: repeat(2, 1fr); }
+}
+.at .l {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.at .v { font-size: 15px; font-weight: 600; color: white; }
+.film-cta { display: flex; gap: var(--s3); flex-wrap: wrap; }
+.btn-trailer {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.2);
+}

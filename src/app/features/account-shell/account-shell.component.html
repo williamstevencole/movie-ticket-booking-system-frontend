@@ -1,0 +1,28 @@
+<app-appbar [navItems]="nav" />
+
+<main class="account-shell">
+  <div class="wrap">
+    <div class="account-grid">
+      <aside class="acc-side">
+        <div class="user">
+          <span class="av">{{ initials() }}</span>
+          <div>
+            <div class="name">{{ user()?.nombre }}</div>
+            <div class="email">{{ user()?.email }}</div>
+          </div>
+        </div>
+        <nav class="acc-nav">
+          <a routerLink="/cuenta/boletos" routerLinkActive="on">🎟 Mis boletos</a>
+          <a routerLink="/cuenta/perfil" routerLinkActive="on">👤 Perfil</a>
+          <a routerLink="/cuenta/metodos-pago" routerLinkActive="on">💳 Métodos de pago</a>
+          <a routerLink="/cuenta/cupones" routerLinkActive="on">🎁 Cupones</a>
+          <a routerLink="/cuenta/seguridad" routerLinkActive="on">🔒 Seguridad</a>
+          <a routerLink="/cuenta/notificaciones" routerLinkActive="on">🔔 Notificaciones</a>
+        </nav>
+      </aside>
+      <div class="acc-main">
+        <router-outlet />
+      </div>
+    </div>
+  </div>
+</main>

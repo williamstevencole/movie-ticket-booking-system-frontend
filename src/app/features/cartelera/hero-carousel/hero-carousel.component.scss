@@ -1,0 +1,111 @@
+:host { display: block; }
+
+.hero {
+  background: var(--ink);
+  color: white;
+  position: relative;
+  overflow: hidden;
+  outline: none;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    800px 400px at 20% 30%,
+    oklch(0.3 0.16 27 / 0.4) 0%,
+    transparent 60%
+  );
+}
+.hero-slide {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: var(--s8);
+  align-items: center;
+  padding: var(--s9) var(--s6);
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: 460px;
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 880px) {
+  .hero-slide { grid-template-columns: 1fr; padding: var(--s7) var(--s6); }
+  .hero-poster { max-width: 280px; margin: 0 auto; }
+}
+.hero-info { max-width: 560px; }
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--red);
+  color: white;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--s4);
+}
+.hero h1 {
+  font-size: clamp(40px, 6.5vw, 72px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin: 0 0 var(--s4);
+  color: white;
+}
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s3);
+  align-items: center;
+  margin-bottom: var(--s5);
+  font-size: 14px;
+  color: #d6d3d1;
+}
+.dot-sep { color: #57534e; }
+.hero-desc {
+  font-size: 16px;
+  color: #d6d3d1;
+  line-height: 1.55;
+  margin: 0 0 var(--s6);
+  max-width: 50ch;
+}
+.hero-cta { display: flex; gap: var(--s3); flex-wrap: wrap; align-items: center; }
+.btn-trailer {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.btn-trailer:hover { background: rgba(255, 255, 255, 0.16); }
+.hero-poster {
+  aspect-ratio: 2/3;
+  max-width: 380px;
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+.hero-dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding: var(--s4) 0 var(--s5);
+  background: var(--ink);
+  position: relative;
+  z-index: 2;
+}
+.hero-dots .d {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  transition: all 200ms var(--ease);
+  padding: 0;
+  border: 0;
+}
+.hero-dots .d.on {
+  background: var(--red);
+  width: 24px;
+  border-radius: 4px;
+}

@@ -1,0 +1,16 @@
+:host { display: block; }
+
+.panel {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--s6);
+  box-shadow: var(--shadow-sm);
+}
+.panel h2 {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 var(--s2);
+}
+.sub { color: var(--text-2); font-size: 14px; margin: 0 0 var(--s6); }
+.form { max-width: 480px; }

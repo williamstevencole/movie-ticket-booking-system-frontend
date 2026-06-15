@@ -1,0 +1,72 @@
+:host { display: block; }
+
+.appfoot {
+  background: var(--ink);
+  color: #d6d3d1;
+  margin-top: var(--s10);
+  padding: var(--s9) 0 var(--s5);
+}
+.appfoot-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: var(--s7);
+  padding-bottom: var(--s6);
+  border-bottom: 1px solid var(--dark-3);
+}
+@media (max-width: 780px) {
+  .appfoot-grid { grid-template-columns: 1fr 1fr; }
+}
+.brand {
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.brand .mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--red);
+  color: white;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 18px;
+}
+.desc {
+  color: #a8a29e;
+  font-size: 14px;
+  max-width: 38ch;
+  margin: var(--s4) 0 0;
+  line-height: 1.5;
+}
+.appfoot h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 var(--s3);
+}
+.appfoot ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+.appfoot a { color: #a8a29e; font-size: 14px; cursor: pointer; }
+.appfoot a:hover { color: white; }
+.colophon {
+  margin-top: var(--s5);
+  padding-top: var(--s4);
+  font-size: 12px;
+  color: #78716c;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--s3);
+}

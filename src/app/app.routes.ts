@@ -49,17 +49,83 @@ export const routes: Routes = [
     path: 'cartelera',
     canActivate: [authGuard, locationGuard],
     loadComponent: () =>
-      import('./features/client/home.component').then(
-        (m) => m.ClientHomeComponent,
+      import('./features/cartelera/home/home.component').then(
+        (m) => m.CarteleraHomeComponent,
+      ),
+  },
+  {
+    path: 'buscar',
+    canActivate: [authGuard, locationGuard],
+    loadComponent: () =>
+      import('./features/busqueda/resultados/resultados.component').then(
+        (m) => m.BusquedaResultadosComponent,
+      ),
+  },
+  {
+    path: 'pelicula/:id',
+    canActivate: [authGuard, locationGuard],
+    loadComponent: () =>
+      import('./features/pelicula/detalle/detalle.component').then(
+        (m) => m.PeliculaDetalleComponent,
       ),
   },
   {
     path: 'cupones',
+    redirectTo: 'cuenta/cupones',
+    pathMatch: 'full',
+  },
+  {
+    path: 'cuenta',
     canActivate: [authGuard, locationGuard],
     loadComponent: () =>
-      import('./features/cupones/list.component').then(
-        (m) => m.CuponesListComponent,
+      import('./features/account-shell/account-shell.component').then(
+        (m) => m.AccountShellComponent,
       ),
+    children: [
+      { path: '', redirectTo: 'boletos', pathMatch: 'full' },
+      {
+        path: 'boletos',
+        loadComponent: () =>
+          import('./features/account-shell/boletos-placeholder.component').then(
+            (m) => m.BoletosPlaceholderComponent,
+          ),
+      },
+      {
+        path: 'perfil',
+        loadComponent: () =>
+          import('./features/perfil/perfil/perfil.component').then(
+            (m) => m.PerfilPageComponent,
+          ),
+      },
+      {
+        path: 'seguridad',
+        loadComponent: () =>
+          import('./features/perfil/seguridad/seguridad.component').then(
+            (m) => m.SeguridadPageComponent,
+          ),
+      },
+      {
+        path: 'cupones',
+        loadComponent: () =>
+          import('./features/perfil/cupones/cupones.component').then(
+            (m) => m.PerfilCuponesComponent,
+          ),
+      },
+      {
+        path: 'metodos-pago',
+        loadComponent: () =>
+          import('./features/perfil/metodos-pago/metodos-pago.component').then(
+            (m) => m.MetodosPagoPageComponent,
+          ),
+      },
+      {
+        path: 'notificaciones',
+        loadComponent: () =>
+          import('./features/perfil/notificaciones/notificaciones.component').then(
+            (m) => m.NotificacionesPageComponent,
+          ),
+      },
+    ],
   },
   {
     path: 'admin',
