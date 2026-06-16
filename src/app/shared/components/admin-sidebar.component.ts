@@ -219,7 +219,7 @@ export class AdminSidebarComponent {
       title: 'Sistema',
       links: [
         { label: 'Usuarios & roles', icon: LucideUsers },
-        { label: 'Bitácora', icon: LucideNotebookText },
+        { label: 'Bitácora', icon: LucideNotebookText, routerLink: '/admin/bitacora' },
       ],
     },
   ];

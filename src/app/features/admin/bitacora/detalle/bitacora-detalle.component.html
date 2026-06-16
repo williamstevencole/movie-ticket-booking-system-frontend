@@ -1,0 +1,25 @@
+<div class="drawer-backdrop" (click)="close()"></div>
+<aside class="drawer" role="dialog" aria-modal="true">
+  <header>
+    <button class="close" type="button" (click)="close()" aria-label="Cerrar">✕</button>
+    <h2 *ngIf="detail() as d">
+      {{ d.accion }}
+      <span *ngIf="d.entidad">· {{ entidadLabel(d.entidad) }} #{{ d.entidad_id }}</span>
+    </h2>
+    <p class="meta" *ngIf="detail() as d">
+      por <strong>{{ d.auditor.nombre }}</strong> · {{ d.created_at | date:'medium' }}
+    </p>
+    <p class="detalle" *ngIf="detail()?.detalle as t">{{ t }}</p>
+  </header>
+
+  <p *ngIf="loading()" class="loading">Cargando…</p>
+
+  <div class="body" *ngIf="detail() as d">
+    <h3>{{ modo() === 'create' ? 'Estado inicial' : modo() === 'delete' ? 'Estado al borrar' : 'Cambios' }}</h3>
+    <app-diff-viewer
+      [entidad]="d.entidad"
+      [valorAnterior]="d.valor_anterior"
+      [valorNuevo]="d.valor_nuevo"
+    />
+  </div>
+</aside>

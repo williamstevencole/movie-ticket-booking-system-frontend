@@ -1,0 +1,43 @@
+.diff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  th,
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border, #e5e7eb);
+    vertical-align: top;
+  }
+
+  th {
+    text-align: left;
+    color: var(--text-2, #666);
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  td.label {
+    width: 30%;
+    color: var(--text, #1f2937);
+    font-weight: 500;
+  }
+
+  td.antes {
+    color: var(--danger, #b91c1c);
+    text-decoration: line-through;
+  }
+
+  td.despues {
+    color: var(--success, #047857);
+    font-weight: 500;
+  }
+}
+
+.empty {
+  color: var(--text-3, #999);
+  font-style: italic;
+  padding: 12px 0;
+}
