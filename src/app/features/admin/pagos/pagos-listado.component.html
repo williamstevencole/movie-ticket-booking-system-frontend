@@ -43,102 +43,24 @@
         </div>
       </section>
 
-      <div class="presets-row">
-        <div class="preset-group" role="tablist">
-          <button class="preset-chip" [class.on]="preset() === '7d'" (click)="setPreset('7d')">Últimos 7 días</button>
-          <button class="preset-chip" [class.on]="preset() === '30d'" (click)="setPreset('30d')">Últimos 30 días</button>
-          <button class="preset-chip" [class.on]="preset() === 'mes'" (click)="setPreset('mes')">Este mes</button>
-          <button class="preset-chip" [class.on]="preset() === 'all'" (click)="setPreset('all')">Todo</button>
-          <button class="preset-chip" [class.on]="preset() === 'custom'" (click)="setPreset('custom')">Personalizado</button>
-        </div>
-
-        @if (preset() === 'custom') {
-          <input
-            type="date"
-            class="select-pill date"
-            [(ngModel)]="customFrom"
-            (ngModelChange)="onCustomChange()"
-          />
-          <input
-            type="date"
-            class="select-pill date"
-            [(ngModel)]="customTo"
-            (ngModelChange)="onCustomChange()"
-          />
-        }
-
-        <div class="export-slot">
-          <app-export-button
-            filename="pagos"
-            [columns]="exportColumns"
-            [rows]="filtered()"
-          />
-        </div>
+      <div class="head-row">
+        <div></div>
+        <app-export-button
+          filename="pagos"
+          [columns]="exportColumns"
+          [rows]="filtered()"
+        />
       </div>
 
-      <div class="toolbar">
-        <label class="search">
-          <svg lucideSearch [size]="14"></svg>
-          <input
-            type="text"
-            placeholder="Buscar por # transacción, # reserva o cliente…"
-            [ngModel]="searchTerm()"
-            (ngModelChange)="searchTerm.set($event); page.set(1)"
-          />
-        </label>
-
-        <div class="chip-group" role="tablist">
-          @for (f of filtrosEstado; track f.id) {
-            <button
-              type="button"
-              class="chip"
-              [class.on]="filterEstado() === f.id"
-              (click)="setEstado(f.id)"
-            >
-              {{ f.label }}
-            </button>
-          }
-        </div>
-
-        <div class="chip-group" role="tablist">
-          @for (f of filtrosMetodo; track f.id) {
-            <button
-              type="button"
-              class="chip"
-              [class.on]="filterMetodo() === f.id"
-              (click)="setMetodo(f.id)"
-            >
-              {{ f.label }}
-            </button>
-          }
-        </div>
-
-        <select
-          class="select-pill"
-          [value]="idCiudad()"
-          (change)="onCiudadChange($event)"
-          title="Filtrar por ciudad"
-        >
-          <option value="">Todas las ciudades</option>
-          @for (c of ciudades(); track c.id) {
-            <option [value]="c.id">{{ c.nombre }}</option>
-          }
-        </select>
-
-        <select
-          class="select-pill"
-          [value]="idCine()"
-          (change)="onCineChange($event)"
-          title="Filtrar por cine"
-        >
-          <option value="">
-            {{ idCiudad() ? 'Todos los cines de la ciudad' : 'Todos los cines' }}
-          </option>
-          @for (c of cinesEnCiudad(); track c.id) {
-            <option [value]="c.id">{{ c.nombre }}</option>
-          }
-        </select>
-      </div>
+      <app-report-filtros
+        [config]="{
+          periodo: true,
+          search: { placeholder: '# pago o # reserva…' },
+          selects: ['cine', 'estado-pago', 'metodo-pago']
+        }"
+        [value]="filtros()"
+        (valueChange)="onFiltrosChange($event)"
+      />
 
       <section class="card">
         @if (paged().length === 0) {
@@ -148,7 +70,6 @@
             </span>
             <h3>Sin pagos para los filtros aplicados</h3>
             <p>Ajusta búsqueda, rango de fecha o limpia los filtros.</p>
-            <button class="reset" type="button" (click)="reset()">Limpiar filtros</button>
           </div>
         } @else {
           <div class="table-scroll">

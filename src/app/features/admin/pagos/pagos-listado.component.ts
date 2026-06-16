@@ -6,14 +6,11 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
-  LucideSearch,
   LucideCreditCard,
   LucideBanknote,
   LucideArrowUpRight,
-  LucideUndo2,
 } from '@lucide/angular';
 
 import {
@@ -35,38 +32,32 @@ import {
   FuncionesService,
 } from '../../../shared/services/funciones.service';
 import { Cine, CinesService } from '../../../shared/services/cines.service';
-import {
-  Ciudad,
-  CiudadesService,
-} from '../../../shared/services/ciudades.service';
 import { AdminSidebarComponent } from '../../../shared/components/admin-sidebar.component';
 import { PagerComponent } from '../../../shared/components/pager.component';
 import {
   ExportButtonComponent,
   ExportColumn,
 } from '../../../shared/components/export-button.component';
-
-type FilterEstado = 'all' | EstadoPago;
-type FilterMetodo = 'all' | 'tarjeta' | 'efectivo';
-type Preset = '7d' | '30d' | 'mes' | 'all' | 'custom';
+import {
+  ReportFiltrosComponent,
+  ReportFiltrosValue,
+} from '../../../shared/components/report-filtros.component';
 
 @Component({
   selector: 'app-admin-pagos-listado',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     RouterLink,
     DatePipe,
     DecimalPipe,
     AdminSidebarComponent,
     PagerComponent,
     ExportButtonComponent,
-    LucideSearch,
+    ReportFiltrosComponent,
     LucideCreditCard,
     LucideBanknote,
     LucideArrowUpRight,
-    LucideUndo2,
   ],
   templateUrl: './pagos-listado.component.html',
   styleUrls: [
@@ -80,7 +71,6 @@ export class AdminPagosListadoComponent {
   private reembolsosSvc = inject(ReembolsosService);
   private funcionesSvc = inject(FuncionesService);
   private cinesSvc = inject(CinesService);
-  private ciudadesSvc = inject(CiudadesService);
   private router = inject(Router);
 
   readonly pagos = signal<Pago[]>([]);
@@ -89,32 +79,15 @@ export class AdminPagosListadoComponent {
   readonly reembolsos = signal<Reembolso[]>([]);
   readonly funciones = signal<Funcion[]>([]);
   readonly cines = signal<Cine[]>([]);
-  readonly ciudades = signal<Ciudad[]>([]);
 
-  readonly searchTerm = signal('');
-  readonly filterEstado = signal<FilterEstado>('all');
-  readonly filterMetodo = signal<FilterMetodo>('all');
-  readonly idCiudad = signal<string>('');
-  readonly idCine = signal<string>('');
-  readonly preset = signal<Preset>('30d');
+  readonly filtros = signal<ReportFiltrosValue>({
+    periodo: { preset: '30d', from: '', to: '' },
+    search: '',
+    selects: {},
+  });
+
   readonly page = signal(1);
   readonly pageSize = signal(15);
-
-  customFrom = '';
-  customTo = '';
-
-  readonly filtrosEstado: { id: FilterEstado; label: string }[] = [
-    { id: 'all', label: 'Todos' },
-    { id: 'exitoso', label: 'Exitosos' },
-    { id: 'reembolsado', label: 'Reembolsados' },
-    { id: 'rechazado', label: 'Rechazados' },
-    { id: 'procesando', label: 'Procesando' },
-  ];
-  readonly filtrosMetodo: { id: FilterMetodo; label: string }[] = [
-    { id: 'all', label: 'Todos los métodos' },
-    { id: 'tarjeta', label: 'Tarjeta' },
-    { id: 'efectivo', label: 'Efectivo' },
-  ];
 
   readonly exportColumns: ExportColumn<Pago>[] = [
     { key: 'referencia', label: 'Referencia', value: (p) => p.referencia_externa ?? `EFEC-${p.id}` },
@@ -155,36 +128,6 @@ export class AdminPagosListadoComponent {
     for (const p of this.pagos()) m.set(p.id, p);
     return m;
   });
-  readonly cinesEnCiudad = computed(() => {
-    const c = this.idCiudad();
-    return c ? this.cines().filter((x) => x.id_ciudad === c) : this.cines();
-  });
-
-  readonly range = computed<{ from: number; to: number }>(() => {
-    const now = Date.now();
-    switch (this.preset()) {
-      case '7d':
-        return { from: now - 7 * 86_400_000, to: now };
-      case '30d':
-        return { from: now - 30 * 86_400_000, to: now };
-      case 'mes': {
-        const d = new Date();
-        return {
-          from: new Date(d.getFullYear(), d.getMonth(), 1).getTime(),
-          to: now,
-        };
-      }
-      case 'all':
-        return { from: -Infinity, to: Infinity };
-      case 'custom':
-        return {
-          from: this.customFrom ? new Date(this.customFrom).getTime() : -Infinity,
-          to: this.customTo
-            ? new Date(this.customTo).getTime() + 86_400_000
-            : Infinity,
-        };
-    }
-  });
 
   private cineIdDe(p: Pago): string | null {
     const r = this.reservasById().get(p.id_reserva);
@@ -200,33 +143,55 @@ export class AdminPagosListadoComponent {
   }
 
   readonly filtered = computed(() => {
-    const term = this.searchTerm().trim().toLowerCase();
-    const fe = this.filterEstado();
-    const fm = this.filterMetodo();
-    const ciudad = this.idCiudad();
-    const cine = this.idCine();
-    const { from, to } = this.range();
-    const cinesOfCiudad = ciudad
-      ? new Set(
-          this.cines().filter((c) => c.id_ciudad === ciudad).map((c) => c.id),
-        )
-      : null;
+    const f = this.filtros();
+    const periodo = f.periodo;
+    let fromTs = -Infinity;
+    let toTs = Infinity;
+    if (periodo) {
+      const now = Date.now();
+      switch (periodo.preset) {
+        case '7d':
+          fromTs = now - 7 * 86_400_000;
+          toTs = now;
+          break;
+        case '30d':
+          fromTs = now - 30 * 86_400_000;
+          toTs = now;
+          break;
+        case 'mes': {
+          const d = new Date();
+          fromTs = new Date(d.getFullYear(), d.getMonth(), 1).getTime();
+          toTs = now;
+          break;
+        }
+        case 'custom':
+          fromTs = periodo.from ? new Date(periodo.from).getTime() : -Infinity;
+          toTs = periodo.to ? new Date(periodo.to + 'T23:59:59').getTime() : Infinity;
+          break;
+      }
+    }
+
+    const term = (f.search || '').toLowerCase().trim();
+    const cine = f.selects['cine'] ?? null;
+    const estado = (f.selects['estado-pago'] ?? null) as EstadoPago | null;
+    const metodo = f.selects['metodo-pago'] ?? null;
+
     return this.pagos().filter((p) => {
       const ts = new Date(p.created_at).getTime();
-      if (ts < from || ts > to) return false;
-      if (fe !== 'all' && p.estado !== fe) return false;
-      if (fm !== 'all' && p.metodo !== fm) return false;
-      if (cinesOfCiudad || cine) {
+      if (ts < fromTs || ts > toTs) return false;
+      if (estado && p.estado !== estado) return false;
+      if (metodo && p.metodo !== metodo) return false;
+      if (cine) {
         const cineId = this.cineIdDe(p);
-        if (!cineId) return false;
-        if (cinesOfCiudad && !cinesOfCiudad.has(cineId)) return false;
-        if (cine && cineId !== cine) return false;
+        if (!cineId || cineId !== cine) return false;
       }
       if (term) {
         const r = this.reservasById().get(p.id_reserva);
         const u = r ? this.usuariosById().get(r.id_usuario) : undefined;
         const hit =
           (p.referencia_externa?.toLowerCase().includes(term) ?? false) ||
+          p.id.toLowerCase().includes(term) ||
+          p.id_reserva.toLowerCase().includes(term) ||
           (r?.numero_reserva.toLowerCase().includes(term) ?? false) ||
           (u?.nombre.toLowerCase().includes(term) ?? false) ||
           (u?.email.toLowerCase().includes(term) ?? false);
@@ -273,7 +238,6 @@ export class AdminPagosListadoComponent {
     this.reembolsosSvc.list().subscribe((d) => this.reembolsos.set(d));
     this.funcionesSvc.list().subscribe((d) => this.funciones.set(d));
     this.cinesSvc.list().subscribe((d) => this.cines.set(d.data));
-    this.ciudadesSvc.list().subscribe((d) => this.ciudades.set(d));
 
     effect(() => {
       const total = this.filtered().length;
@@ -282,38 +246,11 @@ export class AdminPagosListadoComponent {
     });
   }
 
-  setPreset(p: Preset) {
-    this.preset.set(p);
+  onFiltrosChange(v: ReportFiltrosValue) {
+    this.filtros.set(v);
     this.page.set(1);
   }
-  onCustomChange() {
-    this.page.set(1);
-  }
-  setEstado(f: FilterEstado) {
-    this.filterEstado.set(f);
-    this.page.set(1);
-  }
-  setMetodo(f: FilterMetodo) {
-    this.filterMetodo.set(f);
-    this.page.set(1);
-  }
-  onCiudadChange(e: Event) {
-    this.idCiudad.set((e.target as HTMLSelectElement).value);
-    this.idCine.set('');
-    this.page.set(1);
-  }
-  onCineChange(e: Event) {
-    this.idCine.set((e.target as HTMLSelectElement).value);
-    this.page.set(1);
-  }
-  reset() {
-    this.filterEstado.set('all');
-    this.filterMetodo.set('all');
-    this.idCiudad.set('');
-    this.idCine.set('');
-    this.searchTerm.set('');
-    this.page.set(1);
-  }
+
   onPageSizeChange(s: number) {
     this.pageSize.set(s);
     this.page.set(1);

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   LucideDynamicIcon,
@@ -12,6 +12,11 @@ import {
 } from '@lucide/angular';
 import { AuthService } from '../../shared/services/auth.service';
 import { AdminSidebarComponent } from '../../shared/components/admin-sidebar.component';
+import { PeriodPickerComponent, PeriodValue } from '../../shared/components/period-picker.component';
+import { ReservasService, Reserva } from '../../shared/services/reservas.service';
+import { PagosService, Pago } from '../../shared/services/pagos.service';
+import { FuncionesService, Funcion } from '../../shared/services/funciones.service';
+import { PeliculasService, Pelicula } from '../../shared/services/peliculas.service';
 
 interface Stat {
   label: string;
@@ -41,6 +46,7 @@ interface QuickAction {
   imports: [
     CommonModule,
     AdminSidebarComponent,
+    PeriodPickerComponent,
     LucideDynamicIcon,
     LucidePlus,
     LucideDownload,
@@ -73,21 +79,35 @@ interface QuickAction {
           </div>
         </div>
 
+        <div class="period-bar">
+          <app-period-picker [value]="periodo()" (valueChange)="onPeriodoChange($event)" />
+        </div>
+
         <!-- KPIs -->
         <div class="stats">
-          @for (s of stats; track s.label) {
-            <div class="stat">
-              <div class="lbl">{{ s.label }}</div>
-              <div class="v" [class.red]="s.accent === 'red'" [class.orange]="s.accent === 'orange'">{{ s.value }}</div>
-              <div class="delta" [class.up]="s.deltaType === 'up'" [class.dn]="s.deltaType === 'dn'">
-                @if (s.deltaType === 'up') {
-                  <svg lucideTrendingUp [size]="12"></svg>
-                } @else if (s.deltaType === 'dn') {
-                  <svg lucideTrendingDown [size]="12"></svg>
-                }
-                <span>{{ s.delta }}</span>
+          @if (loading()) {
+            @for (i of [1,2,3,4]; track i) {
+              <div class="stat skeleton-card">
+                <div class="skel skel-lbl"></div>
+                <div class="skel skel-v"></div>
+                <div class="skel skel-delta"></div>
               </div>
-            </div>
+            }
+          } @else {
+            @for (s of statsComputed(); track s.label) {
+              <div class="stat">
+                <div class="lbl">{{ s.label }}</div>
+                <div class="v" [class.red]="s.accent === 'red'" [class.orange]="s.accent === 'orange'">{{ s.value }}</div>
+                <div class="delta" [class.up]="s.deltaType === 'up'" [class.dn]="s.deltaType === 'dn'">
+                  @if (s.deltaType === 'up') {
+                    <svg lucideTrendingUp [size]="12"></svg>
+                  } @else if (s.deltaType === 'dn') {
+                    <svg lucideTrendingDown [size]="12"></svg>
+                  }
+                  <span>{{ s.delta }}</span>
+                </div>
+              </div>
+            }
           }
         </div>
 
@@ -98,22 +118,39 @@ interface QuickAction {
             <!-- top films -->
             <div class="panel topfilms">
               <div class="panel-head">
-                <h3>Más vendidas esta semana</h3>
+                <h3>Más vendidas en el período</h3>
                 <a class="link">Ver reporte completo</a>
               </div>
-              @for (f of topFilms; track f.rank) {
-                <div class="row" [class.first]="f.rank === 1" [class.second]="f.rank === 2">
-                  <span class="rank">{{ f.rank }}</span>
-                  <div class="mp" [class]="f.poster"></div>
-                  <div>
-                    <div class="nm">{{ f.title }}</div>
-                    <div class="mt">{{ f.meta }}</div>
+              @if (loading()) {
+                @for (i of [1,2,3,4,5]; track i) {
+                  <div class="row skeleton-row">
+                    <div class="skel skel-rank"></div>
+                    <div class="skel skel-poster"></div>
+                    <div>
+                      <div class="skel skel-line"></div>
+                      <div class="skel skel-line short"></div>
+                    </div>
+                    <div class="sl">
+                      <div class="skel skel-line right"></div>
+                      <div class="skel skel-line short right"></div>
+                    </div>
                   </div>
-                  <div class="sl">
-                    <div class="amt">{{ f.amount }}</div>
-                    <div class="ct">{{ f.tickets }}</div>
+                }
+              } @else {
+                @for (f of topFilmsComputed(); track f.rank) {
+                  <div class="row" [class.first]="f.rank === 1" [class.second]="f.rank === 2">
+                    <span class="rank">{{ f.rank }}</span>
+                    <div class="mp" [class]="f.poster"></div>
+                    <div>
+                      <div class="nm">{{ f.title }}</div>
+                      <div class="mt">{{ f.meta }}</div>
+                    </div>
+                    <div class="sl">
+                      <div class="amt">{{ f.amount }}</div>
+                      <div class="ct">{{ f.tickets }}</div>
+                    </div>
                   </div>
-                </div>
+                }
               }
             </div>
           </div>
@@ -139,10 +176,35 @@ interface QuickAction {
   `,
   styleUrl: './home.component.scss',
 })
-export class AdminHomeComponent {
+export class AdminHomeComponent implements OnInit {
   private auth = inject(AuthService);
+  private reservasSvc = inject(ReservasService);
+  private pagosSvc = inject(PagosService);
+  private funcionesSvc = inject(FuncionesService);
+  private peliculasSvc = inject(PeliculasService);
 
   readonly user = this.auth.user;
+
+  periodo = signal<PeriodValue>({ preset: '30d', from: '', to: '' });
+  loading = signal(true);
+  reservas = signal<Reserva[]>([]);
+  pagos = signal<Pago[]>([]);
+  funciones = signal<Funcion[]>([]);
+  peliculas = signal<Pelicula[]>([]);
+
+  ngOnInit() {
+    this.reservasSvc.list().subscribe((rs) => this.reservas.set(rs));
+    this.pagosSvc.list().subscribe((ps) => this.pagos.set(ps));
+    this.funcionesSvc.list().subscribe((fs) => this.funciones.set(fs));
+    this.peliculasSvc.list().subscribe((ps) => this.peliculas.set(ps));
+    setTimeout(() => this.loading.set(false), 300);
+  }
+
+  onPeriodoChange(p: PeriodValue) {
+    this.periodo.set(p);
+    this.loading.set(true);
+    setTimeout(() => this.loading.set(false), 200);
+  }
 
   firstName(): string {
     return this.user()?.nombre?.split(' ')[0] ?? 'admin';
@@ -155,19 +217,110 @@ export class AdminHomeComponent {
     return 'Buenas noches';
   }
 
-  readonly stats: Stat[] = [
-    { label: 'Funciones hoy', value: '14', delta: '+2 vs ayer', deltaType: 'up' },
-    { label: 'Boletos vendidos', value: '487', delta: '+12.4% sem.', deltaType: 'up', accent: 'red' },
-    { label: 'Ingresos del día', value: 'L 58 440', delta: '−3.1% vs ayer', deltaType: 'dn', accent: 'orange' },
-    { label: 'Reembolsos pendientes', value: '3', delta: '2 efectivo · 1 tarjeta', deltaType: 'flat', accent: 'red' },
-  ];
+  private rangeDates() {
+    const p = this.periodo();
+    return {
+      from: p.from ? new Date(p.from) : null,
+      to: p.to ? new Date(p.to + 'T23:59:59') : null,
+    };
+  }
 
-  readonly topFilms: TopFilm[] = [
-    { rank: 1, title: 'El faro al sur', meta: '12 funciones · 6 días en cartelera', amount: 'L 142 800', tickets: '1 189 boletos', poster: 'p-2' },
-    { rank: 2, title: 'Vientos del este', meta: '9 funciones · 14 días en cartelera', amount: 'L 98 460', tickets: '820 boletos', poster: 'p-4' },
-    { rank: 3, title: 'La frontera blanca', meta: '8 funciones · 11 días en cartelera', amount: 'L 76 120', tickets: '634 boletos', poster: 'p-5' },
-    { rank: 4, title: 'La hora del lobo', meta: '4 funciones · estreno hoy', amount: 'L 18 200', tickets: '152 boletos', poster: 'p-1' },
-  ];
+  private inRange(iso: string, from: Date | null, to: Date | null) {
+    const d = new Date(iso);
+    if (from && d < from) return false;
+    if (to && d > to) return false;
+    return true;
+  }
+
+  private fmtQ(n: number): string {
+    return 'Q' + n.toLocaleString('es-GT', { maximumFractionDigits: 0 });
+  }
+
+  statsComputed = computed<Stat[]>(() => {
+    const { from, to } = this.rangeDates();
+    const reservasInRange = this.reservas().filter((r) => this.inRange(r.created_at, from, to));
+    const pagosInRange = this.pagos().filter((p) => this.inRange(p.created_at, from, to));
+
+    const cobrado = pagosInRange
+      .filter((p) => p.estado === 'exitoso')
+      .reduce((sum, p) => sum + p.monto_final, 0);
+    const reembolsado = pagosInRange
+      .filter((p) => p.estado === 'reembolsado')
+      .reduce((sum, p) => sum + p.monto_final, 0);
+    const neto = cobrado - reembolsado;
+
+    return [
+      {
+        label: 'Reservas',
+        value: reservasInRange.length.toLocaleString('es-GT'),
+        delta: '—',
+        deltaType: 'flat',
+      },
+      {
+        label: 'Cobrado',
+        value: this.fmtQ(cobrado),
+        delta: '—',
+        deltaType: 'flat',
+        accent: 'success',
+      },
+      {
+        label: 'Reembolsado',
+        value: this.fmtQ(reembolsado),
+        delta: '—',
+        deltaType: 'flat',
+        accent: 'orange',
+      },
+      {
+        label: 'Neto',
+        value: this.fmtQ(neto),
+        delta: '—',
+        deltaType: 'flat',
+        accent: neto < 0 ? 'red' : undefined,
+      },
+    ];
+  });
+
+  topFilmsComputed = computed<TopFilm[]>(() => {
+    const { from, to } = this.rangeDates();
+    const reservasInRange = this.reservas().filter((r) => this.inRange(r.created_at, from, to));
+    const funcionesMap = new Map(this.funciones().map((f) => [f.id, f]));
+    const peliculasMap = new Map(this.peliculas().map((p) => [p.id, p]));
+    const pagosByReserva = new Map(this.pagos().map((p) => [p.id_reserva, p]));
+
+    // aggregate by pelicula
+    const agg = new Map<string, { reservas: number; tickets: number; monto: number }>();
+    for (const r of reservasInRange) {
+      const fn = funcionesMap.get(r.id_funcion);
+      if (!fn) continue;
+      const pid = fn.id_pelicula;
+      const pago = pagosByReserva.get(r.id);
+      const monto = pago && pago.estado === 'exitoso' ? pago.monto_final : 0;
+      const cur = agg.get(pid) ?? { reservas: 0, tickets: 0, monto: 0 };
+      cur.reservas += 1;
+      cur.tickets += r.num_asientos;
+      cur.monto += monto;
+      agg.set(pid, cur);
+    }
+
+    const ranked = Array.from(agg.entries())
+      .map(([pid, v]) => ({ pid, ...v }))
+      .sort((a, b) => b.monto - a.monto)
+      .slice(0, 5);
+
+    const posters = ['p-2', 'p-4', 'p-5', 'p-1', 'p-3', 'p-6'];
+
+    return ranked.map((row, idx) => {
+      const peli = peliculasMap.get(row.pid);
+      return {
+        rank: idx + 1,
+        title: peli?.titulo ?? '—',
+        meta: `${row.reservas} reservas`,
+        amount: this.fmtQ(row.monto),
+        tickets: `${row.tickets} boletos`,
+        poster: posters[idx % posters.length],
+      };
+    });
+  });
 
   readonly quickActions: QuickAction[] = [
     { icon: LucidePlus, label: 'Cargar nueva película' },

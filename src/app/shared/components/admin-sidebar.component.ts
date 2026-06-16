@@ -213,6 +213,11 @@ export class AdminSidebarComponent {
           icon: LucideChartColumn,
           routerLink: '/admin/reportes/reservas',
         },
+        {
+          label: 'Estadísticas de cancelación',
+          icon: LucideChartColumn,
+          routerLink: '/admin/reportes/estadisticas-cancelacion',
+        },
       ],
     },
     {
