@@ -30,7 +30,7 @@ import { RouterLink } from '@angular/router';
           <div>
             <h4>Cuenta</h4>
             <ul>
-              <li><a routerLink="/cuenta/boletos">Mis boletos</a></li>
+              <li><a routerLink="/mis-boletos">Mis boletos</a></li>
               <li><a routerLink="/cuenta/perfil">Perfil</a></li>
               <li><a routerLink="/cuenta/cupones">Cupones</a></li>
             </ul>

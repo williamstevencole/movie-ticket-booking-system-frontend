@@ -39,7 +39,7 @@ export class PeliculaDetalleComponent {
     { label: 'Próximos estrenos' },
     { label: 'Promociones' },
     { label: 'Cines' },
-    { label: 'Mis boletos', route: '/cuenta/boletos' },
+    { label: 'Mis boletos', route: '/mis-boletos' },
   ];
 
   readonly pelicula = MOCK_PELICULA_DETALLE;
