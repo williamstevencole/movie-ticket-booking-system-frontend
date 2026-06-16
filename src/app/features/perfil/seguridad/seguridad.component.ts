@@ -2,7 +2,6 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../shared/services/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
-import { MOCK_SESIONES, SesionActiva } from '../../../mocks/data/perfil.mock';
 
 @Component({
   selector: 'app-seguridad-page',
@@ -29,27 +28,6 @@ import { MOCK_SESIONES, SesionActiva } from '../../../mocks/data/perfil.mock';
             Actualizar contraseña
           </button>
         </form>
-      </section>
-
-      <section class="panel">
-        <h2>Sesiones activas</h2>
-        <ul class="sessions">
-          @for (s of sesiones(); track s.id) {
-            <li class="session-row">
-              <div>
-                <div class="dev">{{ s.dispositivo }}</div>
-                <div class="meta">{{ s.navegador }} · {{ s.ultimoUso }}</div>
-              </div>
-              @if (!s.actual) {
-                <button type="button" class="btn btn-sm" (click)="cerrarSesion(s)">
-                  Cerrar sesión en este dispositivo
-                </button>
-              } @else {
-                <span class="pill red-soft">Sesión actual</span>
-              }
-            </li>
-          }
-        </ul>
       </section>
 
       <section class="panel danger">
@@ -83,7 +61,6 @@ export class SeguridadPageComponent {
   private auth = inject(AuthService);
   private toast = inject(ToastService);
 
-  readonly sesiones = signal<SesionActiva[]>([...MOCK_SESIONES]);
   readonly confirmDelete = signal(false);
   readonly userEmail = this.auth.user()?.email ?? '';
 
@@ -106,11 +83,6 @@ export class SeguridadPageComponent {
     }
     this.toast.show('Contraseña actualizada (mock)');
     this.pwForm.reset();
-  }
-
-  cerrarSesion(s: SesionActiva): void {
-    this.sesiones.update((list) => list.filter((x) => x.id !== s.id));
-    this.toast.show('Sesión cerrada en ' + s.dispositivo);
   }
 
   deleteAccount(): void {
