@@ -5,7 +5,6 @@ import {
   LucideCreditCard,
   LucideGift,
   LucideShield,
-  LucideTicket,
   LucideUser,
 } from '@lucide/angular';
 import { AuthService } from '../../shared/services/auth.service';
@@ -19,7 +18,6 @@ import { AppbarComponent } from '../../shared/components/appbar/appbar.component
     RouterLink,
     RouterLinkActive,
     AppbarComponent,
-    LucideTicket,
     LucideUser,
     LucideCreditCard,
     LucideGift,
@@ -39,7 +37,7 @@ export class AccountShellComponent {
     { label: 'Próximos estrenos' },
     { label: 'Promociones' },
     { label: 'Cines' },
-    { label: 'Mis boletos', route: '/cuenta/boletos', active: true },
+    { label: 'Mis boletos', route: '/mis-boletos' },
   ];
 
   initials(): string {
