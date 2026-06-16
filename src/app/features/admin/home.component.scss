@@ -152,12 +152,17 @@
 
 /* ─── MAIN ─── */
 .admin-main {
-  padding: var(--s7) var(--s8);
-  max-width: 100%;
   height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--bg-soft);
+  padding: var(--s7) var(--s6) var(--s9);
+
+  > * {
+    max-width: 1320px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 @media (max-width: 980px) {
   .admin-main { height: auto; overflow: visible; }
@@ -172,16 +177,22 @@
   flex-wrap: wrap;
 
   .breadcrumb {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s2);
     font-size: 13px;
     color: var(--text-3);
-    margin-bottom: 6px;
     font-weight: 500;
+    margin-bottom: var(--s3);
+
+    > span:not(.crumb-current):not([aria-hidden]) { color: var(--text-2); }
+    .crumb-current { color: var(--text); font-weight: 600; }
   }
   h1 {
-    font-size: clamp(24px, 3vw, 32px);
+    font-size: clamp(26px, 3vw, 34px);
     font-weight: 800;
     margin: 0;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
   }
   .actions { display: flex; gap: var(--s3); }
 }
