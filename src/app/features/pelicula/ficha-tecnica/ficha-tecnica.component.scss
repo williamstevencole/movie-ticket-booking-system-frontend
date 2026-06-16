@@ -1,0 +1,25 @@
+:host { display: block; }
+
+.crew-block h3 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--s5);
+}
+.crew-table {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.crew-line {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: var(--s4);
+  padding: var(--s3) var(--s4);
+  border-bottom: 1px solid var(--divider);
+  font-size: 14px;
+}
+.crew-line:last-child { border-bottom: 0; }
+.role { font-weight: 600; color: var(--text-2); font-size: 13px; }
+.value { font-weight: 500; color: var(--text); }

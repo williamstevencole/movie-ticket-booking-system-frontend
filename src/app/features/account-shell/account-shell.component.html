@@ -1,0 +1,37 @@
+<app-appbar [navItems]="nav" />
+
+<main class="account-shell">
+  <div class="wrap">
+    <div class="account-grid">
+      <aside class="acc-side">
+        <div class="user">
+          <span class="av">{{ initials() }}</span>
+          <div>
+            <div class="name">{{ user()?.nombre }}</div>
+            <div class="email">{{ user()?.email }}</div>
+          </div>
+        </div>
+        <nav class="acc-nav">
+          <a routerLink="/cuenta/perfil" routerLinkActive="on">
+            <svg lucideUser [size]="16"></svg><span>Perfil</span>
+          </a>
+          <a routerLink="/cuenta/metodos-pago" routerLinkActive="on">
+            <svg lucideCreditCard [size]="16"></svg><span>Métodos de pago</span>
+          </a>
+          <a routerLink="/cuenta/cupones" routerLinkActive="on">
+            <svg lucideGift [size]="16"></svg><span>Cupones</span>
+          </a>
+          <a routerLink="/cuenta/seguridad" routerLinkActive="on">
+            <svg lucideShield [size]="16"></svg><span>Seguridad</span>
+          </a>
+          <a routerLink="/cuenta/notificaciones" routerLinkActive="on">
+            <svg lucideBell [size]="16"></svg><span>Notificaciones</span>
+          </a>
+        </nav>
+      </aside>
+      <div class="acc-main">
+        <router-outlet />
+      </div>
+    </div>
+  </div>
+</main>

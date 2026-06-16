@@ -1,0 +1,52 @@
+<app-appbar [navItems]="nav" />
+
+<app-hero-carousel />
+
+<main class="wrap">
+  <section class="day-section">
+    <app-day-strip (dayChange)="onDayChange($event)" />
+  </section>
+
+  <section class="section estrenos">
+    <div class="section-head">
+      <h2>Estrenos esta semana</h2>
+      <a class="link" routerLink="/buscar">
+        Ver todos
+        <svg lucideArrowRight [size]="14"></svg>
+      </a>
+    </div>
+
+    <div class="movie-grid">
+      @for (p of filtered(); track p.id) {
+        <a [routerLink]="['/pelicula', p.id]" class="movie-card">
+          <div class="poster" [class]="p.poster">
+            <app-poster-badge [tipo]="p.badge ?? null" [fecha]="p.badgeFecha" />
+            <span class="title-overlay">{{ p.titulo }}</span>
+          </div>
+          <div class="body">
+            <h3 class="title">{{ p.titulo }}</h3>
+            <div class="meta">
+              <span>{{ p.genero }}</span>
+              <span class="sep">·</span>
+              <span>{{ p.duracion }}</span>
+              <span class="sep">·</span>
+              <span>{{ p.idioma }}</span>
+            </div>
+            <div class="times">
+              @for (f of p.funciones; track f.hora) {
+                <span
+                  class="time tnum"
+                  [class.full]="f.asientosLibres <= 0"
+                >{{ f.hora }}</span>
+              }
+            </div>
+          </div>
+        </a>
+      }
+    </div>
+  </section>
+</main>
+
+<app-promos />
+<app-proximamente />
+<app-footer />

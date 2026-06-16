@@ -4,11 +4,10 @@ import { AuthService } from '../../shared/services/auth.service';
 import { LocationService } from '../../shared/services/location.service';
 
 /**
- * Permite entrar sólo si:
- * - el rol no necesita ubicación (admin / taquillero), o
- * - el cliente ya eligió ciudad y cine.
+ * Exige que el usuario haya elegido ciudad+cine antes de entrar.
  *
- * Si es cliente sin ubicación, lo redirige a `/elegir-cine`.
+ * - Admin/taquillero no necesitan ubicación → pasan directo.
+ * - Cualquier otro (anónimo o cliente) sin selección → `/elegir-cine`.
  */
 export const locationGuard: CanActivateFn = () => {
   const auth = inject(AuthService);

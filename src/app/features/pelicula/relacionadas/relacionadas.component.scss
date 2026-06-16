@@ -1,0 +1,40 @@
+:host { display: block; }
+
+.related-block h3 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--s5);
+}
+.related-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.related-card-head {
+  padding: var(--s3) var(--s4);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 700;
+}
+.related-row {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  border-bottom: 1px solid var(--divider);
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+}
+.related-row:last-child { border-bottom: 0; }
+.related-row:hover { background: var(--bg-soft); }
+.mini-poster {
+  width: 48px;
+  height: 72px;
+  border-radius: 4px;
+  display: block;
+}
+.ti { display: block; font-weight: 700; font-size: 14px; }
+.me { display: block; font-size: 12px; color: var(--text-2); margin-top: 2px; }

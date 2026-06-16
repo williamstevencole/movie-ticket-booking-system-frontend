@@ -37,6 +37,9 @@
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px;
   --s6: 24px; --s7: 32px; --s8: 40px; --s9: 56px; --s10: 80px;
 
+  --dark-2: #1f1f1f;
+  --dark-3: #2a2a2a; --s10: 80px;
+
   --r-sm: 6px;
   --r:    10px;
   --r-lg: 16px;
@@ -164,3 +167,27 @@ h1, h2, h3, h4 {
 .pill.warn { background: oklch(0.95 0.05 75); color: oklch(0.40 0.12 75); }
 
 .wrap { max-width: 1280px; margin: 0 auto; padding: 0 var(--s6); }
+
+/* Posters — placeholders coloridos (design-proposal) */
+.poster {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--r);
+  overflow: hidden;
+  background: var(--surface);
+  display: block;
+}
+.poster-1 { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #b91c1c 100%); }
+.poster-2 { background: linear-gradient(135deg, #082f49 0%, #0c4a6e 50%, #f59e0b 100%); }
+.poster-3 { background: linear-gradient(135deg, #831843 0%, #be185d 50%, #fb923c 100%); }
+.poster-4 { background: linear-gradient(135deg, #14532d 0%, #15803d 50%, #fbbf24 100%); }
+.poster-5 { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #ec4899 100%); }
+.poster-6 { background: linear-gradient(135deg, #7c2d12 0%, #c2410c 50%, #fde047 100%); }
+.pill.red-soft { background: var(--red-soft); color: var(--red); }
+.pill.warn { background: oklch(0.95 0.05 75); color: oklch(0.4 0.12 75); }
+.btn-danger {
+  background: white;
+  color: var(--red);
+  border-color: var(--red);
+}
+.btn-danger:hover:not(:disabled) { background: var(--red-soft); }

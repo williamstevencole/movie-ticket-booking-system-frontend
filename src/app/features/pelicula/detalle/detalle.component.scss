@@ -1,0 +1,15 @@
+:host { display: block; }
+
+.credits-section {
+  background: var(--bg-soft);
+  padding: var(--s8) 0;
+}
+.credits-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: var(--s7);
+  align-items: start;
+}
+@media (max-width: 880px) {
+  .credits-grid { grid-template-columns: 1fr; }
+}

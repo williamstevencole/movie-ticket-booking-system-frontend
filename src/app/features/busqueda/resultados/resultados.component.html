@@ -1,0 +1,44 @@
+<app-appbar [navItems]="nav" />
+
+<section class="search-page wrap">
+  <div class="page-head">
+    <div>
+      <h1>Buscar película</h1>
+      @if (query()) {
+        <p class="meta">Resultados para «{{ query() }}»</p>
+      } @else {
+        <p class="meta">Explorá la cartelera con filtros</p>
+      }
+    </div>
+  </div>
+
+  <app-busqueda-filtros (filtrosChange)="onFiltros($event)" />
+
+  <div class="movie-grid">
+    @for (p of resultados(); track p.id) {
+      <a [routerLink]="['/pelicula', p.id]" class="movie-card">
+        <div class="poster" [class]="p.poster">
+          <app-poster-badge [tipo]="p.badge ?? null" />
+          <span class="title-overlay">{{ p.titulo }}</span>
+        </div>
+        <div class="body">
+          <h3 class="title">{{ p.titulo }}</h3>
+          <div class="meta">
+            <span>{{ p.genero }}</span>
+            <span class="sep">·</span>
+            <span>{{ p.duracion }}</span>
+            <span class="sep">·</span>
+            <span>{{ p.idioma }}</span>
+          </div>
+        </div>
+      </a>
+    } @empty {
+      <div class="empty">
+        <svg lucideSearch [size]="32"></svg>
+        <p>No encontramos películas con esos criterios.</p>
+      </div>
+    }
+  </div>
+</section>
+
+<app-footer />

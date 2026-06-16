@@ -1,0 +1,33 @@
+:host { display: block; }
+
+.day-strip {
+  display: flex;
+  gap: var(--s2);
+  overflow-x: auto;
+  margin-bottom: var(--s6);
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+}
+.day {
+  min-width: 84px;
+  padding: var(--s3) var(--s4);
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r);
+  text-align: center;
+  cursor: pointer;
+  transition: all 180ms var(--ease);
+  flex-shrink: 0;
+}
+.day:hover { border-color: var(--text-3); }
+.day.on {
+  background: var(--red);
+  color: white;
+  border-color: var(--red);
+  box-shadow: 0 4px 12px oklch(0.585 0.22 27 / 0.3);
+}
+.day .wd { font-size: 12px; font-weight: 600; color: var(--text-3); display: block; }
+.day.on .wd { color: rgba(255, 255, 255, 0.85); }
+.day .num { font-size: 22px; font-weight: 800; line-height: 1.1; margin-top: 2px; display: block; }
+.day .mn { font-size: 11px; color: var(--text-3); font-weight: 600; display: block; }
+.day.on .mn { color: rgba(255, 255, 255, 0.85); }

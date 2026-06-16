@@ -1,0 +1,40 @@
+:host { display: contents; }
+
+.time-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 16px;
+  background: var(--bg);
+  border: 1.5px solid var(--border-2);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 180ms var(--ease);
+  text-decoration: none;
+  color: inherit;
+  min-width: 92px;
+}
+.time-card:hover {
+  border-color: var(--red);
+  background: var(--red-soft);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+.time-card .h { font-weight: 700; font-size: 16px; }
+.time-card .av { font-size: 11px; color: var(--success); font-weight: 600; }
+.time-card.warn .av { color: oklch(0.4 0.13 55); }
+.time-card.full {
+  background: var(--surface);
+  border-color: var(--border);
+  border-style: dashed;
+  cursor: not-allowed;
+  color: var(--text-3);
+}
+.time-card.full:hover {
+  transform: none;
+  border-color: var(--border);
+  background: var(--surface);
+  box-shadow: none;
+}
+.time-card.full .av { color: var(--text-3); }

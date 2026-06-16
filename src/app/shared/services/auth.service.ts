@@ -95,6 +95,13 @@ export class AuthService {
     });
   }
 
+  resetPassword(token: string, password: string): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${this.base}/reset-password`, {
+      token,
+      password,
+    });
+  }
+
   // ─── sesión ─────────────────────────────────────────────────
   clearSession(): void {
     if (typeof localStorage !== 'undefined') {
@@ -136,8 +143,7 @@ export class AuthService {
       const [, payload] = token.split('.');
       if (!payload) return null;
       const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-      const padded =
-        normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
+      const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
       return JSON.parse(atob(padded)) as JwtPayload;
     } catch {
       return null;

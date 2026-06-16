@@ -1,0 +1,105 @@
+:host { display: contents; }
+
+.search-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--dark-2);
+  border: 1px solid var(--dark-3);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #d6d3d1;
+  transition: all 180ms var(--ease);
+}
+.search-mini:hover { border-color: var(--red); color: white; }
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 25, 23, 0.55);
+  z-index: 200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 10vh var(--s6) var(--s6);
+}
+.panel {
+  width: min(640px, 100%);
+  background: white;
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s4) var(--s5);
+  border-bottom: 1px solid var(--border);
+}
+.ico { color: var(--text-3); flex-shrink: 0; }
+.search-input {
+  flex: 1;
+  border: 0;
+  font-size: 18px;
+  font-family: inherit;
+  font-weight: 600;
+  outline: none;
+  color: var(--text);
+}
+.search-input::placeholder { color: var(--text-3); font-weight: 500; }
+.close {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: var(--text-2);
+}
+.close:hover { background: var(--surface); color: var(--text); }
+
+.section-label {
+  padding: var(--s3) var(--s5) var(--s2);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.results {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 var(--s3);
+}
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  width: 100%;
+  padding: var(--s3) var(--s5);
+  text-align: left;
+  font-size: 15px;
+  color: var(--text);
+  transition: background 150ms var(--ease);
+}
+.result-row:hover { background: var(--bg-soft); }
+.result-row.rich .ti { display: block; font-weight: 700; }
+.result-row.rich .me { display: block; font-size: 13px; color: var(--text-2); margin-top: 2px; }
+.mini-poster {
+  width: 36px;
+  height: 54px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.empty {
+  padding: var(--s4) var(--s5);
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  .search-mini span { display: none; }
+}
