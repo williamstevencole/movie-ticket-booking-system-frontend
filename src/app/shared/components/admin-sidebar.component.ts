@@ -8,6 +8,7 @@ import {
   LucideClapperboard,
   LucideFilm,
   LucideTags,
+  LucideLanguages,
   LucideBuilding2,
   LucideArmchair,
   LucideSofa,
@@ -162,7 +163,8 @@ export class AdminSidebarComponent {
           icon: LucideFilm,
           routerLink: '/admin/peliculas',
         },
-        { label: 'Géneros & idiomas', icon: LucideTags },
+        { label: 'Géneros', icon: LucideTags, routerLink: '/admin/generos' },
+        { label: 'Idiomas', icon: LucideLanguages, routerLink: '/admin/idiomas' },
       ],
     },
     {

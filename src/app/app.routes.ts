@@ -135,6 +135,22 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/generos',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/generos/generos.component').then(
+        (m) => m.AdminGenerosComponent,
+      ),
+  },
+  {
+    path: 'admin/idiomas',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/idiomas/idiomas.component').then(
+        (m) => m.AdminIdiomasComponent,
+      ),
+  },
+  {
     path: 'admin/peliculas',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
