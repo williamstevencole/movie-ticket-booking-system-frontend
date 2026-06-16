@@ -1,10 +1,24 @@
-import { Component, computed, inject, Input, output } from '@angular/core';
+import {
+  Component,
+  computed,
+  ElementRef,
+  HostListener,
+  inject,
+  Input,
+  output,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import {
+  LucideBell,
+  LucideCreditCard,
+  LucideGift,
   LucideLayoutDashboard,
   LucideLogOut,
   LucideMapPin,
+  LucideShield,
+  LucideUser,
 } from '@lucide/angular';
 import { AuthService } from '../../services/auth.service';
 import { LocationService } from '../../services/location.service';
@@ -21,6 +35,11 @@ export type AppNavItem = { label: string; route?: string; active?: boolean };
     LucideMapPin,
     LucideLogOut,
     LucideLayoutDashboard,
+    LucideUser,
+    LucideCreditCard,
+    LucideGift,
+    LucideShield,
+    LucideBell,
     BuscadorGlobalComponent,
   ],
   template: `
@@ -43,17 +62,17 @@ export type AppNavItem = { label: string; route?: string; active?: boolean };
         <div class="app-right">
           <app-buscador-global />
 
-          @if (isAuth()) {
-            <a class="citychip" routerLink="/elegir-cine" title="Cambiar cine">
-              <svg lucideMapPin [size]="14"></svg>
-              <span class="citychip-name">{{
-                cinemaName() ?? 'Elegí un cine'
-              }}</span>
-              @if (cityName(); as city) {
-                <span class="citychip-city">· {{ city }}</span>
-              }
-            </a>
+          <a class="citychip" routerLink="/elegir-cine" title="Cambiar cine">
+            <svg lucideMapPin [size]="14"></svg>
+            <span class="citychip-name">{{
+              cinemaName() ?? 'Elegí un cine'
+            }}</span>
+            @if (cityName(); as city) {
+              <span class="citychip-city">· {{ city }}</span>
+            }
+          </a>
 
+          @if (isAuth()) {
             @if (isAdmin()) {
               <a class="dash-link" routerLink="/admin" title="Dashboard admin">
                 <svg lucideLayoutDashboard [size]="16"></svg>
@@ -61,17 +80,44 @@ export type AppNavItem = { label: string; route?: string; active?: boolean };
               </a>
             }
 
-            <div class="user">
-              <span class="avatar">{{ initials() }}</span>
-              @if (showLogout) {
-                <button
-                  class="logout"
-                  (click)="onLogout()"
-                  title="Cerrar sesión"
-                  aria-label="Cerrar sesión"
-                >
-                  <svg lucideLogOut [size]="16"></svg>
-                </button>
+            <div class="user-menu">
+              <button
+                class="avatar-btn"
+                (click)="toggleMenu($event)"
+                [attr.aria-expanded]="menuOpen()"
+                aria-haspopup="menu"
+                title="Mi cuenta"
+              >
+                <span class="avatar">{{ initials() }}</span>
+              </button>
+
+              @if (menuOpen()) {
+                <div class="menu" role="menu">
+                  <div class="menu-head">
+                    <div class="menu-name">{{ userName() }}</div>
+                    <div class="menu-email">{{ userEmail() }}</div>
+                  </div>
+                  <a routerLink="/cuenta/perfil" (click)="closeMenu()" role="menuitem">
+                    <svg lucideUser [size]="16"></svg><span>Perfil</span>
+                  </a>
+                  <a routerLink="/cuenta/metodos-pago" (click)="closeMenu()" role="menuitem">
+                    <svg lucideCreditCard [size]="16"></svg><span>Métodos de pago</span>
+                  </a>
+                  <a routerLink="/cuenta/cupones" (click)="closeMenu()" role="menuitem">
+                    <svg lucideGift [size]="16"></svg><span>Cupones</span>
+                  </a>
+                  <a routerLink="/cuenta/seguridad" (click)="closeMenu()" role="menuitem">
+                    <svg lucideShield [size]="16"></svg><span>Seguridad</span>
+                  </a>
+                  <a routerLink="/cuenta/notificaciones" (click)="closeMenu()" role="menuitem">
+                    <svg lucideBell [size]="16"></svg><span>Notificaciones</span>
+                  </a>
+                  @if (showLogout) {
+                    <button class="menu-logout" (click)="onLogout()" role="menuitem">
+                      <svg lucideLogOut [size]="16"></svg><span>Cerrar sesión</span>
+                    </button>
+                  }
+                </div>
               }
             </div>
           } @else {
@@ -88,17 +134,19 @@ export class AppbarComponent {
   private auth = inject(AuthService);
   private locationSvc = inject(LocationService);
   private router = inject(Router);
+  private host = inject(ElementRef<HTMLElement>);
 
   @Input() navItems: AppNavItem[] = [
     { label: 'Cartelera', route: '/', active: true },
     { label: 'Próximos estrenos' },
     { label: 'Promociones' },
     { label: 'Cines' },
-    { label: 'Mis boletos', route: '/cuenta/boletos' },
+    { label: 'Mis boletos', route: '/mis-boletos' },
   ];
   @Input() showLogout = true;
 
   readonly loggedOut = output<void>();
+  readonly menuOpen = signal(false);
 
   readonly cinemaName = this.locationSvc.cinemaName;
   readonly cityName = this.locationSvc.cityName;
@@ -118,7 +166,38 @@ export class AppbarComponent {
       .join('');
   }
 
+  userName(): string {
+    return this.auth.user()?.nombre ?? '';
+  }
+
+  userEmail(): string {
+    return this.auth.user()?.email ?? '';
+  }
+
+  toggleMenu(ev: Event): void {
+    ev.stopPropagation();
+    this.menuOpen.update((v) => !v);
+  }
+
+  closeMenu(): void {
+    this.menuOpen.set(false);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocClick(ev: MouseEvent): void {
+    if (!this.menuOpen()) return;
+    const target = ev.target as Node | null;
+    if (target && this.host.nativeElement.contains(target)) return;
+    this.menuOpen.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEsc(): void {
+    if (this.menuOpen()) this.menuOpen.set(false);
+  }
+
   onLogout(): void {
+    this.menuOpen.set(false);
     this.auth.logoutRemote().subscribe({
       next: () => this.finishLogout(),
       error: () => this.finishLogout(),
@@ -129,6 +208,6 @@ export class AppbarComponent {
     this.locationSvc.clear();
     this.auth.clearSession();
     this.loggedOut.emit();
-    this.router.navigate(['/']);
+    this.router.navigate(['/elegir-cine']);
   }
 }
