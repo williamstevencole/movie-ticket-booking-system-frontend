@@ -253,6 +253,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/reportes/estadisticas-cancelacion',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import(
+        './features/admin/reportes/estadisticas-cancelacion/estadisticas-cancelacion.component'
+      ).then((m) => m.AdminReporteEstadisticasCancelacionComponent),
+  },
+  {
     path: 'admin/reportes/pagos-reembolsos',
     redirectTo: 'admin/pagos',
     pathMatch: 'full',
