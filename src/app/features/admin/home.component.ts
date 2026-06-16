@@ -54,7 +54,11 @@ interface QuickAction {
       <main class="admin-main">
         <div class="admin-topbar">
           <div>
-            <div class="breadcrumb">Inicio · Dashboard</div>
+            <div class="breadcrumb">
+              <span>Admin</span>
+              <span aria-hidden="true">·</span>
+              <span class="crumb-current">Dashboard</span>
+            </div>
             <h1>{{ greeting() }}, {{ firstName() }}</h1>
           </div>
           <div class="actions">
