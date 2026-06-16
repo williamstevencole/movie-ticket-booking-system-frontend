@@ -359,12 +359,12 @@ export class LocationSelectorComponent implements OnInit {
       cinemaName: cine.nombre,
       cinemaAddress: cine.direccion,
     });
-    this.router.navigateByUrl('/cartelera');
+    this.router.navigateByUrl('/');
   }
 
   goHome(): void {
     if (this.locationSvc.hasSelection()) {
-      this.router.navigateByUrl('/cartelera');
+      this.router.navigateByUrl('/');
     }
   }
 

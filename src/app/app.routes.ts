@@ -1,17 +1,26 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { roleGuard } from './core/auth/role.guard';
+import { locationGuard } from './core/auth/location.guard';
 
 export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
+    canActivate: [locationGuard],
     loadComponent: () =>
       import('./features/cartelera/home/home.component').then(
         (m) => m.CarteleraHomeComponent,
       ),
   },
   { path: 'cartelera', redirectTo: '', pathMatch: 'full' },
+  {
+    path: 'elegir-cine',
+    loadComponent: () =>
+      import('./features/onboarding/location-selector.component').then(
+        (m) => m.LocationSelectorComponent,
+      ),
+  },
   {
     path: 'login',
     loadComponent: () =>
@@ -39,15 +48,8 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'elegir-cine',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/onboarding/location-selector.component').then(
-        (m) => m.LocationSelectorComponent,
-      ),
-  },
-  {
     path: 'buscar',
+    canActivate: [locationGuard],
     loadComponent: () =>
       import('./features/busqueda/resultados/resultados.component').then(
         (m) => m.BusquedaResultadosComponent,
@@ -55,16 +57,21 @@ export const routes: Routes = [
   },
   {
     path: 'pelicula/:id',
+    canActivate: [locationGuard],
     loadComponent: () =>
       import('./features/pelicula/detalle/detalle.component').then(
         (m) => m.PeliculaDetalleComponent,
       ),
   },
   {
-    path: 'cupones',
-    redirectTo: 'cuenta/cupones',
-    pathMatch: 'full',
+    path: 'mis-boletos',
+    canActivate: [authGuard, locationGuard],
+    loadComponent: () =>
+      import('./features/boletos/mis-boletos.component').then(
+        (m) => m.MisBoletosComponent,
+      ),
   },
+  { path: 'cupones', redirectTo: 'cuenta/cupones', pathMatch: 'full' },
   {
     path: 'cuenta',
     canActivate: [authGuard],
@@ -73,14 +80,7 @@ export const routes: Routes = [
         (m) => m.AccountShellComponent,
       ),
     children: [
-      { path: '', redirectTo: 'boletos', pathMatch: 'full' },
-      {
-        path: 'boletos',
-        loadComponent: () =>
-          import('./features/account-shell/boletos-placeholder.component').then(
-            (m) => m.BoletosPlaceholderComponent,
-          ),
-      },
+      { path: '', redirectTo: 'perfil', pathMatch: 'full' },
       {
         path: 'perfil',
         loadComponent: () =>
