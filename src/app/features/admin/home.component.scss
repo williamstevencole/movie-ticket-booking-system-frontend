@@ -465,6 +465,41 @@
   &:hover .ic { background: var(--red); color: white; }
 }
 
+/* ─── PERIOD BAR ─── */
+.period-bar {
+  margin: 0 0 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  align-items: center;
+}
+
+/* ─── SKELETONS ─── */
+.skeleton-card .skel,
+.skeleton-row .skel {
+  background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+  background-size: 200% 100%;
+  animation: skel-pulse 1.2s ease-in-out infinite;
+  border-radius: 4px;
+}
+.skel-lbl   { height: 12px; width: 60%; margin-bottom: 12px; }
+.skel-v     { height: 28px; width: 75%; margin-bottom: 8px; }
+.skel-delta { height: 12px; width: 40%; }
+
+.skeleton-row {
+  .skel-rank   { height: 22px; width: 22px; border-radius: 4px; }
+  .skel-poster { height: 72px; width: 48px; border-radius: 4px; }
+  .skel-line   { height: 14px; width: 80%; margin-bottom: 6px; }
+  .skel-line.short { width: 50%; }
+  .skel-line.right { margin-left: auto; }
+  &:hover { background: transparent; cursor: default; }
+}
+
+@keyframes skel-pulse {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* botones del topbar con icono + label */
 .admin-topbar .actions .btn {
   display: inline-flex;
