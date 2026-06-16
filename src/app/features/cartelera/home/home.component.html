@@ -2,11 +2,6 @@
 
 <app-hero-carousel />
 
-<app-city-bar
-  [fechaLabel]="fechaActiva()"
-  (cineChange)="onCineChange($event)"
-/>
-
 <main class="wrap">
   <section class="day-section">
     <app-day-strip (dayChange)="onDayChange($event)" />
