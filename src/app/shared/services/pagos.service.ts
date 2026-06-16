@@ -13,9 +13,11 @@ export type Pago = {
   estado: EstadoPago;
   referencia_externa: string | null;
   tarjeta_mask: string | null;
+  tarjeta_brand?: 'visa' | 'master' | 'amex' | 'discover';
   created_at: string;
 };
 
 export abstract class PagosService {
   abstract list(): Observable<Pago[]>;
+  abstract getByReserva(idReserva: string): Observable<Pago | undefined>;
 }

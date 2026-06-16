@@ -18,4 +18,10 @@ export class MockReservasService extends ReservasService {
   override listUsuarios(): Observable<ReservaUsuario[]> {
     return of([...MOCK_USUARIOS_RESERVAS]);
   }
+  override getById(id: string): Observable<Reserva | undefined> {
+    return of(MOCK_RESERVAS.find((r) => r.id === id));
+  }
+  override getUsuario(id: string): Observable<ReservaUsuario | undefined> {
+    return of(MOCK_USUARIOS_RESERVAS.find((u) => u.id === id));
+  }
 }

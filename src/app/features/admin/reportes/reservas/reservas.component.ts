@@ -477,6 +477,7 @@ export class AdminReporteReservasComponent {
       case 'pendiente_pago': return 'Pendiente';
       case 'cancelada': return 'Cancelada';
       case 'reembolsada': return 'Reembolsada';
+      case 'expirada': return 'Expirada';
     }
   }
 }

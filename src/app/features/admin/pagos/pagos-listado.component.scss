@@ -1,0 +1,228 @@
+/* ── KPI grid ─────────────────────────────────────── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--s4);
+  margin-bottom: var(--s5);
+}
+@media (max-width: 1100px) {
+  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 720px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+}
+.kpi {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-sm);
+  padding: var(--s5);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  .kpi-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+    font-weight: 700;
+  }
+  .kpi-value {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .kpi-sub {
+    font-size: 12px;
+    color: var(--text-3);
+    font-weight: 500;
+  }
+}
+.kpi.refund .kpi-value { color: var(--red); }
+.kpi.neto .kpi-value { color: oklch(0.45 0.13 145); }
+
+/* ── presets row ──────────────────────────────────── */
+.presets-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  margin-bottom: var(--s4);
+  flex-wrap: wrap;
+}
+.preset-group {
+  display: inline-flex;
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r);
+  padding: 3px;
+  gap: 2px;
+}
+.preset-chip {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 140ms var(--ease);
+}
+.preset-chip:hover { color: var(--text); }
+.preset-chip.on {
+  background: var(--text);
+  color: var(--bg);
+}
+.export-slot { margin-left: auto; }
+.select-pill.date { min-width: 150px; }
+
+/* ── refund card ───────────────────────────────────── */
+.refund-card {
+  margin-top: var(--s5);
+}
+.card-header {
+  padding: 14px var(--s5);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s4);
+  .card-title-h {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+    svg { color: var(--red); }
+  }
+  .card-count {
+    font-size: 12px;
+    color: var(--text-3);
+    font-weight: 600;
+  }
+}
+.tbl-ops.compact {
+  th, td { padding: 9px var(--s4); }
+}
+.col-num.refund, .col-num .refund {
+  color: var(--red);
+}
+
+.select-pill {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--r);
+  background: var(--bg);
+  border: 1px solid var(--border-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 180px;
+  transition: border-color 140ms var(--ease);
+}
+.select-pill:hover { border-color: var(--text-3); }
+.select-pill:focus {
+  outline: none;
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-soft);
+}
+
+.metodo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  svg { color: var(--text-3); }
+}
+
+.discount {
+  color: var(--red);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.link-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-3);
+  transition: all 140ms var(--ease);
+}
+.link-row:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.totals-foot {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--border);
+  background: var(--bg-soft);
+
+  .tot {
+    padding: 14px var(--s5);
+    border-right: 1px solid var(--divider);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .tot:last-child { border-right: 0; }
+
+  .tot-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .tot-val {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .tot-val.refund { color: var(--red); }
+
+  .tot.strong {
+    background: var(--text);
+    .tot-label { color: oklch(0.7 0 0); }
+    .tot-val { color: var(--bg); font-size: 18px; }
+  }
+}
+
+@media (max-width: 720px) {
+  .totals-foot {
+    grid-template-columns: repeat(2, 1fr);
+    .tot {
+      border-right: 1px solid var(--divider);
+      border-bottom: 1px solid var(--divider);
+    }
+    .tot.strong { grid-column: span 2; border-bottom: 0; }
+  }
+}
+
+.badge-state.exitoso     { background: oklch(0.95 0.06 145); color: oklch(0.42 0.13 145); }
+.badge-state.reembolsado { background: var(--red-soft); color: var(--red); }
+.badge-state.rechazado   { background: var(--surface); color: var(--text-3); }
+.badge-state.procesando  {
+  background: oklch(0.96 0.04 75); color: oklch(0.42 0.13 65);
+  .glyph { animation: pulse-orange 1.6s infinite; }
+}
