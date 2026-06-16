@@ -29,7 +29,7 @@ export class BusquedaResultadosComponent implements OnInit {
     { label: 'Próximos estrenos' },
     { label: 'Promociones' },
     { label: 'Cines' },
-    { label: 'Mis boletos', route: '/cuenta/boletos' },
+    { label: 'Mis boletos', route: '/mis-boletos' },
   ];
 
   readonly query = signal('');
@@ -61,6 +61,7 @@ export class BusquedaResultadosComponent implements OnInit {
     }
     if (f.genero) list = list.filter((p) => p.genero === f.genero);
     if (f.idioma) list = list.filter((p) => p.idioma === f.idioma);
+    if (f.clasificacion) list = list.filter((p) => p.clasificacion === f.clasificacion);
     this.resultados.set(list);
   }
 }

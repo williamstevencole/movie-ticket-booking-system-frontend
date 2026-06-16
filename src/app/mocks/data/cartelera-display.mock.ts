@@ -22,6 +22,7 @@ export type CarteleraPelicula = {
   genero: string;
   duracion: string;
   idioma: string;
+  clasificacion?: string;
   poster: string;
   badge?: BadgeTipo;
   badgeFecha?: string;
