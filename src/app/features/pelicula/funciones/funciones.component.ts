@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { MOCK_FUNCIONES } from '../../../mocks/data/pelicula-funciones.mock';
+import { LocationService } from '../../../shared/services/location.service';
 import { DayStripComponent } from '../../cartelera/day-strip/day-strip.component';
 import { DistanciaCineComponent } from './distancia-cine/distancia-cine.component';
 import { HorarioChipComponent } from './horario-chip/horario-chip.component';
@@ -16,18 +17,26 @@ import { HorarioChipComponent } from './horario-chip/horario-chip.component';
   styleUrl: './funciones.component.scss',
 })
 export class PeliculaFuncionesComponent {
+  private location = inject(LocationService);
+
   readonly cines = MOCK_FUNCIONES;
-  readonly selectedCineId = signal(MOCK_FUNCIONES[0]!.id);
+  readonly selectedCineId = signal(this.resolveInitialCine());
 
-  selectCine(id: string): void {
-    this.selectedCineId.set(id);
-  }
-
-  selectedCine() {
-    return this.cines.find((c) => c.id === this.selectedCineId()) ?? this.cines[0]!;
-  }
+  readonly selectedCine = computed(
+    () => this.cines.find((c) => c.id === this.selectedCineId()) ?? this.cines[0]!,
+  );
 
   mapsUrl(lat: number, lng: number): string {
     return `https://maps.google.com/?q=${lat},${lng}`;
+  }
+
+  private resolveInitialCine(): string {
+    const saved = this.location.cinemaName();
+    if (saved) {
+      const norm = saved.toLowerCase();
+      const match = this.cines.find((c) => c.nombre.toLowerCase().includes(norm));
+      if (match) return match.id;
+    }
+    return this.cines[0]!.id;
   }
 }

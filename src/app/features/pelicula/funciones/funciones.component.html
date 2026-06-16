@@ -1,82 +1,56 @@
 <section id="funciones" class="picker-shell">
   <div class="wrap">
     <div class="picker-section">
-      <h2>1. Elegí el cine</h2>
-      <div class="cine-chips">
-        @for (c of cines; track c.id) {
-          <button
-            type="button"
-            class="cine-chip-pick"
-            [class.on]="selectedCineId() === c.id"
-            (click)="selectCine(c.id)"
-          >
-            <span class="ico">{{ c.iconLetter }}</span>
-            <span>
-              <span class="name">{{ c.nombre }}</span>
-              <span class="where">
-                {{ c.direccion }}
-                <app-distancia-cine [coords]="c.coords" />
-              </span>
-            </span>
-          </button>
-        }
-      </div>
-    </div>
-
-    <div class="picker-section">
-      <h2>2. Elegí el día</h2>
+      <h2>1. Elegí el día</h2>
       <app-day-strip />
     </div>
 
     <div class="picker-section">
-      <h2>3. Elegí la función</h2>
+      <h2>2. Elegí la función</h2>
       <div class="funciones-list">
-        @for (c of cines; track c.id) {
-          @if (selectedCineId() === c.id) {
-            <article class="funcion-block">
-              <div class="funcion-head">
-                <div class="info">
-                  <span
-                    class="icon"
-                    [style.background]="c.iconColor === 'orange' ? 'var(--orange)' : null"
-                  >{{ c.iconLetter }}</span>
-                  <div>
-                    <div class="name">{{ c.nombre }}</div>
-                    <div class="sub">
-                      {{ c.direccion }} · {{ c.ciudad }}
-                      <app-distancia-cine [coords]="c.coords" />
-                    </div>
-                  </div>
+        @let c = selectedCine();
+        <article class="funcion-block">
+          <div class="funcion-head">
+            <div class="info">
+              <span
+                class="icon"
+                [style.background]="c.iconColor === 'orange' ? 'var(--orange)' : null"
+              >{{ c.iconLetter }}</span>
+              <div>
+                <div class="name">{{ c.nombre }}</div>
+                <div class="sub">
+                  {{ c.direccion }} · {{ c.ciudad }}
+                  <app-distancia-cine [coords]="c.coords" />
                 </div>
-                <a
-                  class="btn btn-sm"
-                  [href]="mapsUrl(c.coords.lat, c.coords.lng)"
-                  target="_blank"
-                  rel="noopener"
-                >Cómo llegar →</a>
               </div>
+            </div>
+            <a
+              class="btn btn-sm"
+              [href]="mapsUrl(c.coords.lat, c.coords.lng)"
+              target="_blank"
+              rel="noopener"
+            >Cómo llegar →</a>
+          </div>
 
-              @for (sala of c.salas; track sala.id) {
-                <div class="sala-row">
-                  <div class="sala-info">
-                    <div class="sala-name">{{ sala.nombre }}</div>
-                    <div class="feats">
-                      @for (f of sala.feats; track f.label) {
-                        <span class="feat" [class.vip]="f.vip">{{ f.label }}</span>
-                      }
-                    </div>
-                    <div class="price">Desde <strong>L {{ sala.precioDesde }}</strong></div>
-                  </div>
-                  <div class="times-grid">
-                    @for (h of sala.horarios; track h.id) {
-                      <app-horario-chip [horario]="h" />
-                    }
-                  </div>
+          @for (sala of c.salas; track sala.id) {
+            <div class="sala-row">
+              <div class="sala-info">
+                <div class="sala-name">{{ sala.nombre }}</div>
+                <div class="feats">
+                  @for (f of sala.feats; track f.label) {
+                    <span class="feat" [class.vip]="f.vip">{{ f.label }}</span>
+                  }
                 </div>
-              }
-            </article>
+                <div class="price">Desde <strong>L {{ sala.precioDesde }}</strong></div>
+              </div>
+              <div class="times-grid">
+                @for (h of sala.horarios; track h.id) {
+                  <app-horario-chip [horario]="h" />
+                }
+              </div>
+            </div>
           }
-        }
+        </article>
       </div>
     </div>
   </div>
