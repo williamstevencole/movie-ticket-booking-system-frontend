@@ -7,6 +7,9 @@ import { PeliculasService } from '../../shared/services/peliculas.service';
 import { GenerosService } from '../../shared/services/generos.service';
 import { IdiomasService } from '../../shared/services/idiomas.service';
 import { FuncionesService } from '../../shared/services/funciones.service';
+import { ReservasService } from '../../shared/services/reservas.service';
+import { PagosService } from '../../shared/services/pagos.service';
+import { ReembolsosService } from '../../shared/services/reembolsos.service';
 
 import { MockCiudadesService } from '../../mocks/services/ciudades.mock.service';
 import { MockCinesService } from '../../mocks/services/cines.mock.service';
@@ -15,6 +18,9 @@ import { MockPeliculasService } from '../../mocks/services/peliculas.mock.servic
 import { MockGenerosService } from '../../mocks/services/generos.mock.service';
 import { MockIdiomasService } from '../../mocks/services/idiomas.mock.service';
 import { MockFuncionesService } from '../../mocks/services/funciones.mock.service';
+import { MockReservasService } from '../../mocks/services/reservas.mock.service';
+import { MockPagosService } from '../../mocks/services/pagos.mock.service';
+import { MockReembolsosService } from '../../mocks/services/reembolsos.mock.service';
 
 export const dataProviders: Provider[] = [
   { provide: CiudadesService, useClass: MockCiudadesService },
@@ -24,4 +30,7 @@ export const dataProviders: Provider[] = [
   { provide: GenerosService, useClass: MockGenerosService },
   { provide: IdiomasService, useClass: MockIdiomasService },
   { provide: FuncionesService, useClass: MockFuncionesService },
+  { provide: ReservasService, useClass: MockReservasService },
+  { provide: PagosService, useClass: MockPagosService },
+  { provide: ReembolsosService, useClass: MockReembolsosService },
 ];
