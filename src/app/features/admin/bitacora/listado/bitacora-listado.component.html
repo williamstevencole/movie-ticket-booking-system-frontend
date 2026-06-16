@@ -1,0 +1,163 @@
+<div class="admin-body">
+  <app-admin-sidebar />
+  <main class="admin-main">
+    <div class="shell">
+      <div class="crumb">
+        <a routerLink="/admin">Admin</a>
+        <span aria-hidden="true">·</span>
+        <span class="crumb-current">Bitácora</span>
+      </div>
+
+      <div class="head-row">
+        <div>
+          <h1>Bitácora</h1>
+          <p class="lead">
+            Eventos auditables del sistema. Filtra por entidad o rango de fechas.
+          </p>
+        </div>
+        <div class="head-actions">
+          <span class="counters">
+            @if (loading()) {
+              <span class="loading-pip" aria-hidden="true"></span>
+              <span class="loading-txt">Cargando…</span>
+            } @else {
+              <span class="tnum">{{ total() }} eventos</span>
+            }
+          </span>
+          <app-export-button
+            filename="bitacora"
+            [columns]="exportColumns"
+            [rows]="items()"
+          />
+        </div>
+      </div>
+
+      <section class="filters card">
+        <div class="filter-grid">
+          <label class="field">
+            <span class="lbl">Entidad</span>
+            <select
+              class="input"
+              [ngModel]="draftEntidad()"
+              (ngModelChange)="draftEntidad.set($event)"
+            >
+              <option value="">Todas</option>
+              @for (opt of entityOptions; track opt.key) {
+                <option [value]="opt.key">{{ opt.label }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="lbl">Desde</span>
+            <input
+              type="date"
+              class="input"
+              [ngModel]="draftDesde()"
+              (ngModelChange)="draftDesde.set($event)"
+            />
+          </label>
+
+          <label class="field">
+            <span class="lbl">Hasta</span>
+            <input
+              type="date"
+              class="input"
+              [ngModel]="draftHasta()"
+              (ngModelChange)="draftHasta.set($event)"
+            />
+          </label>
+
+          <div class="field actions">
+            <span class="lbl" aria-hidden="true">&nbsp;</span>
+            <div class="actions-row">
+              <button type="button" class="btn ghost" (click)="limpiar()">
+                <svg lucideRotateCcw [size]="14"></svg>
+                <span>Limpiar</span>
+              </button>
+              <button type="button" class="btn primary" (click)="aplicar()">
+                <svg lucideFilter [size]="14"></svg>
+                <span>Aplicar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        @if (total() === 0 && !loading()) {
+          <div class="empty">
+            <span class="empty-mark">
+              <svg lucideNotebookText [size]="22"></svg>
+            </span>
+            <h3>Sin eventos para estos filtros</h3>
+            <p>Ajusta el rango de fechas o cambia la entidad seleccionada.</p>
+          </div>
+        } @else {
+          <div class="table-scroll" [class.is-loading]="loading()">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th class="col-fecha">Fecha</th>
+                  <th class="col-aud">Auditor</th>
+                  <th class="col-accion">Acción</th>
+                  <th class="col-ent">Entidad</th>
+                  <th class="col-det">Detalle</th>
+                  <th class="col-acc right" aria-label="Acciones"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of items(); track row.id) {
+                  <tr>
+                    <td class="col-fecha tnum">
+                      <div>{{ row.created_at | date: 'd MMM y' }}</div>
+                      <div class="col-sub">{{ row.created_at | date: 'HH:mm' }}</div>
+                    </td>
+                    <td class="col-aud">
+                      <div class="col-strong">{{ row.auditor.nombre }}</div>
+                      <div class="col-sub">{{ row.auditor.email }}</div>
+                    </td>
+                    <td class="col-accion">
+                      <span class="badge" [attr.data-variant]="accionVariant(row.accion)">
+                        {{ row.accion }}
+                      </span>
+                    </td>
+                    <td class="col-ent">
+                      @if (row.entidad) {
+                        <span class="chip">{{ entidadLabel(row.entidad) }}</span>
+                      } @else {
+                        <span class="col-sub">—</span>
+                      }
+                    </td>
+                    <td class="col-det">
+                      {{ row.detalle || '—' }}
+                    </td>
+                    <td class="col-acc right">
+                      @if (row.tiene_snapshot) {
+                        <a class="link" [routerLink]="['detalle', row.id]">
+                          Ver diff
+                        </a>
+                      } @else {
+                        <span class="badge muted">sin snapshot</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card-foot">
+            <app-pager
+              [value]="{ page: page(), pageSize: pageSize(), total: total() }"
+              (pageChange)="goToPage($event)"
+              (pageSizeChange)="onPageSizeChange($event)"
+            />
+          </div>
+        }
+      </section>
+    </div>
+
+    <router-outlet />
+  </main>
+</div>
