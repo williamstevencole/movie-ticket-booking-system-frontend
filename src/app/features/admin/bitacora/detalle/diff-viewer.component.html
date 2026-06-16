@@ -1,0 +1,22 @@
+<p *ngIf="modo() === 'none'" class="empty">Sin cambios registrados.</p>
+
+<table *ngIf="modo() !== 'none'" class="diff-table">
+  <thead>
+    <tr>
+      <th>Campo</th>
+      <th *ngIf="modo() !== 'create'">Antes</th>
+      <th *ngIf="modo() !== 'delete'">Después</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let row of rows()">
+      <td class="label">{{ row.label }}</td>
+      <td *ngIf="modo() !== 'create'" class="antes">{{ formatValue(row.antes) }}</td>
+      <td *ngIf="modo() !== 'delete'" class="despues">{{ formatValue(row.despues) }}</td>
+    </tr>
+  </tbody>
+</table>
+
+<p *ngIf="modo() === 'update' && rows().length === 0" class="empty">
+  No hay diferencias entre el estado anterior y el nuevo.
+</p>
