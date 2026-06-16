@@ -173,7 +173,11 @@ export class AdminSidebarComponent {
           icon: LucideMapPin,
           routerLink: '/admin/ciudades',
         },
-        { label: 'Cines', icon: LucideBuilding2, count: 2 },
+        {
+          label: 'Cines',
+          icon: LucideBuilding2,
+          routerLink: '/admin/cines',
+        },
         { label: 'Salas', icon: LucideArmchair, count: 11 },
         { label: 'Tipos de asiento', icon: LucideSofa },
         { label: 'Precios por cine', icon: LucideBanknote },
