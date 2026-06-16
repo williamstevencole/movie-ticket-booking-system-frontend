@@ -195,9 +195,23 @@ export class AdminSidebarComponent {
       ],
     },
     {
+      title: 'Reportes',
+      links: [
+        {
+          label: 'Reporte de reservas',
+          icon: LucideChartColumn,
+          routerLink: '/admin/reportes/reservas',
+        },
+        {
+          label: 'Pagos y reembolsos',
+          icon: LucideCreditCard,
+          routerLink: '/admin/reportes/pagos-reembolsos',
+        },
+      ],
+    },
+    {
       title: 'Sistema',
       links: [
-        { label: 'Reportes', icon: LucideChartColumn },
         { label: 'Usuarios & roles', icon: LucideUsers },
         { label: 'Bitácora', icon: LucideNotebookText },
       ],

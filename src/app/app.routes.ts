@@ -190,5 +190,26 @@ export const routes: Routes = [
         (m) => m.AdminCancelarFuncionComponent,
       ),
   },
+  {
+    path: 'admin/reportes',
+    pathMatch: 'full',
+    redirectTo: 'admin/reportes/reservas',
+  },
+  {
+    path: 'admin/reportes/reservas',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/reportes/reservas/reservas.component').then(
+        (m) => m.AdminReporteReservasComponent,
+      ),
+  },
+  {
+    path: 'admin/reportes/pagos-reembolsos',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import(
+        './features/admin/reportes/pagos-reembolsos/pagos-reembolsos.component'
+      ).then((m) => m.AdminReportePagosReembolsosComponent),
+  },
   { path: '**', redirectTo: '' },
 ];
