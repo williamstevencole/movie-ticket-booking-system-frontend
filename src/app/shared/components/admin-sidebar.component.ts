@@ -182,8 +182,17 @@ export class AdminSidebarComponent {
     {
       title: 'Comercial',
       links: [
-        { label: 'Reservas', icon: LucideTicket, count: 487 },
-        { label: 'Pagos', icon: LucideCreditCard },
+        {
+          label: 'Reservas',
+          icon: LucideTicket,
+          count: 487,
+          routerLink: '/admin/reservas',
+        },
+        {
+          label: 'Pagos',
+          icon: LucideCreditCard,
+          routerLink: '/admin/pagos',
+        },
         { label: 'Cupones', icon: LucideGift, count: 6 },
         { label: 'Políticas cancelación', icon: LucideClipboardList },
         {
@@ -201,11 +210,6 @@ export class AdminSidebarComponent {
           label: 'Reporte de reservas',
           icon: LucideChartColumn,
           routerLink: '/admin/reportes/reservas',
-        },
-        {
-          label: 'Pagos y reembolsos',
-          icon: LucideCreditCard,
-          routerLink: '/admin/reportes/pagos-reembolsos',
         },
       ],
     },

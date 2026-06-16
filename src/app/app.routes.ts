@@ -191,6 +191,31 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/reservas',
+    pathMatch: 'full',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import(
+        './features/admin/reservas/listado/reservas-listado.component'
+      ).then((m) => m.AdminReservasListadoComponent),
+  },
+  {
+    path: 'admin/reservas/:id',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import(
+        './features/admin/reservas/detalle/reserva-detalle.component'
+      ).then((m) => m.AdminReservaDetalleComponent),
+  },
+  {
+    path: 'admin/pagos',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import(
+        './features/admin/pagos/pagos-listado.component'
+      ).then((m) => m.AdminPagosListadoComponent),
+  },
+  {
     path: 'admin/reportes',
     pathMatch: 'full',
     redirectTo: 'admin/reportes/reservas',
@@ -205,11 +230,8 @@ export const routes: Routes = [
   },
   {
     path: 'admin/reportes/pagos-reembolsos',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
-    loadComponent: () =>
-      import(
-        './features/admin/reportes/pagos-reembolsos/pagos-reembolsos.component'
-      ).then((m) => m.AdminReportePagosReembolsosComponent),
+    redirectTo: 'admin/pagos',
+    pathMatch: 'full',
   },
   { path: '**', redirectTo: '' },
 ];
