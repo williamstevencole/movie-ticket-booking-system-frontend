@@ -232,6 +232,14 @@ export const routes: Routes = [
       ).then((m) => m.AdminPagosListadoComponent),
   },
   {
+    path: 'admin/bitacora',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadChildren: () =>
+      import('./features/admin/bitacora/bitacora.routes').then(
+        (m) => m.BITACORA_ROUTES,
+      ),
+  },
+  {
     path: 'admin/reportes',
     pathMatch: 'full',
     redirectTo: 'admin/reportes/reservas',
