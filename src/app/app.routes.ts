@@ -151,6 +151,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/cines/:id/editar',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/cines/editar/cine-editar.component').then(
+        (m) => m.AdminCineEditarComponent,
+      ),
+  },
+  {
     path: 'admin/salas',
     pathMatch: 'full',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
