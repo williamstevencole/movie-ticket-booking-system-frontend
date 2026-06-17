@@ -135,6 +135,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/cines',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/cines/listado/cines.component').then(
+        (m) => m.AdminCinesComponent,
+     ),
+  },
     path: 'admin/generos',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
