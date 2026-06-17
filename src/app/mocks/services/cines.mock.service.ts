@@ -5,8 +5,10 @@ import {
   CinesPage,
   CinesService,
   CrearCineInput,
+  CrearSalaInput,
   EditarCineInput,
   ListCinesQuery,
+  Sala,
 } from '../../shared/services/cines.service';
 import { MOCK_CINES } from '../data/cines.mock';
 
@@ -96,6 +98,37 @@ export class MockCinesService extends CinesService {
     };
     this.store[idx] = next;
     return of({ ...next });
+  }
+
+  override addSala(idCine: string, input: CrearSalaInput): Observable<Sala> {
+    const cine = this.store.find((c) => c.id === idCine);
+    if (!cine) {
+      return throwError(() => ({ code: 'NOT_FOUND', message: 'Cine no encontrado' }));
+    }
+    const nombre = input.nombre.trim();
+    if (!nombre) {
+      return throwError(() => ({ code: 'EMPTY', message: 'El nombre de la sala no puede estar vacío' }));
+    }
+    if (!Number.isInteger(input.filas) || input.filas < 1) {
+      return throwError(() => ({ code: 'BAD_ROWS', message: 'Las filas deben ser un número mayor a 0' }));
+    }
+    if (!Number.isInteger(input.columnas) || input.columnas < 1) {
+      return throwError(() => ({ code: 'BAD_COLS', message: 'Las columnas deben ser un número mayor a 0' }));
+    }
+    if (cine.salas.some((s) => s.nombre.toLowerCase() === nombre.toLowerCase())) {
+      return throwError(() => ({
+        code: 'DUPLICATE',
+        message: 'Ya existe una sala con ese nombre en este cine',
+      }));
+    }
+    const sala: Sala = {
+      id: `sala-${Date.now().toString(36)}`,
+      nombre,
+      filas: input.filas,
+      columnas: input.columnas,
+    };
+    cine.salas = [...cine.salas, sala];
+    return of({ ...sala });
   }
 
   private existsByNombre(nombre: string, idCiudad: string, ignoreId?: string): boolean {
