@@ -44,10 +44,18 @@ export type CrearSalaInput = {
   columnas: number;
 };
 
+export type EditarSalaInput = Partial<CrearSalaInput>;
+
 export abstract class CinesService {
   abstract list(query?: ListCinesQuery): Observable<CinesPage>;
   abstract getById(id: string): Observable<Cine>;
   abstract create(input: CrearCineInput): Observable<Cine>;
   abstract update(id: string, input: EditarCineInput): Observable<Cine>;
   abstract addSala(idCine: string, input: CrearSalaInput): Observable<Sala>;
+  abstract getSala(idCine: string, idSala: string): Observable<Sala>;
+  abstract updateSala(
+    idCine: string,
+    idSala: string,
+    input: EditarSalaInput,
+  ): Observable<Sala>;
 }

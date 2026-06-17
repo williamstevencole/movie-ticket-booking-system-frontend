@@ -7,6 +7,7 @@ import {
   CrearCineInput,
   CrearSalaInput,
   EditarCineInput,
+  EditarSalaInput,
   ListCinesQuery,
   Sala,
 } from '../../shared/services/cines.service';
@@ -129,6 +130,63 @@ export class MockCinesService extends CinesService {
     };
     cine.salas = [...cine.salas, sala];
     return of({ ...sala });
+  }
+
+  override getSala(idCine: string, idSala: string): Observable<Sala> {
+    const cine = this.store.find((c) => c.id === idCine);
+    if (!cine) {
+      return throwError(() => ({ code: 'NOT_FOUND', message: 'Cine no encontrado' }));
+    }
+    const sala = cine.salas.find((s) => s.id === idSala);
+    if (!sala) {
+      return throwError(() => ({ code: 'NOT_FOUND', message: 'Sala no encontrada' }));
+    }
+    return of({ ...sala });
+  }
+
+  override updateSala(
+    idCine: string,
+    idSala: string,
+    input: EditarSalaInput,
+  ): Observable<Sala> {
+    const cine = this.store.find((c) => c.id === idCine);
+    if (!cine) {
+      return throwError(() => ({ code: 'NOT_FOUND', message: 'Cine no encontrado' }));
+    }
+    const idx = cine.salas.findIndex((s) => s.id === idSala);
+    if (idx === -1) {
+      return throwError(() => ({ code: 'NOT_FOUND', message: 'Sala no encontrada' }));
+    }
+    const current = cine.salas[idx]!;
+    const nombre = input.nombre !== undefined ? input.nombre.trim() : current.nombre;
+    if (!nombre) {
+      return throwError(() => ({ code: 'EMPTY', message: 'El nombre de la sala no puede estar vacío' }));
+    }
+    const filas = input.filas !== undefined ? input.filas : current.filas;
+    const columnas = input.columnas !== undefined ? input.columnas : current.columnas;
+    if (!Number.isInteger(filas) || filas < 1) {
+      return throwError(() => ({ code: 'BAD_ROWS', message: 'Las filas deben ser un número mayor a 0' }));
+    }
+    if (!Number.isInteger(columnas) || columnas < 1) {
+      return throwError(() => ({ code: 'BAD_COLS', message: 'Las columnas deben ser un número mayor a 0' }));
+    }
+    if (
+      cine.salas.some(
+        (s) => s.id !== idSala && s.nombre.toLowerCase() === nombre.toLowerCase(),
+      )
+    ) {
+      return throwError(() => ({
+        code: 'DUPLICATE',
+        message: 'Ya existe una sala con ese nombre en este cine',
+      }));
+    }
+    const next: Sala = { ...current, nombre, filas, columnas };
+    cine.salas = [
+      ...cine.salas.slice(0, idx),
+      next,
+      ...cine.salas.slice(idx + 1),
+    ];
+    return of({ ...next });
   }
 
   private existsByNombre(nombre: string, idCiudad: string, ignoreId?: string): boolean {

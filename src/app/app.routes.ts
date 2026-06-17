@@ -168,6 +168,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/salas/:cineId/:salaId/editar',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/salas/editar/sala-editar.component').then(
+        (m) => m.AdminSalaEditarComponent,
+      ),
+  },
+  {
     path: 'admin/generos',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>

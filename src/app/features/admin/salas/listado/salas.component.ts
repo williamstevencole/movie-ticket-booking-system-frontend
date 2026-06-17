@@ -183,13 +183,13 @@ type SalaRow = {
                         </td>
                         <td class="col-acc">
                           <div class="row-acc">
-                            <span
-                              class="icon-btn is-disabled"
-                              title="Editar sala (próximamente)"
-                              aria-disabled="true"
+                            <a
+                              class="icon-btn"
+                              [routerLink]="['/admin/salas', s.cineId, s.id, 'editar']"
+                              title="Editar sala"
                             >
                               <svg lucidePencil [size]="15"></svg>
-                            </span>
+                            </a>
                             <span
                               class="icon-btn is-disabled"
                               title="Ver distribución (próximamente)"
