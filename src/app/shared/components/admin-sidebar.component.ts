@@ -180,7 +180,7 @@ export class AdminSidebarComponent {
           icon: LucideBuilding2,
           routerLink: '/admin/cines',
         },
-        { label: 'Salas', icon: LucideArmchair, count: 11 },
+        { label: 'Salas', icon: LucideArmchair, routerLink: '/admin/salas' },
         { label: 'Tipos de asiento', icon: LucideSofa },
         { label: 'Precios por cine', icon: LucideBanknote },
       ],

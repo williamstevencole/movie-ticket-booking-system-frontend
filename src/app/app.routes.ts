@@ -151,6 +151,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/salas',
+    pathMatch: 'full',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/salas/listado/salas.component').then(
+        (m) => m.AdminSalasComponent,
+      ),
+  },
+  {
     path: 'admin/salas/crear',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
