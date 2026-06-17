@@ -1,11 +1,7 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import {
-  LucideSearch,
-  LucideClipboardList,
-} from '@lucide/angular';
+import { LucideClipboardList } from '@lucide/angular';
 
 import {
   Reserva,
@@ -31,22 +27,23 @@ import {
   ExportButtonComponent,
   ExportColumn,
 } from '../../../../shared/components/export-button.component';
-
-type Preset = '7d' | '30d' | 'mes' | 'custom';
+import {
+  ReportFiltrosComponent,
+  ReportFiltrosValue,
+} from '../../../../shared/components/report-filtros.component';
 
 @Component({
   selector: 'app-admin-reporte-reservas',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     RouterLink,
     DatePipe,
     DecimalPipe,
     AdminSidebarComponent,
     PagerComponent,
     ExportButtonComponent,
-    LucideSearch,
+    ReportFiltrosComponent,
     LucideClipboardList,
   ],
   template: `
@@ -99,91 +96,15 @@ type Preset = '7d' | '30d' | 'mes' | 'custom';
             </div>
           </section>
 
-          <section class="toolbar">
-            <div class="preset-group" role="tablist">
-              <button
-                class="preset-chip"
-                [class.on]="preset() === '7d'"
-                (click)="setPreset('7d')"
-              >Últimos 7 días</button>
-              <button
-                class="preset-chip"
-                [class.on]="preset() === '30d'"
-                (click)="setPreset('30d')"
-              >Últimos 30 días</button>
-              <button
-                class="preset-chip"
-                [class.on]="preset() === 'mes'"
-                (click)="setPreset('mes')"
-              >Este mes</button>
-              <button
-                class="preset-chip"
-                [class.on]="preset() === 'custom'"
-                (click)="setPreset('custom')"
-              >Personalizado</button>
-            </div>
-
-            @if (preset() === 'custom') {
-              <input
-                type="date"
-                class="select-filter"
-                style="min-width: 150px;"
-                [(ngModel)]="customFrom"
-                (ngModelChange)="onCustomChange()"
-              />
-              <input
-                type="date"
-                class="select-filter"
-                style="min-width: 150px;"
-                [(ngModel)]="customTo"
-                (ngModelChange)="onCustomChange()"
-              />
-            }
-
-            <label class="search">
-              <svg lucideSearch [size]="14"></svg>
-              <input
-                type="text"
-                placeholder="# reserva o cliente…"
-                [ngModel]="searchTerm()"
-                (ngModelChange)="onSearchChange($event)"
-              />
-            </label>
-
-            <select
-              class="select-filter"
-              [value]="estado()"
-              (change)="onEstadoChange($event)"
-            >
-              <option value="">Todos los estados</option>
-              <option value="pagada">Pagadas</option>
-              <option value="pendiente_pago">Pendientes</option>
-              <option value="cancelada">Canceladas</option>
-              <option value="reembolsada">Reembolsadas</option>
-            </select>
-
-            <select
-              class="select-filter"
-              [value]="idCiudad()"
-              (change)="onCiudadChange($event)"
-            >
-              <option value="">Todas las ciudades</option>
-              @for (c of ciudades(); track c.id) {
-                <option [value]="c.id">{{ c.nombre }}</option>
-              }
-            </select>
-
-            <select
-              class="select-filter"
-              [value]="idCine()"
-              (change)="onCineChange($event)"
-            >
-              <option value="">{{ idCiudad() ? 'Todos los cines de la ciudad' : 'Todos los cines' }}</option>
-              @for (c of cinesEnCiudad(); track c.id) {
-                <option [value]="c.id">{{ c.nombre }}</option>
-              }
-            </select>
-          </section>
+          <app-report-filtros
+            [config]="{
+              periodo: true,
+              search: { placeholder: '# reserva o cliente…' },
+              selects: ['cine', 'ciudad', 'pelicula', 'estado-reserva']
+            }"
+            [value]="filtros()"
+            (valueChange)="onFiltrosChange($event)"
+          />
 
           <section class="card">
             <div class="card-head">
@@ -278,16 +199,14 @@ export class AdminReporteReservasComponent {
   readonly ciudades = signal<Ciudad[]>([]);
   readonly usuarios = signal<ReservaUsuario[]>([]);
 
-  readonly preset = signal<Preset>('7d');
-  readonly searchTerm = signal('');
-  readonly estado = signal<string>('');
-  readonly idCiudad = signal<string>('');
-  readonly idCine = signal<string>('');
+  readonly filtros = signal<ReportFiltrosValue>({
+    periodo: { preset: '30d', from: '', to: '' },
+    search: '',
+    selects: {},
+  });
+
   readonly page = signal(1);
   readonly pageSize = signal(20);
-
-  customFrom = '';
-  customTo = '';
 
   readonly exportColumns: ExportColumn<Reserva>[] = [
     { key: 'numero_reserva', label: '# Reserva', value: (r) => r.numero_reserva },
@@ -323,44 +242,48 @@ export class AdminReporteReservasComponent {
     return map;
   });
 
-  readonly cinesEnCiudad = computed(() => {
-    const c = this.idCiudad();
-    return c ? this.cines().filter((x) => x.id_ciudad === c) : this.cines();
-  });
-
-  readonly range = computed<{ from: number; to: number }>(() => {
-    const now = Date.now();
-    switch (this.preset()) {
-      case '7d':
-        return { from: now - 7 * 86_400_000, to: now };
-      case '30d':
-        return { from: now - 30 * 86_400_000, to: now };
-      case 'mes': {
-        const d = new Date();
-        const from = new Date(d.getFullYear(), d.getMonth(), 1).getTime();
-        return { from, to: now };
-      }
-      case 'custom':
-        return {
-          from: this.customFrom ? new Date(this.customFrom).getTime() : -Infinity,
-          to: this.customTo ? new Date(this.customTo).getTime() + 86_400_000 : Infinity,
-        };
-    }
-  });
-
   readonly filtered = computed(() => {
-    const { from, to } = this.range();
-    const term = this.searchTerm().trim().toLowerCase();
-    const estado = this.estado();
-    const ciudad = this.idCiudad();
-    const cine = this.idCine();
+    const f = this.filtros();
+    const periodo = f.periodo;
+    let fromTs = -Infinity;
+    let toTs = Infinity;
+    if (periodo) {
+      const now = Date.now();
+      switch (periodo.preset) {
+        case '7d':
+          fromTs = now - 7 * 86_400_000;
+          toTs = now;
+          break;
+        case '30d':
+          fromTs = now - 30 * 86_400_000;
+          toTs = now;
+          break;
+        case 'mes': {
+          const d = new Date();
+          fromTs = new Date(d.getFullYear(), d.getMonth(), 1).getTime();
+          toTs = now;
+          break;
+        }
+        case 'custom':
+          fromTs = periodo.from ? new Date(periodo.from).getTime() : -Infinity;
+          toTs = periodo.to ? new Date(periodo.to + 'T23:59:59').getTime() : Infinity;
+          break;
+      }
+    }
+
+    const term = (f.search || '').toLowerCase().trim();
+    const cine = f.selects['cine'] ?? null;
+    const ciudad = f.selects['ciudad'] ?? null;
+    const pelicula = f.selects['pelicula'] ?? null;
+    const estado = f.selects['estado-reserva'] ?? null;
+
     const cinesOfCiudad = ciudad
       ? new Set(this.cines().filter((c) => c.id_ciudad === ciudad).map((c) => c.id))
       : null;
 
     return this.reservas().filter((r) => {
       const ts = new Date(r.created_at).getTime();
-      if (ts < from || ts > to) return false;
+      if (ts < fromTs || ts > toTs) return false;
       if (estado && r.estado !== estado) return false;
       if (term) {
         const u = this.usuariosById().get(r.id_usuario);
@@ -369,11 +292,12 @@ export class AdminReporteReservasComponent {
           (u && u.nombre.toLowerCase().includes(term));
         if (!hit) return false;
       }
-      if (cinesOfCiudad || cine) {
-        const f = this.funcionesById().get(r.id_funcion);
-        if (!f) return false;
-        if (cinesOfCiudad && !cinesOfCiudad.has(f.id_cine)) return false;
-        if (cine && f.id_cine !== cine) return false;
+      if (cinesOfCiudad || cine || pelicula) {
+        const fun = this.funcionesById().get(r.id_funcion);
+        if (!fun) return false;
+        if (cinesOfCiudad && !cinesOfCiudad.has(fun.id_cine)) return false;
+        if (cine && fun.id_cine !== cine) return false;
+        if (pelicula && fun.id_pelicula !== pelicula) return false;
       }
       return true;
     });
@@ -429,25 +353,11 @@ export class AdminReporteReservasComponent {
     });
   }
 
-  setPreset(p: Preset) {
-    this.preset.set(p);
+  onFiltrosChange(v: ReportFiltrosValue) {
+    this.filtros.set(v);
     this.page.set(1);
   }
-  onCustomChange() { this.page.set(1); }
-  onSearchChange(v: string) { this.searchTerm.set(v); this.page.set(1); }
-  onEstadoChange(e: Event) {
-    this.estado.set((e.target as HTMLSelectElement).value);
-    this.page.set(1);
-  }
-  onCiudadChange(e: Event) {
-    this.idCiudad.set((e.target as HTMLSelectElement).value);
-    this.idCine.set('');
-    this.page.set(1);
-  }
-  onCineChange(e: Event) {
-    this.idCine.set((e.target as HTMLSelectElement).value);
-    this.page.set(1);
-  }
+
   onPageSizeChange(s: number) { this.pageSize.set(s); this.page.set(1); }
 
   usuarioNombre(id: string): string {
@@ -477,6 +387,7 @@ export class AdminReporteReservasComponent {
       case 'pendiente_pago': return 'Pendiente';
       case 'cancelada': return 'Cancelada';
       case 'reembolsada': return 'Reembolsada';
+      case 'expirada': return 'Expirada';
     }
   }
 }

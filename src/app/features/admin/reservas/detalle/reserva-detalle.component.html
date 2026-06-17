@@ -1,0 +1,285 @@
+<div class="admin-body">
+  <app-admin-sidebar />
+  <main class="admin-main">
+    @if (notFound()) {
+      <div class="shell">
+        <div class="not-found">
+          <span class="not-found-mark">
+            <svg lucideCircleAlert [size]="22"></svg>
+          </span>
+          <h2>Reserva no encontrada</h2>
+          <p>La reserva solicitada no existe o fue eliminada.</p>
+          <a routerLink="/admin/reservas" class="back-btn">
+            <svg lucideArrowLeft [size]="14"></svg>
+            Volver a reservas
+          </a>
+        </div>
+      </div>
+    } @else {
+      @if (reserva(); as r) {
+      <div class="shell">
+        <div class="crumb">
+          <a routerLink="/admin">Admin</a>
+          <span aria-hidden="true">·</span>
+          <a routerLink="/admin/reservas">Reservas</a>
+          <span aria-hidden="true">·</span>
+          <span class="crumb-current">{{ r.numero_reserva }}</span>
+        </div>
+
+        <div class="detail-head">
+          <button type="button" class="ghost-back" (click)="back()" aria-label="Atrás">
+            <svg lucideArrowLeft [size]="16"></svg>
+          </button>
+          <div>
+            <div class="num-label">RESERVA</div>
+            <h1 class="num">{{ r.numero_reserva }}</h1>
+          </div>
+          <span class="badge-state" [class]="'badge-state ' + r.estado">
+            <span class="glyph" aria-hidden="true"></span>
+            {{ estadoLabel(r.estado) }}
+          </span>
+        </div>
+
+        <div class="detail-grid">
+          <!-- LEFT: timeline -->
+          <section class="panel timeline-panel">
+            <header class="panel-h">
+              <span class="panel-title">Línea de tiempo</span>
+              <span class="panel-sub">Actualizada {{ r.updated_at | date: 'd MMM HH:mm' }}</span>
+            </header>
+
+            <ol class="timeline">
+              @for (ev of timeline(); track ev.kind + ev.at; let i = $index) {
+                <li class="tl-item" [class]="'tl-item ' + ev.kind">
+                  <span class="tl-node" aria-hidden="true">
+                    @switch (ev.kind) {
+                      @case ('created') { <svg lucideTicket [size]="13"></svg> }
+                      @case ('blocked') { <svg lucideArmchair [size]="13"></svg> }
+                      @case ('paid')    { <svg lucideCheckCircle2 [size]="13"></svg> }
+                      @case ('cancelled') { <svg lucideBan [size]="13"></svg> }
+                      @case ('refunded')  { <svg lucideReceipt [size]="13"></svg> }
+                      @case ('expired')   { <svg lucideCircleAlert [size]="13"></svg> }
+                    }
+                  </span>
+                  <div class="tl-body">
+                    <div class="tl-title">{{ ev.title }}</div>
+                    <div class="tl-detail">{{ ev.detail }}</div>
+                    <div class="tl-time">{{ ev.at | date: 'd MMM y · HH:mm' }}</div>
+                  </div>
+                </li>
+              }
+              @for (ev of futurosHitos(); track ev.kind) {
+                <li class="tl-item future">
+                  <span class="tl-node future" aria-hidden="true"></span>
+                  <div class="tl-body">
+                    <div class="tl-title future">{{ ev.title }}</div>
+                    <div class="tl-detail future">Pendiente</div>
+                  </div>
+                </li>
+              }
+            </ol>
+
+            @if (r.notas_internas) {
+              <div class="note">
+                <span class="note-label">NOTA INTERNA</span>
+                <p>{{ r.notas_internas }}</p>
+              </div>
+            }
+          </section>
+
+          <!-- RIGHT: stacked cards -->
+          <div class="side-stack">
+            <section class="panel">
+              <header class="panel-h">
+                <span class="panel-title">
+                  <svg lucideUser [size]="14"></svg>
+                  Cliente
+                </span>
+              </header>
+              <div class="panel-body">
+                <div class="cli-name">{{ cliente()?.nombre ?? '—' }}</div>
+                <div class="cli-email">{{ cliente()?.email }}</div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <header class="panel-h">
+                <span class="panel-title">
+                  <svg lucideFilm [size]="14"></svg>
+                  Función
+                </span>
+              </header>
+              <div class="panel-body">
+                <div class="fn-title">{{ pelicula()?.titulo ?? '—' }}</div>
+                <div class="fn-meta">
+                  {{ cine()?.nombre }} · Sala {{ salaNombre() }}
+                </div>
+                <div class="fn-when">
+                  {{ funcion()?.fecha_inicio | date: 'EEE d MMM · HH:mm' }}
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <header class="panel-h">
+                <span class="panel-title">
+                  <svg lucideArmchair [size]="14"></svg>
+                  Asientos
+                </span>
+                <span class="panel-sub tnum">{{ r.num_asientos }}</span>
+              </header>
+              <div class="panel-body">
+                <div class="seat-grid">
+                  @for (s of r.asientos_codigos ?? []; track s) {
+                    <span class="seat-chip">{{ s }}</span>
+                  }
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <header class="panel-h">
+                <span class="panel-title">
+                  <svg lucideCreditCard [size]="14"></svg>
+                  Pago
+                </span>
+                @if (pago(); as p) {
+                  <span class="panel-sub tnum">Q{{ p.monto_final | number }}</span>
+                }
+              </header>
+              <div class="panel-body">
+                @if (pago(); as p) {
+                  <div class="pay-line">
+                    <span class="pay-label">Método</span>
+                    <span class="pay-val">
+                      @if (p.metodo === 'tarjeta') {
+                        {{ brandLabel(p.tarjeta_brand) }} <span class="tnum">{{ p.tarjeta_mask }}</span>
+                      } @else {
+                        Efectivo en taquilla
+                      }
+                    </span>
+                  </div>
+                  @if (p.referencia_externa) {
+                    <div class="pay-line">
+                      <span class="pay-label">Ref.</span>
+                      <span class="pay-val tnum">{{ p.referencia_externa }}</span>
+                    </div>
+                  }
+                  @if (p.monto_descuento > 0) {
+                    <div class="pay-line discount">
+                      <span class="pay-label">Cupón {{ r.cupon_codigo }}</span>
+                      <span class="pay-val tnum">−Q{{ p.monto_descuento | number }}</span>
+                    </div>
+                  }
+                  <div class="pay-line strong">
+                    <span class="pay-label">Total cobrado</span>
+                    <span class="pay-val tnum">Q{{ p.monto_final | number }}</span>
+                  </div>
+                } @else {
+                  <div class="pay-empty">Sin pago registrado.</div>
+                }
+              </div>
+            </section>
+          </div>
+        </div>
+
+        @if (cancelOpen()) {
+          <section class="cancel-panel">
+            <header>
+              <h3>Cancelar reserva {{ r.numero_reserva }}</h3>
+              <button type="button" class="link" (click)="closeCancel()">Cerrar</button>
+            </header>
+
+            <div class="cancel-body">
+              <label class="field">
+                <span>Motivo</span>
+                <select [(ngModel)]="motivo" name="motivo">
+                  @for (m of motivos; track m.id) {
+                    <option [ngValue]="m.id">{{ m.label }}</option>
+                  }
+                </select>
+              </label>
+
+              <div class="refund-card">
+                <div class="rf-row">
+                  <span>Monto pagado</span>
+                  <span class="tnum">Q{{ r.monto_total | number }}</span>
+                </div>
+                <div class="rf-row">
+                  <span>% según política</span>
+                  <span class="tnum">{{ cancelPercent() }}%</span>
+                </div>
+                <div class="rf-row total">
+                  <span>Reembolso</span>
+                  <span class="tnum">Q{{ cancelMonto() | number }}</span>
+                </div>
+              </div>
+
+              <p class="warn">
+                Esta acción no se puede deshacer. El cliente recibirá una notificación por email.
+              </p>
+
+              <div class="cancel-actions">
+                <button type="button" class="btn-ghost" (click)="closeCancel()">No cancelar</button>
+                <button type="button" class="btn-danger" (click)="confirmCancel()">
+                  Cancelar y reembolsar Q{{ cancelMonto() | number }}
+                </button>
+              </div>
+            </div>
+          </section>
+        }
+
+        <!-- spacer for sticky bar -->
+        <div class="stuck-spacer" aria-hidden="true"></div>
+      </div>
+
+      <!-- sticky action bar -->
+      @if (canSendTicket() || canMarkAttendance() || canCancel() || canResendRefund()) {
+        <aside class="action-bar">
+          <div class="action-bar-inner">
+            <div class="ab-summary">
+              <span class="ab-num tnum">{{ r.numero_reserva }}</span>
+              <span class="ab-sub">{{ cliente()?.nombre }} · Q{{ r.monto_total | number }}</span>
+            </div>
+            <div class="ab-actions">
+              @if (canSendTicket()) {
+                <button type="button" class="btn" (click)="reenviar()">
+                  <svg lucideMail [size]="14"></svg>
+                  Reenviar boleto
+                </button>
+              }
+              @if (canMarkAttendance()) {
+                <button type="button" class="btn" (click)="marcarAsistencia()">
+                  <svg lucideCheckCircle2 [size]="14"></svg>
+                  Marcar asistencia
+                </button>
+              }
+              @if (canResendRefund()) {
+                <button type="button" class="btn" (click)="reenviarReembolso()">
+                  <svg lucideReceipt [size]="14"></svg>
+                  Reenviar comprobante
+                </button>
+              }
+              @if (canCancel() && !cancelOpen()) {
+                <button type="button" class="btn btn-primary-danger" (click)="openCancel()">
+                  <svg lucideBan [size]="14"></svg>
+                  Cancelar reserva
+                </button>
+              }
+            </div>
+          </div>
+        </aside>
+      }
+      }
+    }
+  </main>
+</div>
+
+@if (toastMsg(); as msg) {
+  <div class="toast-stack">
+    <div class="toast">
+      <span class="t-dot" aria-hidden="true"></span>
+      <span>{{ msg }}</span>
+    </div>
+  </div>
+}

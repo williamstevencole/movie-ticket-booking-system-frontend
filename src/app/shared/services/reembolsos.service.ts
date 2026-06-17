@@ -5,6 +5,7 @@ export type EstadoReembolso = 'pendiente' | 'procesado' | 'rechazado';
 export type Reembolso = {
   id: string;
   id_pago: string;
+  id_politica: string | null;
   porcentaje_aplicado: number;
   monto: number;
   estado: EstadoReembolso;

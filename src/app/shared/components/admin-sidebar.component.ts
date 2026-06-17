@@ -8,6 +8,7 @@ import {
   LucideClapperboard,
   LucideFilm,
   LucideTags,
+  LucideLanguages,
   LucideBuilding2,
   LucideArmchair,
   LucideSofa,
@@ -162,7 +163,8 @@ export class AdminSidebarComponent {
           icon: LucideFilm,
           routerLink: '/admin/peliculas',
         },
-        { label: 'Géneros & idiomas', icon: LucideTags },
+        { label: 'Géneros', icon: LucideTags, routerLink: '/admin/generos' },
+        { label: 'Idiomas', icon: LucideLanguages, routerLink: '/admin/idiomas' },
       ],
     },
     {
@@ -186,8 +188,17 @@ export class AdminSidebarComponent {
     {
       title: 'Comercial',
       links: [
-        { label: 'Reservas', icon: LucideTicket, count: 487 },
-        { label: 'Pagos', icon: LucideCreditCard },
+        {
+          label: 'Reservas',
+          icon: LucideTicket,
+          count: 487,
+          routerLink: '/admin/reservas',
+        },
+        {
+          label: 'Pagos',
+          icon: LucideCreditCard,
+          routerLink: '/admin/pagos',
+        },
         { label: 'Cupones', icon: LucideGift, count: 6 },
         { label: 'Políticas cancelación', icon: LucideClipboardList },
         {
@@ -207,9 +218,9 @@ export class AdminSidebarComponent {
           routerLink: '/admin/reportes/reservas',
         },
         {
-          label: 'Pagos y reembolsos',
-          icon: LucideCreditCard,
-          routerLink: '/admin/reportes/pagos-reembolsos',
+          label: 'Estadísticas de cancelación',
+          icon: LucideChartColumn,
+          routerLink: '/admin/reportes/estadisticas-cancelacion',
         },
       ],
     },
@@ -217,7 +228,7 @@ export class AdminSidebarComponent {
       title: 'Sistema',
       links: [
         { label: 'Usuarios & roles', icon: LucideUsers },
-        { label: 'Bitácora', icon: LucideNotebookText },
+        { label: 'Bitácora', icon: LucideNotebookText, routerLink: '/admin/bitacora' },
       ],
     },
   ];

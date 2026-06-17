@@ -140,6 +140,21 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/admin/cines/listado/cines.component').then(
         (m) => m.AdminCinesComponent,
+     ),
+  },
+    path: 'admin/generos',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/generos/generos.component').then(
+        (m) => m.AdminGenerosComponent,
+      ),
+  },
+  {
+    path: 'admin/idiomas',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/idiomas/idiomas.component').then(
+        (m) => m.AdminIdiomasComponent,
       ),
   },
   {
@@ -199,6 +214,39 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/reservas',
+    pathMatch: 'full',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import(
+        './features/admin/reservas/listado/reservas-listado.component'
+      ).then((m) => m.AdminReservasListadoComponent),
+  },
+  {
+    path: 'admin/reservas/:id',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import(
+        './features/admin/reservas/detalle/reserva-detalle.component'
+      ).then((m) => m.AdminReservaDetalleComponent),
+  },
+  {
+    path: 'admin/pagos',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import(
+        './features/admin/pagos/pagos-listado.component'
+      ).then((m) => m.AdminPagosListadoComponent),
+  },
+  {
+    path: 'admin/bitacora',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadChildren: () =>
+      import('./features/admin/bitacora/bitacora.routes').then(
+        (m) => m.BITACORA_ROUTES,
+      ),
+  },
+  {
     path: 'admin/reportes',
     pathMatch: 'full',
     redirectTo: 'admin/reportes/reservas',
@@ -212,12 +260,17 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'admin/reportes/pagos-reembolsos',
+    path: 'admin/reportes/estadisticas-cancelacion',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
       import(
-        './features/admin/reportes/pagos-reembolsos/pagos-reembolsos.component'
-      ).then((m) => m.AdminReportePagosReembolsosComponent),
+        './features/admin/reportes/estadisticas-cancelacion/estadisticas-cancelacion.component'
+      ).then((m) => m.AdminReporteEstadisticasCancelacionComponent),
+  },
+  {
+    path: 'admin/reportes/pagos-reembolsos',
+    redirectTo: 'admin/pagos',
+    pathMatch: 'full',
   },
   { path: '**', redirectTo: '' },
 ];

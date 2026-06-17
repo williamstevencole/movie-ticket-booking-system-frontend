@@ -1,0 +1,167 @@
+<div class="admin-body">
+  <app-admin-sidebar />
+  <main class="admin-main">
+    <div class="shell">
+      <div class="crumb">
+        <a routerLink="/admin">Admin</a>
+        <span aria-hidden="true">·</span>
+        <span class="crumb-current">Pagos</span>
+      </div>
+
+      <div class="head-row">
+        <h1>Pagos</h1>
+        <span class="counters">
+          <span>{{ filtered().length }} transacciones</span>
+        </span>
+      </div>
+
+      <section class="kpi-grid">
+        <div class="kpi">
+          <span class="kpi-label">Transacciones</span>
+          <span class="kpi-value tnum">{{ filtered().length | number }}</span>
+          <span class="kpi-sub">{{ kpis().exitosos }} exitosas</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">Cobrado</span>
+          <span class="kpi-value tnum">Q{{ kpis().cobrado | number }}</span>
+          <span class="kpi-sub">Pagos exitosos</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label">Descuentos</span>
+          <span class="kpi-value tnum">Q{{ kpis().descuentos | number }}</span>
+          <span class="kpi-sub">Cupones aplicados</span>
+        </div>
+        <div class="kpi refund">
+          <span class="kpi-label">Reembolsado</span>
+          <span class="kpi-value tnum">Q{{ kpis().reembolsado | number }}</span>
+          <span class="kpi-sub">{{ filteredReembolsos().length }} reembolsos</span>
+        </div>
+        <div class="kpi neto">
+          <span class="kpi-label">Neto</span>
+          <span class="kpi-value tnum">Q{{ kpis().neto | number }}</span>
+          <span class="kpi-sub">Cobrado − reembolsado</span>
+        </div>
+      </section>
+
+      <div class="head-row">
+        <div></div>
+        <app-export-button
+          filename="pagos"
+          [columns]="exportColumns"
+          [rows]="filtered()"
+        />
+      </div>
+
+      <app-report-filtros
+        [config]="{
+          periodo: true,
+          search: { placeholder: '# pago o # reserva…' },
+          selects: ['cine', 'estado-pago', 'metodo-pago']
+        }"
+        [value]="filtros()"
+        (valueChange)="onFiltrosChange($event)"
+      />
+
+      <section class="card">
+        @if (paged().length === 0) {
+          <div class="empty">
+            <span class="empty-mark">
+              <svg lucideCreditCard [size]="22"></svg>
+            </span>
+            <h3>Sin pagos para los filtros aplicados</h3>
+            <p>Ajusta búsqueda, rango de fecha o limpia los filtros.</p>
+          </div>
+        } @else {
+          <div class="table-scroll">
+            <table class="tbl-ops">
+              <thead>
+                <tr>
+                  <th>Referencia</th>
+                  <th>Reserva</th>
+                  <th>Cliente</th>
+                  <th>Método</th>
+                  <th class="right col-hide-sm">Original</th>
+                  <th class="right col-hide-sm">Descuento</th>
+                  <th class="right">Final</th>
+                  <th>Estado</th>
+                  <th class="col-hide-sm">Fecha</th>
+                  <th aria-label="Abrir"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of paged(); track p.id) {
+                  <tr (click)="openReserva(p.id_reserva)">
+                    <td>
+                      @if (p.metodo === 'tarjeta') {
+                        <div class="col-num">{{ p.referencia_externa }}</div>
+                        <div class="col-sub">
+                          {{ brandLabel(p.tarjeta_brand) }} {{ p.tarjeta_mask }}
+                        </div>
+                      } @else {
+                        <div class="col-num">EFEC-{{ p.id }}</div>
+                        <div class="col-sub">Pago en taquilla</div>
+                      }
+                    </td>
+                    <td>
+                      <div class="col-num">{{ reservaNumero(p.id_reserva) }}</div>
+                      <div class="col-sub">{{ cineNombrePorPago(p) }}</div>
+                    </td>
+                    <td>
+                      <div class="col-strong">{{ clienteNombre(p.id_reserva) }}</div>
+                      <div class="col-sub">{{ clienteEmail(p.id_reserva) }}</div>
+                    </td>
+                    <td>
+                      <span class="metodo">
+                        @if (p.metodo === 'tarjeta') {
+                          <svg lucideCreditCard [size]="13"></svg> Tarjeta
+                        } @else {
+                          <svg lucideBanknote [size]="13"></svg> Efectivo
+                        }
+                      </span>
+                    </td>
+                    <td class="right col-hide-sm tnum">Q{{ p.monto_original | number }}</td>
+                    <td class="right col-hide-sm tnum">
+                      @if (p.monto_descuento > 0) {
+                        <span class="discount">−Q{{ p.monto_descuento | number }}</span>
+                      } @else {
+                        <span class="col-sub">—</span>
+                      }
+                    </td>
+                    <td class="right col-num">Q{{ p.monto_final | number }}</td>
+                    <td>
+                      <span class="badge-state" [class]="'badge-state ' + p.estado">
+                        <span class="glyph" aria-hidden="true"></span>
+                        {{ estadoLabel(p.estado) }}
+                      </span>
+                    </td>
+                    <td class="col-hide-sm col-sub tnum">
+                      {{ p.created_at | date: 'd MMM HH:mm' }}
+                    </td>
+                    <td (click)="$event.stopPropagation()">
+                      <a
+                        class="link-row"
+                        [routerLink]="['/admin/reservas', p.id_reserva]"
+                        title="Abrir reserva"
+                      >
+                        <svg lucideArrowUpRight [size]="14"></svg>
+                      </a>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card-foot">
+            <app-pager
+              [value]="{ page: page(), pageSize: pageSize(), total: filtered().length }"
+              (pageChange)="page.set($event)"
+              (pageSizeChange)="onPageSizeChange($event)"
+            />
+          </div>
+        }
+      </section>
+
+    </div>
+  </main>
+</div>

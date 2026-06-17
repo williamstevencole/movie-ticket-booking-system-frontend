@@ -16,12 +16,11 @@ export const appConfig: ApplicationConfig = {
       routes,
       withComponentInputBinding(),
       withInMemoryScrolling({
-        scrollPositionRestoration: 'top',
-        anchorScrolling: 'enabled',
+        scrollPositionRestoration: 'disabled',
+        anchorScrolling: 'disabled',
       }),
     ),
     provideHttpClient(withInterceptors([authInterceptor])),
-    // services de datos: mock o HTTP real según USE_MOCKS en core/config/env.ts
     ...dataProviders,
   ],
 };

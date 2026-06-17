@@ -8,4 +8,7 @@ export class MockPagosService extends PagosService {
   override list(): Observable<Pago[]> {
     return of([...MOCK_PAGOS]);
   }
+  override getByReserva(idReserva: string): Observable<Pago | undefined> {
+    return of(MOCK_PAGOS.find((p) => p.id_reserva === idReserva));
+  }
 }

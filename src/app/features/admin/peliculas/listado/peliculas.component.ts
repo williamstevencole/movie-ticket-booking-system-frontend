@@ -34,7 +34,7 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
 import { PagerComponent } from '../../../../shared/components/pager.component';
 
 type Toast = { kind: 'ok' | 'err'; text: string } | null;
-type EstadoFiltro = 'todas' | 'activa' | 'inactiva';
+type EstadoFiltro = 'todas' | 'activa' | 'inactiva' | 'proximos';
 
 @Component({
   selector: 'app-admin-peliculas',
@@ -107,6 +107,12 @@ type EstadoFiltro = 'todas' | 'activa' | 'inactiva';
                 (click)="setEstado('inactiva')"
                 role="tab"
               >Inactivas</button>
+              <button
+                class="filter-chip"
+                [class.on]="estadoFiltro() === 'proximos'"
+                (click)="setEstado('proximos')"
+                role="tab"
+              >Próximos</button>
             </div>
 
             <select class="select-filter" [value]="idCiudad()" (change)="onCiudadChange($event)">
@@ -311,7 +317,15 @@ export class AdminPeliculasComponent {
     const estado = this.estadoFiltro();
     const enCine = this.peliculasEnCine();
     return this.peliculas().filter((p) => {
-      if (estado !== 'todas' && p.estado !== estado) return false;
+      if (estado === 'proximos') {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const [y, m, d] = p.fecha_estreno.split('-').map(Number);
+        const estreno = new Date(y!, (m ?? 1) - 1, d ?? 1);
+        if (!(estreno > today)) return false;
+      } else if (estado !== 'todas' && p.estado !== estado) {
+        return false;
+      }
       if (t && !p.titulo.toLowerCase().includes(t)) return false;
       if (enCine && !enCine.has(p.id)) return false;
       return true;

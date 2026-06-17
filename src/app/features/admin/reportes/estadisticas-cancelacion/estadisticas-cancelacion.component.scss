@@ -1,0 +1,83 @@
+.panel {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-sm);
+  padding: var(--s5);
+  margin-top: var(--s5);
+}
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  margin-bottom: var(--s4);
+}
+.panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.panel-sub {
+  font-size: 12px;
+}
+.muted {
+  color: var(--text-3);
+}
+
+.tbl.dense {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th, td {
+    padding: var(--s2) var(--s3);
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    font-weight: 600;
+    color: var(--text-2);
+    background: var(--bg-soft);
+  }
+  td.right, th.right { text-align: right; }
+  .cell-strong { font-weight: 600; color: var(--text); }
+  tfoot td {
+    border-top: 2px solid var(--line);
+    border-bottom: none;
+    font-weight: 600;
+    color: var(--text);
+    padding-top: var(--s3);
+  }
+  tfoot td.label { text-align: right; }
+}
+
+.trend-chart {
+  width: 100%;
+  max-width: 720px;
+  height: auto;
+  .bar { fill: #c8202b; opacity: .85; }
+  .bar:hover { opacity: 1; }
+  .bar-label { font-size: 11px; fill: #666; }
+  .bar-count { font-size: 11px; fill: #222; font-weight: 600; }
+}
+
+.empty-state {
+  padding: 40px;
+  text-align: center;
+  color: #666;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-top: var(--s5);
+  p { margin: 0; }
+  p + p { margin-top: var(--s2); }
+}
+
+.empty {
+  padding: var(--s5);
+  text-align: center;
+  color: var(--text-3);
+  font-size: 13px;
+}

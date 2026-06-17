@@ -11,7 +11,17 @@ function dummyRef(seed: string): string {
   return 'TX' + String(100000 + h).slice(0, 6);
 }
 
-const cards = ['4242', '5555', '3782', '6011', '1234', '9876', '4400', '5500'];
+type CardSeed = { last: string; brand: 'visa' | 'master' | 'amex' | 'discover' };
+const cards: CardSeed[] = [
+  { last: '4242', brand: 'visa' },
+  { last: '5555', brand: 'master' },
+  { last: '3782', brand: 'amex' },
+  { last: '6011', brand: 'discover' },
+  { last: '1234', brand: 'visa' },
+  { last: '9876', brand: 'master' },
+  { last: '4400', brand: 'visa' },
+  { last: '5500', brand: 'master' },
+];
 
 export const MOCK_PAGOS: Pago[] = MOCK_RESERVAS
   .filter((r) => r.estado !== 'pendiente_pago')
@@ -35,7 +45,8 @@ export const MOCK_PAGOS: Pago[] = MOCK_RESERVAS
       metodo,
       estado,
       referencia_externa: metodo === 'tarjeta' ? dummyRef(r.id) : null,
-      tarjeta_mask: metodo === 'tarjeta' ? `****${card}` : null,
+      tarjeta_mask: metodo === 'tarjeta' ? `****${card.last}` : null,
+      tarjeta_brand: metodo === 'tarjeta' ? card.brand : undefined,
       created_at: r.created_at,
     };
   });

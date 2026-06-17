@@ -4,7 +4,8 @@ export type EstadoReserva =
   | 'pendiente_pago'
   | 'pagada'
   | 'cancelada'
-  | 'reembolsada';
+  | 'reembolsada'
+  | 'expirada';
 
 export type Reserva = {
   id: string;
@@ -16,6 +17,10 @@ export type Reserva = {
   monto_total: number;
   created_at: string;
   updated_at: string;
+  expira_en?: string;
+  asientos_codigos?: string[];
+  cupon_codigo?: string;
+  notas_internas?: string;
 };
 
 export type ReservaUsuario = {
@@ -27,4 +32,6 @@ export type ReservaUsuario = {
 export abstract class ReservasService {
   abstract list(): Observable<Reserva[]>;
   abstract listUsuarios(): Observable<ReservaUsuario[]>;
+  abstract getById(id: string): Observable<Reserva | undefined>;
+  abstract getUsuario(id: string): Observable<ReservaUsuario | undefined>;
 }
