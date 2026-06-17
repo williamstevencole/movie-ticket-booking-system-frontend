@@ -140,8 +140,17 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/admin/cines/listado/cines.component').then(
         (m) => m.AdminCinesComponent,
-     ),
+      ),
   },
+  {
+    path: 'admin/cines/crear',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/cines/crear/cine-form.component').then(
+        (m) => m.AdminCineFormComponent,
+      ),
+  },
+  {
     path: 'admin/generos',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
