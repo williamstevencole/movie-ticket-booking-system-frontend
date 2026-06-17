@@ -184,6 +184,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/salas/:cineId/:salaId/distribucion',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/salas/distribucion/distribucion.component').then(
+        (m) => m.AdminSalaDistribucionComponent,
+      ),
+  },
+  {
     path: 'admin/generos',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
