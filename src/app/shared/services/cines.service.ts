@@ -30,7 +30,17 @@ export type ListCinesQuery = {
   id_ciudad?: number | string;
 };
 
+export type CrearCineInput = {
+  nombre: string;
+  id_ciudad: string;
+  direccion: string | null;
+};
+
+export type EditarCineInput = Partial<CrearCineInput>;
+
 export abstract class CinesService {
   abstract list(query?: ListCinesQuery): Observable<CinesPage>;
   abstract getById(id: string): Observable<Cine>;
+  abstract create(input: CrearCineInput): Observable<Cine>;
+  abstract update(id: string, input: EditarCineInput): Observable<Cine>;
 }
