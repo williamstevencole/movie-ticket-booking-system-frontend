@@ -210,7 +210,11 @@ export class AdminSidebarComponent {
           count: 6,
           routerLink: '/admin/cupones',
         },
-        { label: 'Políticas cancelación', icon: LucideClipboardList },
+        {
+          label: 'Políticas cancelación',
+          icon: LucideClipboardList,
+          routerLink: '/admin/politicas',
+        },
         {
           label: 'Reembolsos',
           icon: LucideUndo2,
