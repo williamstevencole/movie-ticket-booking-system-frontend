@@ -1,4 +1,12 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -45,10 +53,31 @@ import { LocationService } from '../../shared/services/location.service';
         <span class="dot" [class.on]="selectedCityId() !== null" aria-hidden="true"></span>
       </div>
 
-      <button class="signout" (click)="logout()" type="button" [attr.aria-label]="'Cerrar sesión'">
-        <svg lucideLogOut [size]="16"></svg>
-        <span>Cerrar sesión</span>
-      </button>
+      <div class="user-menu">
+        <button
+          class="avatar-btn"
+          type="button"
+          (click)="toggleMenu($event)"
+          [attr.aria-expanded]="menuOpen()"
+          aria-haspopup="menu"
+          [title]="firstName() ?? 'Mi cuenta'"
+        >
+          <span class="avatar">{{ initials() }}</span>
+        </button>
+
+        @if (menuOpen()) {
+          <div class="menu" role="menu">
+            <div class="menu-head">
+              <div class="menu-name">{{ userName() }}</div>
+              <div class="menu-email">{{ userEmail() }}</div>
+            </div>
+            <button class="menu-logout" type="button" (click)="logout()" role="menuitem">
+              <svg lucideLogOut [size]="16"></svg>
+              <span>Cerrar sesión</span>
+            </button>
+          </div>
+        }
+      </div>
     </header>
 
     <!-- HERO ─ pregunta ─ -->
@@ -248,6 +277,9 @@ export class LocationSelectorComponent implements OnInit {
   private locationSvc = inject(LocationService);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private host = inject(ElementRef<HTMLElement>);
+
+  readonly menuOpen = signal(false);
 
   readonly loadingCities = signal(true);
   readonly errorCities = signal<string | null>(null);
@@ -374,6 +406,42 @@ export class LocationSelectorComponent implements OnInit {
     return first || null;
   }
 
+  initials(): string {
+    const name = this.auth.user()?.nombre ?? '?';
+    return name
+      .split(' ')
+      .filter((p) => p.length > 0)
+      .slice(0, 2)
+      .map((p) => p[0]!.toUpperCase())
+      .join('');
+  }
+
+  userName(): string {
+    return this.auth.user()?.nombre ?? '';
+  }
+
+  userEmail(): string {
+    return this.auth.user()?.email ?? '';
+  }
+
+  toggleMenu(ev: Event): void {
+    ev.stopPropagation();
+    this.menuOpen.update((v) => !v);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocClick(ev: MouseEvent): void {
+    if (!this.menuOpen()) return;
+    const target = ev.target as Node | null;
+    if (target && this.host.nativeElement.contains(target)) return;
+    this.menuOpen.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEsc(): void {
+    if (this.menuOpen()) this.menuOpen.set(false);
+  }
+
   todayLabel(): string {
     return new Date().toLocaleDateString('es-HN', {
       weekday: 'short',
@@ -383,6 +451,7 @@ export class LocationSelectorComponent implements OnInit {
   }
 
   logout(): void {
+    this.menuOpen.set(false);
     this.auth.logoutRemote().subscribe({
       next: () => this.finishLogout(),
       error: () => this.finishLogout(),
