@@ -314,6 +314,14 @@ export const routes: Routes = [
       ).then((m) => m.AdminPagosListadoComponent),
   },
   {
+    path: 'admin/clientes',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/clientes/listado/clientes.component').then(
+        (m) => m.AdminClientesComponent,
+      ),
+  },
+  {
     path: 'admin/bitacora',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadChildren: () =>

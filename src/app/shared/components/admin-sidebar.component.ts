@@ -20,6 +20,7 @@ import {
   LucideUndo2,
   LucideChartColumn,
   LucideUsers,
+  LucideUserRound,
   LucideNotebookText,
   LucideLogOut,
   type LucideIconInput,
@@ -236,6 +237,7 @@ export class AdminSidebarComponent {
     {
       title: 'Sistema',
       links: [
+        { label: 'Clientes', icon: LucideUserRound, routerLink: '/admin/clientes' },
         { label: 'Usuarios & roles', icon: LucideUsers },
         { label: 'Bitácora', icon: LucideNotebookText, routerLink: '/admin/bitacora' },
       ],
