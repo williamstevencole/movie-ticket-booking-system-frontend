@@ -192,6 +192,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/tipos-asiento',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/tipos-asiento/tipos-asiento.component').then(
+        (m) => m.AdminTiposAsientoComponent,
+      ),
+  },
+  {
     path: 'admin/cupones',
     pathMatch: 'full',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],

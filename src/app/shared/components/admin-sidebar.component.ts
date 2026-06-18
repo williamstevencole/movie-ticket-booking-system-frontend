@@ -181,7 +181,11 @@ export class AdminSidebarComponent {
           routerLink: '/admin/cines',
         },
         { label: 'Salas', icon: LucideArmchair, routerLink: '/admin/salas' },
-        { label: 'Tipos de asiento', icon: LucideSofa },
+        {
+          label: 'Tipos de asiento',
+          icon: LucideSofa,
+          routerLink: '/admin/tipos-asiento',
+        },
         { label: 'Precios por cine', icon: LucideBanknote },
       ],
     },
