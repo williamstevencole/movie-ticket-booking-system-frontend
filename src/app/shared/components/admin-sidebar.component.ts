@@ -199,7 +199,12 @@ export class AdminSidebarComponent {
           icon: LucideCreditCard,
           routerLink: '/admin/pagos',
         },
-        { label: 'Cupones', icon: LucideGift, count: 6 },
+        {
+          label: 'Cupones',
+          icon: LucideGift,
+          count: 6,
+          routerLink: '/admin/cupones',
+        },
         { label: 'Políticas cancelación', icon: LucideClipboardList },
         {
           label: 'Reembolsos',

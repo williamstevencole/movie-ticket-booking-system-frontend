@@ -192,6 +192,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/cupones',
+    pathMatch: 'full',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/cupones/listado/cupones.component').then(
+        (m) => m.AdminCuponesComponent,
+      ),
+  },
+  {
     path: 'admin/generos',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
