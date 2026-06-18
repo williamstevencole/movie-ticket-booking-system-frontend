@@ -1,0 +1,140 @@
+<app-appbar [navItems]="nav" />
+
+<main class="wrap">
+  <header class="head">
+    <h1>Mis boletos</h1>
+    <p class="lead">Tus funciones, tus boletos, tu historial.</p>
+  </header>
+
+  <!-- Tabs -->
+  <nav class="tabs" role="tablist">
+    <button
+      class="tab"
+      role="tab"
+      [class.on]="tab() === 'proximos'"
+      (click)="setTab('proximos')"
+    >
+      Próximos <span class="count">{{ counts().proximos }}</span>
+    </button>
+    <button
+      class="tab"
+      role="tab"
+      [class.on]="tab() === 'pasados'"
+      (click)="setTab('pasados')"
+    >
+      Pasados <span class="count">{{ counts().pasados }}</span>
+    </button>
+    <button
+      class="tab"
+      role="tab"
+      [class.on]="tab() === 'cancelados'"
+      (click)="setTab('cancelados')"
+    >
+      Cancelados <span class="count">{{ counts().cancelados }}</span>
+    </button>
+  </nav>
+
+  @if (cargando()) {
+    <div class="loading">Cargando tus reservas…</div>
+  } @else if (filtered().length === 0) {
+    <section class="empty">
+      <div class="empty-card">
+        @switch (tab()) {
+          @case ('proximos') {
+            <span class="empty-icon"><svg lucideTicket [size]="32"></svg></span>
+            <h2>Aún no tenés boletos para próximas funciones</h2>
+            <p>Cuando compres una función, va a aparecer acá.</p>
+            <a routerLink="/" class="btn btn-primary">
+              <span>Ver cartelera</span>
+              <svg lucideArrowRight [size]="14"></svg>
+            </a>
+          }
+          @case ('pasados') {
+            <span class="empty-icon"><svg lucideRotateCcw [size]="32"></svg></span>
+            <h2>Aún no tenés historial de funciones</h2>
+            <p>Acá vas a ver las funciones a las que ya asististe.</p>
+          }
+          @case ('cancelados') {
+            <span class="empty-icon"><svg lucideCalendarX [size]="32"></svg></span>
+            <h2>No tenés reservas canceladas</h2>
+            <p>Tus reservas canceladas o reembolsadas aparecen acá.</p>
+          }
+        }
+      </div>
+    </section>
+  } @else {
+    <section class="tickets-grid">
+      @for (r of filtered(); track r.id) {
+        <article
+          class="ticket"
+          (click)="verDetalle(r)"
+          tabindex="0"
+          (keydown.enter)="verDetalle(r)"
+        >
+          <!-- Poster -->
+          <div class="ticket-poster">
+            @if (peliculaDe(r)?.poster_url; as url) {
+              <img [src]="url" [alt]="peliculaDe(r)?.titulo" loading="lazy" />
+            } @else {
+              <span class="poster-placeholder">
+                <svg lucideFilm [size]="22"></svg>
+              </span>
+            }
+          </div>
+
+          <!-- Body -->
+          <div class="ticket-body">
+            <h3 class="ticket-title">{{ peliculaDe(r)?.titulo ?? '—' }}</h3>
+            <p class="ticket-cine">
+              <svg lucideMapPin [size]="13"></svg>
+              <span>{{ cineDe(r)?.nombre ?? '—' }} · Sala {{ salaDe(r) }}</span>
+            </p>
+            <p class="ticket-date">{{ fechaFuncionTexto(r) }}</p>
+
+            <div class="ticket-meta">
+              <span class="meta-chip">
+                {{ r.num_asientos }} {{ r.num_asientos === 1 ? 'asiento' : 'asientos' }}
+              </span>
+              <span class="meta-chip">L {{ r.monto_total | number:'1.2-2' }}</span>
+              @if (tab() === 'proximos') {
+                <span
+                  class="meta-chip time"
+                  [class.urgent]="tiempoRestanteKind(r) === 'urgente'"
+                >
+                  <svg lucideClock [size]="12"></svg>
+                  {{ tiempoRestanteTexto(r) }}
+                </span>
+              } @else if (tab() === 'cancelados') {
+                <span class="meta-chip kind-{{ r.estado }}">{{ estadoLabel(r.estado) }}</span>
+              }
+            </div>
+          </div>
+
+          <!-- Mini QR placeholder (solo para reservas pagadas con función futura) -->
+          @if (showQr(r)) {
+            <div class="ticket-qr" aria-hidden="true">
+              <svg viewBox="0 0 36 36" width="48" height="48">
+                <rect width="36" height="36" fill="white" />
+                @for (cell of qrCells(r.numero_reserva); track $index) {
+                  <rect
+                    [attr.x]="cell.x"
+                    [attr.y]="cell.y"
+                    width="3"
+                    height="3"
+                    fill="black"
+                  />
+                }
+              </svg>
+            </div>
+          }
+
+          <div class="ticket-arrow" aria-hidden="true">
+            <svg lucideChevronRight [size]="18"></svg>
+          </div>
+        </article>
+      }
+    </section>
+  }
+</main>
+
+<app-footer />

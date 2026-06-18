@@ -71,6 +71,14 @@ export const routes: Routes = [
         (m) => m.MisBoletosComponent,
       ),
   },
+  {
+    path: 'mis-boletos/:numero',
+    canActivate: [authGuard, locationGuard],
+    loadComponent: () =>
+      import('./features/boletos/detalle/reserva-detalle-cliente.component').then(
+        (m) => m.ReservaDetalleClienteComponent,
+      ),
+  },
   { path: 'cupones', redirectTo: 'cuenta/cupones', pathMatch: 'full' },
   {
     path: 'cuenta',
