@@ -19,6 +19,32 @@
     position: relative;
 }
 
+
+.booking-layout {
+
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns: 300px auto;
+
+    gap: var(--s10);
+
+    align-items: center;
+
+}
+
+
+.checkout-side {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: var(--s6);
+
+}
+
 /* HEADER */
 
 .header {
@@ -332,6 +358,11 @@
 
 }
 
+.seat.hidden-seat {
+    visibility: hidden;
+    pointer-events: none;
+}
+
 /* LEGEND */
 
 .legend {
@@ -412,169 +443,6 @@
 
 }
 
-//----------------------SECTION FOR BUYING TICKETS
-
-.checkout-container {
-
-
-    display: flex;
-
-    flex-direction: column;
-
-
-    gap: var(--s6);
-
-
-    padding: var(--s8);
-
-
-
-    background: var(--dark-2);
-
-
-    border-radius: var(--r-lg);
-
-
-    border:
-        1px solid rgba(255, 255, 255, .08);
-
-
-
-    box-shadow:
-        0 15px 40px rgba(0, 0, 0, .3);
-
-
-
-    h2 {
-
-        color: white;
-
-        font-size: 20px;
-
-        margin: 0;
-
-    }
-
-}
-
-
-.summary {
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: var(--s5);
-
-}
-
-
-
-.summary-item {
-
-
-    span {
-
-        color: rgba(255, 255, 255, .55);
-
-        font-size: 13px;
-
-    }
-
-
-    strong {
-
-        display: block;
-
-        margin-top: 4px;
-
-
-        color: white;
-
-        font-size: 22px;
-
-        font-weight: 800;
-
-    }
-
-}
-
-
-
-.summary-item.total strong {
-
-    color: var(--red);
-
-}
-
-
-
-.divider {
-
-    height: 1px;
-
-    background: rgba(255, 255, 255, .1);
-
-}
-
-
-.buy-button {
-
-    height: 48px;
-
-    padding: 0 var(--s8);
-
-
-    border: none;
-
-    border-radius: 999px;
-
-
-    background: var(--red);
-
-    color: white;
-
-
-    font-weight: 800;
-
-    font-size: 15px;
-
-
-    cursor: pointer;
-
-
-    box-shadow:
-        0 8px 20px rgba(0, 0, 0, .3);
-
-
-    transition:
-        transform .18s ease,
-        background .18s ease;
-
-    &:hover {
-
-        background: var(--red-hover);
-
-        transform: translateY(-2px);
-
-    }
-
-    width: 100%;
-
-}
-
-.booking-layout {
-    width: fit-content;
-    margin: 0 auto;
-
-    display: grid;
-
-    grid-template-columns: 300px auto;
-
-    gap: var(--s10);
-
-    align-items: center;
-}
 
 .back-button {
 
@@ -622,86 +490,5 @@
     background: rgba(255, 255, 255, .15);
 
     transform: translateX(-3px);
-
-}
-
-/* SHOW INFO */
-
-.show-info {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: var(--s4);
-
-    padding: var(--s5);
-
-    margin-bottom: var(--s6);
-
-
-    background: var(--dark-2);
-
-    border-radius: var(--r-lg);
-
-    border: 1px solid rgba(255, 255, 255, .08);
-
-}
-
-
-.movie-icon {
-
-    width: 55px;
-
-    height: 55px;
-
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-
-    font-size: 28px;
-
-
-    background: rgba(255, 255, 255, .08);
-
-    border-radius: var(--r);
-
-
-}
-
-
-.show-details {
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 4px;
-
-}
-
-
-.show-details h3 {
-
-    color: white;
-
-    font-size: 16px;
-
-    font-weight: 800;
-
-    margin: 0;
-
-}
-
-
-.show-details span {
-
-    color: rgba(255, 255, 255, .6);
-
-    font-size: 14px;
 
 }

@@ -8,10 +8,8 @@
 
     <section class="booking-layout">
 
-
         <!-- LEFT SIDE -->
         <aside class="checkout-side">
-
 
             <header class="header">
 
@@ -27,88 +25,11 @@
             </header>
 
 
-
-            <!-- INFO DE FUNCION -->
-
-            <section class="show-info">
-
-                <div class="movie-icon">
-                    🎬
-                </div>
-
-
-                <div class="show-details">
-
-                    <h3>
-                        Nombre de la película
-                    </h3>
-
-                    <span>
-                        Sala 5
-                    </span>
-
-                    <span>
-                        Hoy · 8:30 PM
-                    </span>
-
-                </div>
-
-            </section>
-
-
-
-            <!-- CHECKOUT -->
-
-            <section class="checkout-container">
-
-                <h2>
-                    Resumen
-                </h2>
-
-
-                <div class="summary">
-
-                    <div class="summary-item">
-
-                        <span>
-                            Asientos seleccionados
-                        </span>
-
-                        <strong>
-                            2
-                        </strong>
-
-                    </div>
-
-
-                    <div class="summary-item">
-
-                        <span>
-                            Total
-                        </span>
-
-                        <strong>
-                            $12.00
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-                <button class="buy-button">
-                    Continuar al pago
-                </button>
-
-
-            </section>
+            <app-panel-lateral>
+            </app-panel-lateral>
 
 
         </aside>
-
-
-
-
 
         <!-- RIGHT SIDE -->
 
@@ -127,8 +48,6 @@
 
 
 
-
-
             <section class="container_map">
 
 
@@ -144,33 +63,21 @@
                         <span class="row-label">
                             {{ fila }}
                         </span>
-
-
-
                         <div class="seats">
-
 
                             @for (asiento of asientosPorFila(fila); track asiento.id) {
 
-
-                            <button 
-                                class="seat"
-
+                            <button class="seat" (click)="toggleAsiento(asiento)"
                                 [class.available]="asiento.estado === 'disponible'"
-
                                 [class.occupied]="asiento.estado === 'ocupado'"
-
-                                [class.selected]="asiento.estado === 'seleccionado'">
-
-
+                                [class.selected]="asiento.estado === 'seleccionado'" [class.hidden-seat]="
+                asiento.estado === 'bloqueado' ||
+                asiento.estado === 'reservado'
+            ">
                                 {{ asiento.numero }}
-
-
                             </button>
 
-
                             }
-
 
                         </div>
 

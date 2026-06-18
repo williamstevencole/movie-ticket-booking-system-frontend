@@ -1,10 +1,16 @@
 import { Component, computed, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
+import { PanelLateralComponent } from '../panel-lateral/panel-lateral.component';
 
 //logica cambia despues
 
-type EstadoAsiento = 'disponible' | 'ocupado' | 'seleccionado';
+type EstadoAsiento =
+  | 'disponible'
+  | 'ocupado'
+  | 'seleccionado'
+  | 'reservado'
+  | 'bloqueado';
 
 interface Asiento {
   id: string;
@@ -16,6 +22,7 @@ interface Asiento {
 @Component({
   selector: 'app-mapa',
   standalone: true,
+  imports: [PanelLateralComponent],
   templateUrl: './mapa.component.html',
   styleUrl: './mapa.component.scss',
 })
@@ -47,10 +54,8 @@ export class MapaComponent {
 
         if (rand < 0.5) {
           estado = 'disponible';
-        } else if (rand < 0.8) {
-          estado = 'ocupado';
         } else {
-          estado = 'seleccionado';
+          estado = 'ocupado';
         }
 
         resultado.push({
@@ -67,5 +72,23 @@ export class MapaComponent {
 
   volver() {
     this.location.back();
-}
+  }
+
+  toggleAsiento(asiento: Asiento) {
+    if (asiento.estado === 'ocupado') {
+      return;
+    }
+
+    this.asientos.update((lista) =>
+      lista.map((a) =>
+        a.id === asiento.id
+          ? {
+              ...a,
+              estado:
+                a.estado === 'seleccionado' ? 'disponible' : 'seleccionado',
+            }
+          : a,
+      ),
+    );
+  }
 }
