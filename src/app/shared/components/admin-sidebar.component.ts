@@ -181,7 +181,11 @@ export class AdminSidebarComponent {
           routerLink: '/admin/cines',
         },
         { label: 'Salas', icon: LucideArmchair, routerLink: '/admin/salas' },
-        { label: 'Tipos de asiento', icon: LucideSofa },
+        {
+          label: 'Tipos de asiento',
+          icon: LucideSofa,
+          routerLink: '/admin/tipos-asiento',
+        },
         { label: 'Precios por cine', icon: LucideBanknote },
       ],
     },
@@ -199,7 +203,12 @@ export class AdminSidebarComponent {
           icon: LucideCreditCard,
           routerLink: '/admin/pagos',
         },
-        { label: 'Cupones', icon: LucideGift, count: 6 },
+        {
+          label: 'Cupones',
+          icon: LucideGift,
+          count: 6,
+          routerLink: '/admin/cupones',
+        },
         { label: 'Políticas cancelación', icon: LucideClipboardList },
         {
           label: 'Reembolsos',

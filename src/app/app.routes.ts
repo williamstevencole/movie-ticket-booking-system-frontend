@@ -184,6 +184,39 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/salas/:cineId/:salaId/distribucion',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/salas/distribucion/distribucion.component').then(
+        (m) => m.AdminSalaDistribucionComponent,
+      ),
+  },
+  {
+    path: 'admin/tipos-asiento',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/tipos-asiento/tipos-asiento.component').then(
+        (m) => m.AdminTiposAsientoComponent,
+      ),
+  },
+  {
+    path: 'admin/cupones',
+    pathMatch: 'full',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/cupones/listado/cupones.component').then(
+        (m) => m.AdminCuponesComponent,
+      ),
+  },
+  {
+    path: 'admin/cupones/crear',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/cupones/crear/cupon-form.component').then(
+        (m) => m.AdminCuponFormComponent,
+      ),
+  },
+  {
     path: 'admin/generos',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>

@@ -190,13 +190,13 @@ type SalaRow = {
                             >
                               <svg lucidePencil [size]="15"></svg>
                             </a>
-                            <span
-                              class="icon-btn is-disabled"
-                              title="Ver distribución (próximamente)"
-                              aria-disabled="true"
+                            <a
+                              class="icon-btn"
+                              [routerLink]="['/admin/salas', s.cineId, s.id, 'distribucion']"
+                              title="Ver distribución"
                             >
                               <svg lucideGrid3x3 [size]="15"></svg>
-                            </span>
+                            </a>
                             <button
                               class="icon-btn"
                               [class.danger]="isActivo(s.key)"
