@@ -298,6 +298,14 @@ export const routes: Routes = [
       ).then((m) => m.AdminReservasListadoComponent),
   },
   {
+    path: 'admin/reservas/:id/cancelar',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import(
+        './features/admin/reservas/cancelar/reserva-cancelar.component'
+      ).then((m) => m.AdminReservaCancelarComponent),
+  },
+  {
     path: 'admin/reservas/:id',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
@@ -312,6 +320,22 @@ export const routes: Routes = [
       import(
         './features/admin/pagos/pagos-listado.component'
       ).then((m) => m.AdminPagosListadoComponent),
+  },
+  {
+    path: 'admin/clientes',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/clientes/listado/clientes.component').then(
+        (m) => m.AdminClientesComponent,
+      ),
+  },
+  {
+    path: 'admin/politicas',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/politicas/configuracion/politicas-config.component').then(
+        (m) => m.AdminPoliticasConfigComponent,
+      ),
   },
   {
     path: 'admin/bitacora',

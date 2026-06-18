@@ -20,6 +20,7 @@ import {
   LucideUndo2,
   LucideChartColumn,
   LucideUsers,
+  LucideUserRound,
   LucideNotebookText,
   LucideLogOut,
   type LucideIconInput,
@@ -209,7 +210,11 @@ export class AdminSidebarComponent {
           count: 6,
           routerLink: '/admin/cupones',
         },
-        { label: 'Políticas cancelación', icon: LucideClipboardList },
+        {
+          label: 'Políticas cancelación',
+          icon: LucideClipboardList,
+          routerLink: '/admin/politicas',
+        },
         {
           label: 'Reembolsos',
           icon: LucideUndo2,
@@ -236,6 +241,7 @@ export class AdminSidebarComponent {
     {
       title: 'Sistema',
       links: [
+        { label: 'Clientes', icon: LucideUserRound, routerLink: '/admin/clientes' },
         { label: 'Usuarios & roles', icon: LucideUsers },
         { label: 'Bitácora', icon: LucideNotebookText, routerLink: '/admin/bitacora' },
       ],
