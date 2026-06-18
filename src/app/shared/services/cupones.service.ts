@@ -21,10 +21,19 @@ export type ValidarCuponResponse = {
   mensaje?: string;
 };
 
+export type CrearCuponInput = {
+  codigo: string;
+  tipo: 'porcentaje' | 'monto';
+  valor: number;
+  fecha_expiracion: string;
+  usos_maximos: number | null;
+};
+
 export abstract class CuponesService {
   abstract list(): Observable<Cupon[]>;
   abstract getById(id: string): Observable<Cupon>;
   abstract validar(codigo: string): Observable<ValidarCuponResponse>;
+  abstract create(input: CrearCuponInput): Observable<Cupon>;
   abstract setActivo(id: string, activo: boolean): Observable<Cupon>;
   abstract remove(id: string): Observable<void>;
 }

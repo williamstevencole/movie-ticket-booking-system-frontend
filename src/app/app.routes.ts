@@ -201,6 +201,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/cupones/crear',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/cupones/crear/cupon-form.component').then(
+        (m) => m.AdminCuponFormComponent,
+      ),
+  },
+  {
     path: 'admin/generos',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>

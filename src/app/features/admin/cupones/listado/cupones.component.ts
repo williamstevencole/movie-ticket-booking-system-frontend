@@ -56,10 +56,10 @@ const POR_EXPIRAR_DIAS = 7;
                 {{ totalActivos() }} activos · {{ cupones().length }} en total
               </p>
             </div>
-            <span class="btn btn-primary is-disabled" title="Disponible al crear el formulario de cupón">
+            <a routerLink="/admin/cupones/crear" class="btn btn-primary">
               <svg lucidePlus [size]="16"></svg>
               <span>Nuevo cupón</span>
-            </span>
+            </a>
           </div>
 
           @if (porExpirarCount() > 0) {
@@ -133,6 +133,10 @@ const POR_EXPIRAR_DIAS = 7;
                   <p>No hay cupones que coincidan con los filtros.</p>
                 } @else {
                   <p>Aún no hay cupones registrados.</p>
+                  <a routerLink="/admin/cupones/crear" class="btn btn-primary btn-sm">
+                    <svg lucidePlus [size]="14"></svg>
+                    <span>Crear el primero</span>
+                  </a>
                 }
               </div>
             } @else {

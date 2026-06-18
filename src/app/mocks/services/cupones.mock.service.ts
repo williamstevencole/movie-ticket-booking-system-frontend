@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import {
+  CrearCuponInput,
   Cupon,
   CuponesService,
   ValidarCuponResponse,
@@ -48,6 +49,45 @@ export class MockCuponesService extends CuponesService {
     }
 
     return of({ valido: true, cupon: { ...cupon } });
+  }
+
+  override create(input: CrearCuponInput): Observable<Cupon> {
+    const codigo = input.codigo.trim().toUpperCase();
+    if (!codigo) {
+      return throwError(() => ({ code: 'EMPTY', message: 'El código no puede estar vacío' }));
+    }
+    if (this.store.some((c) => c.codigo.toUpperCase() === codigo)) {
+      return throwError(() => ({ code: 'DUPLICATE', message: 'Ya existe un cupón con ese código' }));
+    }
+    if (!(input.valor > 0)) {
+      return throwError(() => ({ code: 'BAD_VALUE', message: 'El valor debe ser mayor a 0' }));
+    }
+    if (input.tipo === 'porcentaje' && input.valor > 100) {
+      return throwError(() => ({ code: 'BAD_PERCENT', message: 'El porcentaje no puede ser mayor a 100' }));
+    }
+    if (new Date(input.fecha_expiracion).getTime() <= Date.now()) {
+      return throwError(() => ({ code: 'BAD_DATE', message: 'La fecha de expiración debe ser futura' }));
+    }
+    if (
+      input.usos_maximos !== null &&
+      (!Number.isInteger(input.usos_maximos) || input.usos_maximos < 1)
+    ) {
+      return throwError(() => ({ code: 'BAD_USES', message: 'Los usos máximos deben ser un entero mayor a 0' }));
+    }
+    const cupon: Cupon = {
+      id: `cup-${Date.now().toString(36)}`,
+      codigo,
+      tipo: input.tipo,
+      valor: input.valor,
+      fecha_expiracion: input.fecha_expiracion,
+      usos_maximos: input.usos_maximos,
+      usos_actuales: 0,
+      activo: true,
+      created_at: new Date().toISOString(),
+      monto_descontado: 0,
+    };
+    this.store = [cupon, ...this.store];
+    return of({ ...cupon });
   }
 
   override setActivo(id: string, activo: boolean): Observable<Cupon> {
