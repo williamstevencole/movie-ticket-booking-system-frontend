@@ -1,0 +1,238 @@
+<main class="page">
+
+
+    <button class="back-button" (click)="volver()">
+        ← Volver
+    </button>
+
+
+    <section class="booking-layout">
+
+
+        <!-- LEFT SIDE -->
+        <aside class="checkout-side">
+
+
+            <header class="header">
+
+                <h1>
+                    Elige tus asientos
+                </h1>
+
+                <p>
+                    Función
+                    <strong>{{ funcionId() }}</strong>
+                </p>
+
+            </header>
+
+
+
+            <!-- INFO DE FUNCION -->
+
+            <section class="show-info">
+
+                <div class="movie-icon">
+                    🎬
+                </div>
+
+
+                <div class="show-details">
+
+                    <h3>
+                        Nombre de la película
+                    </h3>
+
+                    <span>
+                        Sala 5
+                    </span>
+
+                    <span>
+                        Hoy · 8:30 PM
+                    </span>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- CHECKOUT -->
+
+            <section class="checkout-container">
+
+                <h2>
+                    Resumen
+                </h2>
+
+
+                <div class="summary">
+
+                    <div class="summary-item">
+
+                        <span>
+                            Asientos seleccionados
+                        </span>
+
+                        <strong>
+                            2
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-item">
+
+                        <span>
+                            Total
+                        </span>
+
+                        <strong>
+                            $12.00
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <button class="buy-button">
+                    Continuar al pago
+                </button>
+
+
+            </section>
+
+
+        </aside>
+
+
+
+
+
+        <!-- RIGHT SIDE -->
+
+        <section class="cinema-area">
+
+
+            <section class="cinema-screen">
+
+                <div class="screen"></div>
+
+                <span>
+                    PANTALLA
+                </span>
+
+            </section>
+
+
+
+
+
+            <section class="container_map">
+
+
+                <section class="seat-map">
+
+
+                    @for (fila of filas(); track fila) {
+
+
+                    <div class="row">
+
+
+                        <span class="row-label">
+                            {{ fila }}
+                        </span>
+
+
+
+                        <div class="seats">
+
+
+                            @for (asiento of asientosPorFila(fila); track asiento.id) {
+
+
+                            <button 
+                                class="seat"
+
+                                [class.available]="asiento.estado === 'disponible'"
+
+                                [class.occupied]="asiento.estado === 'ocupado'"
+
+                                [class.selected]="asiento.estado === 'seleccionado'">
+
+
+                                {{ asiento.numero }}
+
+
+                            </button>
+
+
+                            }
+
+
+                        </div>
+
+
+                    </div>
+
+
+                    }
+
+
+                </section>
+
+
+
+
+
+                <!-- LEYENDA -->
+
+                <section class="legend">
+
+
+                    <div class="legend-item">
+
+                        <span class="box available"></span>
+
+                        Disponible
+
+                    </div>
+
+
+
+                    <div class="legend-item">
+
+                        <span class="box occupied"></span>
+
+                        Ocupado
+
+                    </div>
+
+
+
+
+                    <div class="legend-item">
+
+                        <span class="box selected"></span>
+
+                        Seleccionado
+
+                    </div>
+
+
+
+                </section>
+
+
+            </section>
+
+
+        </section>
+
+
+    </section>
+
+
+</main>

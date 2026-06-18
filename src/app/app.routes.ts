@@ -64,6 +64,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'sala/:id',
+    canActivate: [locationGuard],
+    loadComponent: () =>
+      import('./features/asientos/mapa/mapa.component').then(
+        (m) => m.MapaComponent,
+      ),
+  },
+  {
     path: 'mis-boletos',
     canActivate: [authGuard, locationGuard],
     loadComponent: () =>
@@ -211,25 +219,25 @@ export const routes: Routes = [
     pathMatch: 'full',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
-      import(
-        './features/admin/reservas/listado/reservas-listado.component'
-      ).then((m) => m.AdminReservasListadoComponent),
+      import('./features/admin/reservas/listado/reservas-listado.component').then(
+        (m) => m.AdminReservasListadoComponent,
+      ),
   },
   {
     path: 'admin/reservas/:id',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
-      import(
-        './features/admin/reservas/detalle/reserva-detalle.component'
-      ).then((m) => m.AdminReservaDetalleComponent),
+      import('./features/admin/reservas/detalle/reserva-detalle.component').then(
+        (m) => m.AdminReservaDetalleComponent,
+      ),
   },
   {
     path: 'admin/pagos',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
-      import(
-        './features/admin/pagos/pagos-listado.component'
-      ).then((m) => m.AdminPagosListadoComponent),
+      import('./features/admin/pagos/pagos-listado.component').then(
+        (m) => m.AdminPagosListadoComponent,
+      ),
   },
   {
     path: 'admin/bitacora',
@@ -256,9 +264,9 @@ export const routes: Routes = [
     path: 'admin/reportes/estadisticas-cancelacion',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
-      import(
-        './features/admin/reportes/estadisticas-cancelacion/estadisticas-cancelacion.component'
-      ).then((m) => m.AdminReporteEstadisticasCancelacionComponent),
+      import('./features/admin/reportes/estadisticas-cancelacion/estadisticas-cancelacion.component').then(
+        (m) => m.AdminReporteEstadisticasCancelacionComponent,
+      ),
   },
   {
     path: 'admin/reportes/pagos-reembolsos',
