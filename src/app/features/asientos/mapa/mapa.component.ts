@@ -25,6 +25,8 @@ export class MapaComponent {
     this.asientos().filter((asiento) => asiento.estado === 'seleccionado'),
   );
 
+  readonly mapaActualizado = signal(false);
+
   constructor(
     private route: ActivatedRoute,
     private location: Location,
@@ -82,5 +84,29 @@ export class MapaComponent {
           : a,
       ),
     );
+  }
+
+  actualizarMapa(asientosActualizados: Asiento[]) {
+    this.asientos.set(asientosActualizados);
+  }
+
+  //---------------------------------------testing testing para mapa refresh
+  simularCambio() {
+    const nuevosAsientos: Asiento[] = this.asientos().map((asiento) => {
+      if (asiento.id === 'B-3') {
+        return this.cambiarEstado(asiento, 'ocupado');
+      }
+
+      return asiento;
+    });
+
+    this.actualizarMapa(nuevosAsientos);
+  }
+
+  private cambiarEstado(asiento: Asiento, estado: EstadoAsiento): Asiento {
+    return {
+      ...asiento,
+      estado,
+    };
   }
 }
