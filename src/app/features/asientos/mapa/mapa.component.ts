@@ -1,6 +1,5 @@
 import { Component, computed, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Location } from '@angular/common';
 import { PanelLateralComponent } from '../panel-lateral/panel-lateral.component';
 import { Asiento, EstadoAsiento } from './seat-types/asiento.model';
 import { ErrorComponent } from '../error/error.component';
@@ -31,10 +30,7 @@ export class MapaComponent {
   readonly mostrarError = signal(false);
   readonly asientoConflicto = signal('');
 
-  constructor(
-    private route: ActivatedRoute,
-    private location: Location,
-  ) {
+  constructor(private route: ActivatedRoute) {
     this.funcionId.set(this.route.snapshot.paramMap.get('id'));
   }
 
@@ -66,10 +62,6 @@ export class MapaComponent {
     }
 
     return resultado;
-  }
-
-  volver() {
-    this.location.back();
   }
 
   toggleAsiento(asiento: Asiento) {
