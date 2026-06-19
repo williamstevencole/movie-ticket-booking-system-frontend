@@ -3,13 +3,14 @@ import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { PanelLateralComponent } from '../panel-lateral/panel-lateral.component';
 import { Asiento, EstadoAsiento } from './seat-types/asiento.model';
+import { ErrorComponent } from '../error/error.component';
 
 //logica cambia despues
 
 @Component({
   selector: 'app-mapa',
   standalone: true,
-  imports: [PanelLateralComponent],
+  imports: [PanelLateralComponent, ErrorComponent],
   templateUrl: './mapa.component.html',
   styleUrl: './mapa.component.scss',
 })
