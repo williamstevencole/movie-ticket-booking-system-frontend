@@ -27,6 +27,10 @@ export class MapaComponent {
 
   readonly mapaActualizado = signal(false);
 
+  //---------------------simulando el error de conflicto ya con la actualizacion de mapa
+  readonly mostrarError = signal(false);
+  readonly asientoConflicto = signal('');
+
   constructor(
     private route: ActivatedRoute,
     private location: Location,
@@ -100,7 +104,14 @@ export class MapaComponent {
       return asiento;
     });
 
+    this.asientoConflicto.set('B-3');
+    this.mostrarError.set(true);
+
     this.actualizarMapa(nuevosAsientos);
+
+    setTimeout(() => {
+      this.mostrarError.set(false);
+    }, 4000);
   }
 
   private cambiarEstado(asiento: Asiento, estado: EstadoAsiento): Asiento {

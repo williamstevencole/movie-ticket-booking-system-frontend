@@ -92,10 +92,12 @@
 
                 </section>
 
+                @if(mostrarError()) {
 
-                <!---para testing!!!!!-->
-                <!---<app-seat-error asiento="A3"></app-seat-error> -->
+                <app-seat-error [asiento]="asientoConflicto()">
+                </app-seat-error>
 
+                }
 
                 <!-- LEYENDA -->
 
