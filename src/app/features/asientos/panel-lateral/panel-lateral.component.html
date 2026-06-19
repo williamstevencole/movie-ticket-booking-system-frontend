@@ -1,102 +1,105 @@
 <aside class="panel">
 
 
-<section class="show-info">
+    <section class="show-info">
 
-    <div class="movie-icon">
-        🎬
-    </div>
-
-
-    <div class="show-details">
-
-        <h3>
-            Nombre de la película
-        </h3>
-
-        <span>
-            Sala 5
-        </span>
-
-        <span>
-            Hoy · 8:30 PM
-        </span>
-
-    </div>
-
-</section>
+        <div class="movie-icon">
+            🎬
+        </div>
 
 
+        <div class="show-details">
 
-<section class="summary-card">
-
-    <h2>
-        Resumen
-    </h2>
-
-
-    <div class="selected-seats">
-
-        <span>
-            Asientos seleccionados
-        </span>
-
-
-        <div class="seat-tags">
+            <h3>
+                Nombre de la película
+            </h3>
 
             <span>
-                A3
+                Sala 5
             </span>
 
             <span>
-                A4
+                Hoy · 8:30 PM
             </span>
 
         </div>
 
-    </div>
+    </section>
 
 
 
-    <div class="summary-item">
+    <section class="summary-card">
 
-        <span>
-            Cantidad
-        </span>
-
-        <strong>
-            2
-        </strong>
-
-    </div>
+        <h2>
+            Resumen
+        </h2>
 
 
+        <div class="selected-seats">
 
-    <div class="summary-item">
-
-        <span>
-            Subtotal
-        </span>
-
-        <strong>
-            $12.00
-        </strong>
-
-    </div>
+            <span>
+                Asientos seleccionados
+            </span>
 
 
+            <div class="seat-tags">
 
-    <p class="limit">
-        Máximo 6 asientos por reserva
-    </p>
+                @for (
+                asiento of asientosSeleccionados;
+                track asiento.id
+                ) {
 
+                <span>
+                    {{ asiento.fila }}{{ asiento.numero }}
+                </span>
 
-</section>
+                }
+
+            </div>
+
+        </div>
 
 
 
-<button class="buy-button">
-    Continuar al pago
-</button>
+        <div class="summary-item">
+
+            <span>
+                Cantidad
+            </span>
+
+            <strong>
+                2
+            </strong>
+
+        </div>
+
+
+
+        <div class="summary-item">
+
+            <span>
+                Subtotal
+            </span>
+
+            <strong>
+                $12.00
+            </strong>
+
+        </div>
+
+
+
+        <p class="limit">
+            Máximo 6 asientos por reserva
+        </p>
+
+
+    </section>
+
+
+
+    <button class="buy-button">
+        Continuar al pago
+    </button>
 
 </aside>

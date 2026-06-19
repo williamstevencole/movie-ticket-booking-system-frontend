@@ -2,22 +2,9 @@ import { Component, computed, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { PanelLateralComponent } from '../panel-lateral/panel-lateral.component';
+import { Asiento, EstadoAsiento } from './seat-types/asiento.model';
 
 //logica cambia despues
-
-type EstadoAsiento =
-  | 'disponible'
-  | 'ocupado'
-  | 'seleccionado'
-  | 'reservado'
-  | 'bloqueado';
-
-interface Asiento {
-  id: string;
-  fila: string;
-  numero: number;
-  estado: EstadoAsiento;
-}
 
 @Component({
   selector: 'app-mapa',
@@ -32,6 +19,10 @@ export class MapaComponent {
   readonly filas = signal<string[]>(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']);
 
   readonly asientos = signal<Asiento[]>(this.crearAsientos());
+
+  readonly asientosSeleccionados = computed(() =>
+    this.asientos().filter((asiento) => asiento.estado === 'seleccionado'),
+  );
 
   constructor(
     private route: ActivatedRoute,
