@@ -6,6 +6,26 @@
         <p>Acá vas a ver las funciones que ya reservaste.</p>
     </header>
 
+    <nav class="tabs">
+
+        <button [class.active]="vistaActual === 'activos'" (click)="cambiarVista('activos')">
+            Boletos activos
+        </button>
+
+
+        <button [class.active]="vistaActual === 'historial'" (click)="cambiarVista('historial')">
+            Historial
+        </button>
+
+
+        <button [class.active]="vistaActual === 'reembolsos'" (click)="cambiarVista('reembolsos')">
+            Reembolsos
+        </button>
+
+    </nav>
+
+    @if(vistaActual === 'activos') {
+
     @if (boletos.length === 0) {
     <section class="empty">
         <div class="empty-card">
@@ -87,11 +107,66 @@
 
 
         </article>
-
         }
 
     </section>
     }
+    }
+    @if(vistaActual === 'reembolsos') {
+
+    <section class="refund-section">
+
+        @for(reembolso of reembolsos; track reembolso.id) {
+
+        <article class="ticket-card">
+
+            <div>
+                <h2>{{reembolso.pelicula}}</h2>
+
+                <p>
+                    Monto:
+                    <strong>
+                        L {{reembolso.monto}}
+                    </strong>
+                </p>
+
+                <p>
+                    Estado:
+                    <strong>
+                        {{reembolso.estado}}
+                    </strong>
+                </p>
+            </div>
+
+
+            <button [routerLink]="['/reembolsos', reembolso.id]">
+                Ver estado
+            </button>
+
+        </article>
+
+        }
+
+    </section>
+
+    }
+
+    @if(vistaActual === 'historial') {
+
+    <section class="empty-card">
+
+        <h2>
+            Historial de reservas
+        </h2>
+
+        <p>
+            Aquí aparecerán tus reservas anteriores.
+        </p>
+
+    </section>
+
+    }
+
 </main>
 
 <app-footer />

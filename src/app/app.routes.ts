@@ -111,6 +111,14 @@ export const routes: Routes = [
         (m) => m.CancelarComponent,
       ),
   },
+  {
+    path: 'reembolsos/:id',
+    canActivate: [authGuard, locationGuard],
+    loadComponent: () =>
+      import('./features/boletos/reembolsos/reembolsos.component').then(
+        (m) => m.ReembolsosComponent,
+      ),
+  },
   { path: 'cupones', redirectTo: 'cuenta/cupones', pathMatch: 'full' },
   {
     path: 'cuenta',

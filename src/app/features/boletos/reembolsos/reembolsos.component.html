@@ -1,0 +1,183 @@
+<app-appbar [navItems]="nav" />
+
+
+<main class="wrap">
+
+    <section class="card">
+
+        <header>
+            <h1>
+                Estado del reembolso
+            </h1>
+
+            <p>
+                Consulta el estado de tu devolución.
+            </p>
+        </header>
+
+
+
+        <section class="status-card">
+
+            <span class="label">
+                Estado actual
+            </span>
+
+
+            <span class="status" [class.completed]="reembolso.estado === 'procesado'"
+                [class.pending]="reembolso.estado === 'pendiente'" [class.rejected]="reembolso.estado === 'rechazado'">
+                {{ reembolso.estado | uppercase }}
+            </span>
+
+
+        </section>
+
+
+
+
+        <section class="info-section">
+
+            <h2>
+                Información del reembolso
+            </h2>
+
+
+            <div class="grid">
+
+                <div>
+                    <span>
+                        Monto devuelto
+                    </span>
+
+                    <strong>
+                        L {{ reembolso.monto }}
+                    </strong>
+                </div>
+
+
+
+                <div>
+                    <span>
+                        Porcentaje aplicado
+                    </span>
+
+                    <strong>
+                        {{ reembolso.porcentaje_aplicado }}%
+                    </strong>
+                </div>
+
+
+
+                <div>
+                    <span>
+                        Fecha solicitud
+                    </span>
+
+                    <strong>
+                        {{ reembolso.created_at | date }}
+                    </strong>
+                </div>
+
+
+
+                <div>
+                    <span>
+                        Fecha procesado
+                    </span>
+
+                    <strong>
+                        @if(reembolso.fecha_procesado) {
+                        {{ reembolso.fecha_procesado | date }}
+                        }
+                        @else {
+                        Pendiente
+                        }
+                    </strong>
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+
+
+        <section class="timeline">
+
+            <h2>
+                Historial
+            </h2>
+
+
+            <div class="step completed">
+
+                <span>
+                    ✓
+                </span>
+
+                <div>
+                    <strong>
+                        Reserva cancelada
+                    </strong>
+
+                    <p>
+                        Solicitud creada correctamente.
+                    </p>
+                </div>
+
+            </div>
+
+
+
+            <div class="step" [class.completed]="reembolso.estado === 'procesado'">
+
+                <span>
+                    ✓
+                </span>
+
+                <div>
+                    <strong>
+                        Reembolso procesado
+                    </strong>
+
+                    <p>
+                        El dinero fue enviado al método de pago.
+                    </p>
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+
+
+        <section class="notice">
+
+            <h3>
+                Información importante
+            </h3>
+
+            <p>
+                El tiempo de acreditación depende de la entidad bancaria.
+                Puede tardar entre 3 y 5 días hábiles.
+            </p>
+
+        </section>
+
+        <section class="actions">
+
+            <button class="back-button" (click)="volverBoletos()">
+                ← Volver a mis boletos
+            </button>
+
+        </section>
+    </section>
+
+
+</main>
+
+
+<app-footer />
