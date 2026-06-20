@@ -1,0 +1,55 @@
+<div class="overlay">
+
+    <section class="modal">
+
+        <header>
+            <h2>Políticas de cancelación</h2>
+            <button (click)="cerrarModal()">✕</button>
+        </header>
+
+
+        <div class="content">
+
+            <p>
+                Antes de cancelar tu boleto toma en cuenta las siguientes reglas:
+            </p>
+
+            <ul>
+                <li>
+                    Cancelaciones con más de 24 horas:
+                    <strong>100% de reembolso</strong>
+                </li>
+
+                <li>
+                    Entre 12 y 24 horas:
+                    <strong>50% de reembolso</strong>
+                </li>
+
+                <li>
+                    Menos de 12 horas:
+                    <strong>No aplica reembolso</strong>
+                </li>
+
+            </ul>
+
+            <p class="warning">
+                Una vez confirmada la cancelación no podrás recuperar la reserva.
+            </p>
+
+        </div>
+
+
+        <footer>
+            <button class="secondary" (click)="cerrarModal()">
+                Volver
+            </button>
+
+            <button class="danger">
+                Continuar cancelación
+            </button>
+        </footer>
+
+
+    </section>
+
+</div>

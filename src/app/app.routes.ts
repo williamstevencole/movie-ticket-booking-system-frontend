@@ -73,6 +73,7 @@ export const routes: Routes = [
   },
   {
     path: 'checkout/confirmacion',
+    canActivate: [locationGuard],
     loadComponent: () =>
       import('./features/checkout/confirmacion/confirmacion.component').then(
         (m) => m.ConfirmacionComponent,
@@ -80,6 +81,7 @@ export const routes: Routes = [
   },
   {
     path: 'checkout/metodos-pago',
+    canActivate: [locationGuard],
     loadComponent: () =>
       import('./features/checkout/metodos-pago/metodos-pago.component').then(
         (m) => m.MetodosPagoComponent,
@@ -87,6 +89,7 @@ export const routes: Routes = [
   },
   {
     path: 'checkout/resultado',
+    canActivate: [locationGuard],
     loadComponent: () =>
       import('./features/checkout/resultado/resultado.component').then(
         (m) => m.ResultadoComponent,

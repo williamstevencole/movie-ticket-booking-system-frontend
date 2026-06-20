@@ -1,0 +1,97 @@
+<app-appbar [navItems]="nav" />
+
+<main class="wrap">
+    <header class="head">
+        <h1>Mis boletos</h1>
+        <p>Acá vas a ver las funciones que ya reservaste.</p>
+    </header>
+
+    @if (boletos.length === 0) {
+    <section class="empty">
+        <div class="empty-card">
+            <h2>Todavía no tenés boletos</h2>
+            <p>Cuando compres una función, va a aparecer acá.</p>
+        </div>
+    </section>
+    } @else {
+    <section class="tickets">
+
+        @for (boleto of boletos; track boleto.id) {
+
+        <article class="ticket-card">
+
+            <div class="ticket-main">
+
+                <div class="ticket-info">
+
+                    <div class="status">
+                        {{ boleto.estado }}
+                    </div>
+
+                    <h2>{{ boleto.pelicula }}</h2>
+
+                    <p class="cinema">
+                        📍 {{ boleto.cine }}
+                    </p>
+
+                    <div class="details">
+
+                        <span>
+                            📅 {{ boleto.fecha }}
+                        </span>
+
+                        <span>
+                            🕒 {{ boleto.hora }}
+                        </span>
+
+                        <span>
+                            🎬 {{ boleto.sala }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="seats">
+                        <strong>Asientos:</strong>
+
+                        @for(asiento of boleto.asientos; track asiento) {
+                        <span>{{ asiento }}</span>
+                        }
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <div class="ticket-footer">
+
+                <div>
+                    Código:
+                    <strong>{{ boleto.id }}</strong>
+                </div>
+
+                <button (click)="abrirPoliticas()">
+                    Cancelar boleto
+                </button>
+
+
+                @if(mostrarPoliticas){
+                <app-politicas-cancelacion (cerrar)="cerrarPoliticas()">
+                </app-politicas-cancelacion>
+                }
+
+            </div>
+
+
+        </article>
+
+        }
+
+    </section>
+    }
+</main>
+
+<app-footer />
