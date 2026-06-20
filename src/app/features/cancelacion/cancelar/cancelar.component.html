@@ -18,22 +18,22 @@
 
             <div class="details">
                 <p>
-                    <strong>Cine:</strong>
+                    <strong>Cine</strong><br>
                     Cinetario Mall
                 </p>
 
                 <p>
-                    <strong>Sala:</strong>
+                    <strong>Sala</strong><br>
                     Sala 4
                 </p>
 
                 <p>
-                    <strong>Fecha:</strong>
+                    <strong>Fecha</strong><br>
                     25 Junio 2026
                 </p>
 
                 <p>
-                    <strong>Hora:</strong>
+                    <strong>Hora</strong><br>
                     7:30 PM
                 </p>
 
@@ -41,6 +41,7 @@
                     <strong>Asientos:</strong>
                     A5, A6
                 </p>
+
             </div>
 
 
@@ -62,18 +63,48 @@
 
         <div class="actions">
 
-            <button class="secondary" (click)="volver()" >
+            <button class="secondary" (click)="volver()">
                 Volver
             </button>
 
-            <button class="danger">
+            <button class="danger" (click)="confirmarCancelacion()">
                 Confirmar cancelación
             </button>
 
+
         </div>
 
-
     </section>
+
+    @if(cancelado) {
+
+    <div class="overlay">
+
+        <section class="success-modal">
+
+            <div class="icon">
+                ✓
+            </div>
+
+            <h2>
+                ¡Reserva cancelada exitosamente!
+            </h2>
+
+
+            <p>
+                Tu reserva fue cancelada correctamente.
+            </p>
+
+
+            <button (click)="volverBoletos()">
+                Volver a mis boletos
+            </button>
+
+        </section>
+
+    </div>
+
+    }
 
 </main>
 
