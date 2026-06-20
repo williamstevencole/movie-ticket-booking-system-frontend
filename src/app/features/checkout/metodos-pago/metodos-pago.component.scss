@@ -202,16 +202,17 @@
 
 .summary {
 
+    display: flex;
+    flex-direction: column;
+    gap: var(--s5);
+
 
     .row {
 
-        padding: var(--s3) 0;
-
+        padding: var(--s1) 0;
 
         span {
-
             color: var(--text-2);
-
         }
 
     }
@@ -251,5 +252,78 @@
 
     }
 
+
+}
+
+.discount-summary {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: var(--s3);
+
+    margin-top: var(--s5);
+
+    padding-top: var(--s5);
+
+    border-top: 1px solid var(--border);
+
+}
+
+
+.discount-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+
+    span {
+
+        color: var(--text-2);
+
+        font-size: 14px;
+
+    }
+
+
+    strong {
+
+        font-weight: 700;
+
+    }
+
+}
+
+
+
+.original-price {
+
+    color: var(--text-2);
+
+    text-decoration: line-through;
+
+}
+
+
+
+.discount {
+
+    color: #16a34a;
+
+}
+
+
+
+.total {
+
+    margin-top: var(--s5);
+
+    padding-top: var(--s5);
+
+    border-top: 1px solid var(--border);
 
 }

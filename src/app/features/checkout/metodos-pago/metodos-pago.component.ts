@@ -1,12 +1,13 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { MOCK_PELICULA_DETALLE } from '../../../mocks/data/cartelera-display.mock';
 import { TarjetaComponent } from './tarjeta/tarjeta.component';
 import { EfectivoComponent } from './efectivo/efectivo.component';
+import { CuponComponent } from '../cupon/cupon.component';
 
 @Component({
   selector: 'app-metodos-pago',
   standalone: true,
-  imports: [TarjetaComponent, EfectivoComponent],
+  imports: [TarjetaComponent, EfectivoComponent, CuponComponent],
   templateUrl: './metodos-pago.component.html',
   styleUrl: './metodos-pago.component.scss',
 })
@@ -23,5 +24,18 @@ export class MetodosPagoComponent {
 
   readonly total = signal(12);
 
+  //metodo pago stuff
   readonly metodoPago = signal<'tarjeta' | 'efectivo'>('tarjeta');
+
+  //cupon stuff
+
+  readonly precioOriginal = signal(12);
+
+  readonly descuento = signal(3);
+
+  readonly descuentoAplicado = signal(true);
+
+  readonly totalFinal = computed(() => {
+    return this.precioOriginal() - this.descuento();
+  });
 }

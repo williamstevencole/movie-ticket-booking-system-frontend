@@ -16,8 +16,6 @@
 
         </header>
 
-
-
         <section class="payment-layout">
 
 
@@ -76,6 +74,7 @@
             <section class="card summary">
 
 
+                <app-cupon></app-cupon>
                 <h2>
                     Resumen
                 </h2>
@@ -155,21 +154,50 @@
 
                 </div>
 
+                <div class="discount-summary">
+
+                    <div class="discount-row">
+
+                        <span>
+                            Precio original
+                        </span>
+
+                        <strong class="original-price">
+                            ${{ precioOriginal() }}
+                        </strong>
+
+                    </div>
+
+
+                    @if(descuentoAplicado()) {
+
+                    <div class="discount-row">
+
+                        <span>
+                            Cupón aplicado
+                        </span>
+
+                        <strong class="discount">
+                            -${{ descuento() }}
+                        </strong>
+
+                    </div>
+
+                    }
+
+                </div>
 
 
 
                 <div class="total">
 
-
                     <span>
                         Total
                     </span>
 
-
                     <strong>
-                        ${{ total() }}
+                        ${{ totalFinal() }}
                     </strong>
-
 
                 </div>
 
