@@ -1,8 +1,9 @@
 import { Component, computed, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { PanelLateralComponent } from '../panel-lateral/panel-lateral.component';
-import { Asiento, EstadoAsiento } from './seat-types/asiento.model';
+import { Asiento } from './asiento.model';
 import { ErrorComponent } from '../error/error.component';
+import { TipoAsiento } from './seat-types/seat-type.model';
 
 //logica cambia despues
 
@@ -44,6 +45,17 @@ export class MapaComponent {
     for (const fila of ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']) {
       for (let numero = 1; numero <= 10; numero++) {
         const rand = Math.random();
+
+        let tipo: TipoAsiento = 'estandar';
+
+        if (fila === 'A' || fila === 'B') {
+          tipo = 'vip';
+        }
+
+        if (fila === 'H') {
+          tipo = 'accesible';
+        }
+
         let estado: EstadoAsiento;
 
         if (rand < 0.5) {
@@ -52,10 +64,19 @@ export class MapaComponent {
           estado = 'ocupado';
         }
 
+        if (fila === 'D' && numero <= 3) {
+          estado = 'bloqueado';
+        }
+
         resultado.push({
           id: `${fila}-${numero}`,
+
           fila,
+
           numero,
+
+          tipo,
+
           estado,
         });
       }
@@ -65,7 +86,7 @@ export class MapaComponent {
   }
 
   toggleAsiento(asiento: Asiento) {
-    if (asiento.estado === 'ocupado') {
+    if (asiento.estado === 'ocupado' || asiento.estado === 'bloqueado') {
       return;
     }
 
@@ -86,6 +107,10 @@ export class MapaComponent {
     this.asientos.set(asientosActualizados);
   }
 
+  readonly salaBloqueada = computed(() =>
+    this.asientos().every((asiento) => asiento.estado === 'bloqueado'),
+  );
+  
   //---------------------------------------testing testing para mapa refresh
   simularCambio() {
     const nuevosAsientos: Asiento[] = this.asientos().map((asiento) => {
@@ -113,3 +138,4 @@ export class MapaComponent {
     };
   }
 }
+import { EstadoAsiento } from './seat-states/seat-state.model';

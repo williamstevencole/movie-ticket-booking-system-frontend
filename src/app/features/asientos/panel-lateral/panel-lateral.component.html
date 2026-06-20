@@ -26,11 +26,10 @@
 
     </section>
 
+    <app-timer></app-timer>
 
 
     <section class="summary-card">
-
-        <app-timer></app-timer>
 
         <h2>
             Resumen
@@ -43,17 +42,40 @@
                 Asientos seleccionados
             </span>
 
-
             <div class="seat-tags">
 
-                @for (
-                asiento of asientosSeleccionados;
-                track asiento.id
-                ) {
+                @for (asiento of asientosSeleccionados; track asiento.id) {
 
-                <span>
-                    {{ asiento.fila }}{{ asiento.numero }}
-                </span>
+                <div class="seat-tag">
+
+                    <strong class="seat-number">
+                        {{ asiento.fila }}{{ asiento.numero }}
+                    </strong>
+
+
+                    <div class="seat-info">
+
+                        @if(asiento.tipo === 'vip') {
+                        <span class="seat-type vip">
+                            ⭐ VIP · Reclinable
+                        </span>
+                        }
+
+                        @if(asiento.tipo === 'accesible') {
+                        <span class="seat-type accessible">
+                            ♿ Accesible
+                        </span>
+                        }
+
+                        @if(asiento.tipo === 'estandar') {
+                        <span class="seat-type standard">
+                            Estándar
+                        </span>
+                        }
+
+                    </div>
+
+                </div>
 
                 }
 

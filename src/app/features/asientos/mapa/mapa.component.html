@@ -42,8 +42,6 @@
 
             </section>
 
-
-
             <section class="container_map">
 
 
@@ -64,14 +62,25 @@
 
                             @for (asiento of asientosPorFila(fila); track asiento.id) {
 
-                            <button class="seat" (click)="toggleAsiento(asiento)"
+                            <button class="seat" [title]="asiento.estado === 'bloqueado' ? 'Asiento no disponible' : ''"
+                                [class.vip]="asiento.tipo === 'vip'" [class.accessible]="asiento.tipo === 'accesible'"
                                 [class.available]="asiento.estado === 'disponible'"
                                 [class.occupied]="asiento.estado === 'ocupado'"
-                                [class.selected]="asiento.estado === 'seleccionado'" [class.hidden-seat]="
-                asiento.estado === 'bloqueado' ||
-                asiento.estado === 'reservado'
-            ">
-                                {{ asiento.numero }}
+                                [class.selected]="asiento.estado === 'seleccionado'"
+                                [class.blocked]="asiento.estado === 'bloqueado'" (click)="toggleAsiento(asiento)">
+
+                                @if (asiento.tipo === 'vip') {
+                                <span class="seat-icon">★</span>
+                                }
+
+                                @if (asiento.tipo === 'accesible') {
+                                <span class="seat-icon">♿︎</span>
+                                }
+
+                                <span class="number">
+                                    {{ asiento.numero }}
+                                </span>
+
                             </button>
 
                             }
@@ -132,7 +141,34 @@
 
                     </div>
 
+                    <div class="legend-item">
 
+                        <span class="box vip">★</span>
+
+                        VIP L180
+
+                    </div>
+
+
+                    <div class="legend-item">
+
+                        <span class="box accessible">
+                            ♿︎
+                        </span>
+
+                        Accesible L90
+
+                    </div>
+
+
+                    <div class="legend-item">
+
+                        <span class="box blocked">
+                        </span>
+
+                        Bloqueado
+
+                    </div>
 
                 </section>
 

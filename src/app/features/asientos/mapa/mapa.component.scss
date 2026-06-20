@@ -4,21 +4,16 @@
     background: var(--dark);
 }
 
-
 .page {
-    max-width: 1400px;
+    max-width: 1500px;
     margin: auto;
 
-    padding: var(--s10) var(--s10);
+    padding: 80px 40px;
 
     min-height: 100vh;
 
-    display: flex;
-    align-items: center;
-
     position: relative;
 }
-
 
 .booking-layout {
 
@@ -33,7 +28,6 @@
     align-items: center;
 
 }
-
 
 .checkout-side {
 
@@ -177,8 +171,6 @@
     padding: var(--s8) var(--s9);
 
 
-    background: transparent;
-
     border: none;
 
     box-shadow: none;
@@ -190,6 +182,16 @@
     flex-direction: column;
 
     gap: var(--s4);
+
+
+    padding: 45px;
+
+    background: rgba(255, 255, 255, .04);
+
+    border: 1px solid rgba(255, 255, 255, .08);
+
+    box-shadow:
+        0 30px 60px rgba(0, 0, 0, .35);
 
 }
 
@@ -236,125 +238,126 @@
 
 .seat {
 
-    width: 42px;
+    width: 44px;
+    height: 44px;
 
-    height: 42px;
+    border-radius: 12px;
 
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     position: relative;
 
-
-    border-radius: var(--r);
-
-
-    border: 2px solid transparent;
-
-
-    display: flex;
-
-    justify-content: center;
-
-    align-items: center;
-
-
-    font-size: 13px;
-
     font-weight: 800;
+    font-size: 14px;
+
+    transition: .18s ease;
 
 
-    cursor: pointer;
+    .seat-icon {
+        position: absolute;
+
+        top: 3px;
+        right: 4px;
+
+        font-size: 14px;
+        font-weight: 900;
+    }
 
 
-    transition:
-        transform 180ms var(--ease),
-        box-shadow 180ms var(--ease);
+    .number {
+        font-size: 14px;
+        font-weight: 800;
+    }
+
+    /* TYPE COLORS */
+
+    &.available {
+        background: var(--success);
+        border-color: var(--success);
+    }
+
+    &.vip {
+        background: #fad57e;
+        color: #652d0b;
+    }
+
+
+    &.accessible {
+        background: #b2d3ff;
+        color: #06243a;
+    }
 
 
 
-    box-shadow:
-
-        inset 0 -5px 0 rgba(0, 0, 0, .18),
-
-        0 3px 8px rgba(0, 0, 0, .25);
+    /* STATES OVERRIDE TYPES */
 
 
-    overflow: hidden;
+    &.occupied {
+
+        background: var(--surface-2);
+
+        border-color: var(--border-2);
+
+        color: var(--text-2);
+
+        cursor: not-allowed;
+
+    }
+
+    &.blocked {
+
+        background:
+            repeating-linear-gradient(45deg,
+                #d1d5db,
+                #d1d5db 5px,
+                #9ca3af 5px,
+                #9ca3af 10px);
+
+        border-color: #9ca3af;
+
+        color: #57534e;
+
+        cursor: not-allowed;
+    }
+
+    /* SELECTED */
+
+    &.selected {
+
+        background: var(--orange);
+
+        color: #1c1917;
+
+        box-shadow:
+            0 0 12px rgba(182, 178, 173, 0.45);
+
+    }
+
+
+    &.vip.selected {
+
+        background: #f59e0b;
+
+        color: white;
+
+    }
+
+
+    &.accessible.selected {
+
+        background: #1c588d;
+
+        color: white;
+
+    }
 
 }
-
-
-
-/* little cushion */
-
-.seat::after {
-
-    content: "";
-
-
-    position: absolute;
-
-
-    bottom: 5px;
-
-
-    left: 8px;
-
-    right: 8px;
-
-
-    height: 7px;
-
-
-    border-radius: 999px;
-
-
-    background: rgba(255, 255, 255, .3);
-
-}
-
-
 
 .seat:hover {
 
     transform: translateY(-3px);
-
-}
-
-
-
-/* STATES */
-
-.seat.available {
-
-    background: var(--success);
-
-    border-color: var(--success);
-
-}
-
-
-
-.seat.occupied {
-
-    background: var(--surface-2);
-
-    color: var(--text-2);
-
-    border-color: var(--border-2);
-
-}
-
-
-.seat.selected {
-
-    background: var(--orange);
-
-    color: #1c1917;
-
-    border-color: white;
-
-    box-shadow:
-        0 0 12px rgba(245, 158, 11, .45);
 
 }
 
@@ -407,19 +410,21 @@
 
 }
 
-
-
 .box {
 
-    width: 20px;
+    width: 22px;
+    height: 22px;
 
-    height: 20px;
+    border-radius: 6px;
 
-    border-radius: var(--r-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 12px;
+    font-weight: 900;
 
 }
-
-
 
 /* LEGEND COLORS */
 
@@ -443,6 +448,39 @@
 
 }
 
+.box.blocked {
+
+    background:
+        repeating-linear-gradient(45deg,
+            #d1d5db,
+            #d1d5db 5px,
+            #9ca3af 5px,
+            #9ca3af 10px);
+
+    border: 1px solid #9ca3af;
+
+}
+
+.box.vip {
+
+    background: #fff3d6;
+
+    border: 2px solid #f59e0b;
+
+    color: #d97706;
+
+}
+
+
+.box.accessible {
+
+    background: #dbeafe;
+
+    border: 2px solid #3b82f6;
+
+    color: #2563eb;
+
+}
 
 .back-button {
 
@@ -499,16 +537,16 @@
 
     padding: 10px 18px;
 
-    border-radius:999px;
+    border-radius: 999px;
 
-    border:none;
+    border: none;
 
-    background:var(--orange);
+    background: var(--orange);
 
-    color:white;
+    color: white;
 
-    font-weight:700;
+    font-weight: 700;
 
-    cursor:pointer;
+    cursor: pointer;
 
 }
