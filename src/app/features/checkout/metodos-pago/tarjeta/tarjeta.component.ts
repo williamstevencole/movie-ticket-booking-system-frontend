@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { Location } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-tarjeta',
@@ -8,8 +9,10 @@ import { Location } from '@angular/common';
   styleUrl: './tarjeta.component.scss',
 })
 export class TarjetaComponent {
-  constructor(private location: Location) {}
-
+  constructor(
+    private location: Location,
+    private router: Router,
+  ) {}
   readonly tarjeta = signal('');
 
   readonly expiracion = signal('');
@@ -51,7 +54,7 @@ export class TarjetaComponent {
       return;
     }
 
-    console.log('Pago correcto');
+    this.router.navigate(['/checkout/resultado']);
   }
 
   actualizarTarjeta(event: Event) {

@@ -1,0 +1,218 @@
+<main class="result-page">
+
+
+  <section class="result-card">
+
+
+    @if(pagoExitoso()) {
+
+
+    <section class="status success">
+
+
+      <div class="icon">
+        ✓
+      </div>
+
+
+      <h1>
+        Pago realizado
+      </h1>
+
+
+      <p>
+        Tu reserva fue confirmada correctamente.
+      </p>
+
+
+    </section>
+
+
+    }
+    @else {
+
+
+    <section class="status error">
+
+
+      <div class="icon">
+        ⚠
+      </div>
+
+
+      <h1>
+        Pago rechazado
+      </h1>
+
+
+      <p>
+        No fue posible procesar tu pago.
+      </p>
+
+
+    </section>
+
+
+    }
+
+
+
+    <section class="transaction-card">
+
+
+      <h2>
+        Detalle de transacción
+      </h2>
+
+
+
+      <div class="row">
+
+        <span>
+          Número de reserva
+        </span>
+
+
+        <strong>
+          {{ numeroReserva() }}
+        </strong>
+
+      </div>
+
+
+
+      <div class="row">
+
+        <span>
+          Método de pago
+        </span>
+
+
+        <strong>
+          {{ metodoPago() }}
+        </strong>
+
+      </div>
+
+
+
+      <div class="row">
+
+        <span>
+          Número de transacción
+        </span>
+
+
+        <strong>
+          {{ numeroTransaccion() }}
+        </strong>
+
+      </div>
+
+
+
+
+      <div class="row">
+
+        <span>
+          Fecha
+        </span>
+
+
+        <strong>
+          {{ fecha() }}
+        </strong>
+
+      </div>
+
+
+
+
+      <div class="row total">
+
+        <span>
+          Total
+        </span>
+
+
+        <strong>
+          ${{ monto() }}
+        </strong>
+
+      </div>
+
+
+
+    </section>
+
+    @if(pagoExitoso()) {
+
+    <section class="qr-card">
+
+      <h2>
+        Código QR del boleto
+      </h2>
+
+      <div class="qr-placeholder">
+
+        <span>
+          QR
+        </span>
+
+        <p>
+          Aquí aparecerá el código QR de tu boleto
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <section class="actions">
+
+      <button class="secondary" (click)="volverInicio()">
+
+        Volver al inicio
+
+      </button>
+
+
+      <button class="primary" (click)="verBoletos()">
+
+        Ver mis boletos
+
+      </button>
+
+    </section>
+
+
+    }
+    @else {
+
+    <section class="actions">
+
+      <button class="secondary" (click)="volverInicio()">
+
+        Volver
+
+      </button>
+
+
+      <button class="primary" (click)="intentarNuevamente()">
+
+        Intentar nuevamente
+
+      </button>
+
+    </section>
+
+
+    }
+
+
+  </section>
+
+
+
+
+</main>

@@ -86,6 +86,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'checkout/resultado',
+    loadComponent: () =>
+      import('./features/checkout/resultado/resultado.component').then(
+        (m) => m.ResultadoComponent,
+      ),
+  },
+  {
     path: 'mis-boletos',
     canActivate: [authGuard, locationGuard],
     loadComponent: () =>

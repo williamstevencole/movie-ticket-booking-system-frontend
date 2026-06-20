@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { Location } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-efectivo',
@@ -8,10 +9,13 @@ import { Location } from '@angular/common';
   styleUrl: './efectivo.component.scss',
 })
 export class EfectivoComponent {
-  constructor(private location: Location) {}
+  constructor(
+    private location: Location,
+    private router: Router,
+  ) {}
 
   continuar() {
-    console.log('Pago en efectivo confirmado');
+    this.router.navigate(['/checkout/resultado']);
   }
 
   volver() {
