@@ -1,0 +1,255 @@
+:host {
+    display: block;
+}
+
+.payment-page {
+
+    min-height: 100vh;
+
+    background: var(--bg-soft);
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: var(--s8);
+
+}
+
+.page-card {
+
+    width: 100%;
+
+    max-width: 1000px;
+
+    background: white;
+
+    border-radius: var(--r-lg);
+
+    padding: var(--s8);
+
+    box-shadow: var(--shadow);
+
+    border: 1px solid var(--border);
+
+}
+
+.page-header {
+
+    text-align: center;
+
+    margin-bottom: var(--s7);
+
+
+    h1 {
+
+        margin: 0 0 var(--s2);
+
+        font-size: 32px;
+
+        font-weight: 800;
+
+    }
+
+
+    p {
+
+        margin: 0;
+
+        color: var(--text-2);
+
+    }
+
+}
+
+.card {
+
+    background: white;
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--r-lg);
+
+    padding: var(--s5);
+
+    box-shadow: var(--shadow-sm);
+
+
+
+    h2 {
+
+        margin: 0 0 var(--s5);
+
+        font-size: 18px;
+
+        font-weight: 800;
+
+    }
+
+}
+
+.payment-layout {
+
+    display: grid;
+
+    grid-template-columns: 1fr 350px;
+
+    gap: var(--s8);
+
+    align-items: start;
+
+}
+
+.payment-options {
+
+    display: flex;
+
+    gap: var(--s3);
+
+    margin-bottom: var(--s5);
+
+
+    button {
+
+        flex: 1;
+
+        height: 45px;
+
+        border-radius: var(--r);
+
+        border: 1px solid var(--border);
+
+        background: white;
+
+        font-weight: 700;
+
+        cursor: pointer;
+
+
+        &.active {
+
+            background: var(--red-soft);
+
+            color: var(--red);
+
+            border-color: var(--red);
+
+        }
+
+    }
+
+}
+
+
+.row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: var(--s4);
+
+
+    >.field {
+
+        flex: 1;
+
+    }
+
+}
+
+
+.reservation-row {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    background: var(--red-soft);
+
+    border-radius: var(--r);
+
+    padding: var(--s4);
+
+    margin-bottom: var(--s4);
+
+
+    span {
+        color: var(--text-2);
+        font-weight: 600;
+    }
+
+
+    strong {
+        color: var(--red);
+        font-weight: 800;
+    }
+}
+
+.payment-content {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: var(--s5);
+
+}
+
+.summary {
+
+
+    .row {
+
+        padding: var(--s3) 0;
+
+
+        span {
+
+            color: var(--text-2);
+
+        }
+
+    }
+
+}
+
+.total {
+
+    margin-top: var(--s5);
+
+    padding-top: var(--s5);
+
+    border-top: 1px solid var(--border);
+
+    display: flex;
+
+    justify-content: space-between;
+
+
+    strong {
+
+        color: var(--red);
+
+        font-size: 22px;
+
+    }
+
+}
+
+
+@media(max-width: 800px) {
+
+
+    .payment-layout {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+}

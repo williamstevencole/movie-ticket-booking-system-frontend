@@ -1,0 +1,187 @@
+<main class="payment-page">
+
+    <section class="page-card">
+
+
+        <header class="page-header">
+
+            <h1>
+                Método de pago
+            </h1>
+
+
+            <p>
+                Selecciona cómo deseas pagar tu reserva.
+            </p>
+
+        </header>
+
+
+
+        <section class="payment-layout">
+
+
+            <section class="payment-content">
+
+
+                <section class="card">
+
+                    <h2>
+                        Opciones de pago
+                    </h2>
+
+
+                    <div class="payment-options">
+
+                        <button [class.active]="metodoPago() === 'tarjeta'" (click)="metodoPago.set('tarjeta')">
+
+                            💳 Tarjeta
+
+                        </button>
+
+
+                        <button [class.active]="metodoPago() === 'efectivo'" (click)="metodoPago.set('efectivo')">
+
+                            💵 Efectivo
+
+                        </button>
+
+                    </div>
+
+                </section>
+
+
+
+                @if(metodoPago() === 'tarjeta') {
+
+                <app-tarjeta></app-tarjeta>
+
+                }
+
+
+                @if(metodoPago() === 'efectivo') {
+
+                <app-efectivo></app-efectivo>
+
+                }
+
+
+            </section>
+
+
+
+            <!-- SUMMARY -->
+
+
+            <section class="card summary">
+
+
+                <h2>
+                    Resumen
+                </h2>
+
+                <div class="reservation-row">
+
+                    <span>
+                        Reserva
+                    </span>
+
+
+                    <strong>
+                        {{ numeroReserva() }}
+                    </strong>
+
+                </div>
+
+
+                <div class="row">
+
+                    <span>
+                        Película
+                    </span>
+
+
+                    <strong>
+                        {{ pelicula.titulo }}
+                    </strong>
+
+                </div>
+
+
+
+
+                <div class="row">
+
+                    <span>
+                        Sala
+                    </span>
+
+
+                    <strong>
+                        {{ sala() }}
+                    </strong>
+
+                </div>
+
+
+
+
+                <div class="row">
+
+                    <span>
+                        Horario
+                    </span>
+
+
+                    <strong>
+                        {{ horario() }}
+                    </strong>
+
+                </div>
+
+
+
+
+                <div class="row">
+
+                    <span>
+                        Asientos
+                    </span>
+
+
+                    <strong>
+                        {{ asientos().join(', ') }}
+                    </strong>
+
+                </div>
+
+
+
+
+                <div class="total">
+
+
+                    <span>
+                        Total
+                    </span>
+
+
+                    <strong>
+                        ${{ total() }}
+                    </strong>
+
+
+                </div>
+
+
+
+            </section>
+
+
+        </section>
+
+
+    </section>
+
+
+</main>

@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { Location } from '@angular/common';
+import { Router } from '@angular/router';
 import { MOCK_PELICULA_DETALLE } from '../../../mocks/data/cartelera-display.mock';
 
 @Component({
@@ -10,7 +11,10 @@ import { MOCK_PELICULA_DETALLE } from '../../../mocks/data/cartelera-display.moc
   styleUrl: './confirmacion.component.scss',
 })
 export class ConfirmacionComponent {
-  constructor(private location: Location) {}
+  constructor(
+    private location: Location,
+    private router: Router,
+  ) {}
 
   readonly sala = signal('Sala 5');
 
@@ -24,5 +28,9 @@ export class ConfirmacionComponent {
 
   volver() {
     this.location.back();
+  }
+
+  continuarPago() {
+    this.router.navigate(['/checkout/metodos-pago']);
   }
 }

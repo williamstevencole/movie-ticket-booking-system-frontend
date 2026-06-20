@@ -79,6 +79,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'checkout/metodos-pago',
+    loadComponent: () =>
+      import('./features/checkout/metodos-pago/metodos-pago.component').then(
+        (m) => m.MetodosPagoComponent,
+      ),
+  },
+  {
     path: 'mis-boletos',
     canActivate: [authGuard, locationGuard],
     loadComponent: () =>

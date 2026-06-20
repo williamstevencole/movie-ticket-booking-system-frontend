@@ -1,0 +1,116 @@
+<section class="card">
+
+
+    <h2>
+        Datos de pago
+    </h2>
+
+
+    <div class="field">
+
+        <label>
+            Número de tarjeta
+        </label>
+
+        <input type="text" inputmode="numeric" maxlength="19" placeholder="1234 5678 9101 1231"
+            (input)="actualizarTarjeta($event)">
+
+
+        @if (errores().tarjeta) {
+
+        <p class="error">
+            {{ errores().tarjeta }}
+        </p>
+
+        }
+
+    </div>
+
+
+
+    <div class="row">
+
+
+        <div class="field">
+
+            <label>
+                Expiración
+            </label>
+
+
+            <input type="text" inputmode="numeric" maxlength="5" placeholder="MM/AA"
+                (input)="actualizarExpiracion($event)">
+
+
+            @if (errores().expiracion) {
+
+            <p class="error">
+                {{ errores().expiracion }}
+            </p>
+
+            }
+
+        </div>
+
+
+
+
+        <div class="field">
+
+            <label>
+                CVV
+            </label>
+
+
+            <input type="text" inputmode="numeric" maxlength="3" placeholder="123" (input)="actualizarCvv($event)">
+
+
+            @if (errores().cvv) {
+
+            <p class="error">
+                {{ errores().cvv }}
+            </p>
+
+            }
+
+        </div>
+
+
+    </div>
+
+
+
+
+    <div class="field">
+
+        <label>
+            Nombre del titular
+        </label>
+
+
+        <input placeholder="Nombre completo">
+
+    </div>
+
+    <section class="actions">
+
+
+        <button class="btn btn-danger" (click)="volver()">
+
+            Volver
+
+        </button>
+
+
+
+        <button class="btn btn-primary" (click)="pagar()">
+
+            Confirmar pago
+
+        </button>
+
+
+    </section>
+
+
+</section>
