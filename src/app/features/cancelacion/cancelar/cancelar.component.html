@@ -1,0 +1,81 @@
+<app-appbar [navItems]="nav" />
+
+<main class="wrap">
+
+    <section class="cancel-card">
+
+        <header>
+            <h1>Cancelar reserva</h1>
+            <p>
+                Revisa los detalles de tu reserva antes de continuar.
+            </p>
+        </header>
+
+
+        <div class="ticket-info">
+
+            <h2>Spider-Man: Across the Spider-Verse</h2>
+
+            <div class="details">
+                <p>
+                    <strong>Cine:</strong>
+                    Cinetario Mall
+                </p>
+
+                <p>
+                    <strong>Sala:</strong>
+                    Sala 4
+                </p>
+
+                <p>
+                    <strong>Fecha:</strong>
+                    25 Junio 2026
+                </p>
+
+                <p>
+                    <strong>Hora:</strong>
+                    7:30 PM
+                </p>
+
+                <p>
+                    <strong>Asientos:</strong>
+                    A5, A6
+                </p>
+            </div>
+
+
+            <div class="refund">
+                <h3>Reembolso estimado</h3>
+
+                <span>
+                    L 240.00
+                </span>
+
+                <small>
+                    Según la política de cancelación aplicada.
+                </small>
+            </div>
+
+
+        </div>
+
+
+        <div class="actions">
+
+            <button class="secondary" (click)="volver()" >
+                Volver
+            </button>
+
+            <button class="danger">
+                Confirmar cancelación
+            </button>
+
+        </div>
+
+
+    </section>
+
+</main>
+
+
+<app-footer />

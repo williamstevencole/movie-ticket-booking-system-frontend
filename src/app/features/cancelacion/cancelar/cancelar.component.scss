@@ -1,0 +1,120 @@
+:host {
+    display: block;
+    min-height: 100vh;
+    background: var(--bg-soft);
+}
+
+
+.wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: var(--s8) var(--s6);
+}
+
+
+.cancel-card {
+    background: white;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--border);
+    padding: var(--s8);
+    box-shadow: var(--shadow-sm);
+}
+
+
+header {
+
+    h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 800;
+    }
+
+    p {
+        color: var(--text-2);
+        margin-top: var(--s2);
+    }
+
+}
+
+
+.ticket-info {
+
+    margin-top: var(--s7);
+
+    h2 {
+        font-size: 20px;
+        margin-bottom: var(--s4);
+    }
+
+}
+
+
+.details {
+
+    display: grid;
+    gap: var(--s2);
+
+    p {
+        margin: 0;
+        color: var(--text-2);
+    }
+
+}
+
+
+.refund {
+
+    margin-top: var(--s6);
+    padding: var(--s5);
+    background: var(--bg-soft);
+    border-radius: var(--r-md);
+
+    h3 {
+        margin: 0 0 var(--s2);
+    }
+
+    span {
+        font-size: 30px;
+        font-weight: 800;
+    }
+
+    small {
+        display: block;
+        color: var(--text-2);
+        margin-top: var(--s2);
+    }
+
+}
+
+
+.actions {
+
+    margin-top: var(--s8);
+
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--s3);
+
+}
+
+
+button {
+
+    border: none;
+    padding: 12px 22px;
+    border-radius: var(--r-md);
+    cursor: pointer;
+    font-weight: 700;
+
+}
+
+
+.secondary {
+    background: #eee;
+}
+
+
+.danger {
+    background: #dc2626;
+    color: white;
+}

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { AppbarComponent } from '../../shared/components/appbar/appbar.component';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
-import { MOCK_BOLETOS } from '../../mocks/data/boletos.mock';
+import { BoletoMock, MOCK_BOLETOS } from '../../mocks/data/boletos.mock';
 import { PoliticasComponent } from '../cancelacion/politicas/politicas.component';
 
 @Component({
@@ -12,7 +12,12 @@ import { PoliticasComponent } from '../cancelacion/politicas/politicas.component
   styleUrl: './mis-boletos.component.scss',
 })
 export class MisBoletosComponent {
+  
+  boletos = MOCK_BOLETOS;
+
   mostrarPoliticas = false;
+
+  selectedBoleto?: BoletoMock;
 
   readonly nav = [
     { label: 'Cartelera', route: '/' },
@@ -22,9 +27,8 @@ export class MisBoletosComponent {
     { label: 'Mis boletos', route: '/mis-boletos', active: true },
   ];
 
-  readonly boletos = MOCK_BOLETOS;
-
-  abrirPoliticas() {
+  abrirPoliticas(boleto: BoletoMock) {
+    this.selectedBoleto = boleto;
     this.mostrarPoliticas = true;
   }
 

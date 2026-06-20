@@ -103,6 +103,14 @@ export const routes: Routes = [
         (m) => m.MisBoletosComponent,
       ),
   },
+  {
+    path: 'cancelar/:id',
+    canActivate: [authGuard, locationGuard],
+    loadComponent: () =>
+      import('./features/cancelacion/cancelar/cancelar.component').then(
+        (m) => m.CancelarComponent,
+      ),
+  },
   { path: 'cupones', redirectTo: 'cuenta/cupones', pathMatch: 'full' },
   {
     path: 'cuenta',

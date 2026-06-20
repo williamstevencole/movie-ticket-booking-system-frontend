@@ -73,13 +73,13 @@
                     <strong>{{ boleto.id }}</strong>
                 </div>
 
-                <button (click)="abrirPoliticas()">
+                <button (click)="abrirPoliticas(boleto)">
                     Cancelar boleto
                 </button>
 
 
-                @if(mostrarPoliticas){
-                <app-politicas-cancelacion (cerrar)="cerrarPoliticas()">
+                @if (mostrarPoliticas) {
+                <app-politicas-cancelacion [boleto]="selectedBoleto!" (cerrar)="mostrarPoliticas = false">
                 </app-politicas-cancelacion>
                 }
 
