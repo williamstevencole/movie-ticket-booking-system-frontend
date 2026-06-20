@@ -72,6 +72,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'checkout/confirmacion',
+    loadComponent: () =>
+      import('./features/checkout/confirmacion/confirmacion.component').then(
+        (m) => m.ConfirmacionComponent,
+      ),
+  },
+  {
     path: 'mis-boletos',
     canActivate: [authGuard, locationGuard],
     loadComponent: () =>

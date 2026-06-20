@@ -1,0 +1,14 @@
+[33mcommit 31d60a2427aa92723db53914ad231a87ac1a1152[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mvista-ir-a-pagar[m[33m, [m[1;31morigin/vista-ir-a-pagar[m[33m)[m
+Author: Andrea Quin <andrea.quin123@gmail.com>
+Date:   Fri Jun 19 14:45:45 2026 -0600
+
+    redesigned button for continue to payment and to cancel checkout, added new folder structure for new design
+
+ src/app/features/asientos/cta/cta.component.html   | 16 [32m++++++[m
+ src/app/features/asientos/cta/cta.component.scss   | 66 [32m++++++++++++++++++++++[m
+ src/app/features/asientos/cta/cta.component.ts     | 13 [32m+++++[m
+ src/app/features/asientos/mapa/mapa.component.html |  5 [31m--[m
+ src/app/features/asientos/mapa/mapa.component.ts   | 10 [32m+[m[31m---[m
+ .../panel-lateral/panel-lateral.component.html     |  7 [32m+[m[31m--[m
+ .../panel-lateral/panel-lateral.component.ts       | 10 [32m+++[m[31m-[m
+ 7 files changed, 107 insertions(+), 20 deletions(-)

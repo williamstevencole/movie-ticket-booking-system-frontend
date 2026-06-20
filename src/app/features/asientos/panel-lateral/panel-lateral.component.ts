@@ -3,6 +3,7 @@ import { Asiento } from '../mapa/seat-types/asiento.model';
 import { TimerComponent } from '../timer/timer.component';
 import { CtaComponent } from '../cta/cta.component';
 import { Location } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-panel-lateral',
@@ -15,9 +16,16 @@ export class PanelLateralComponent {
   @Input()
   asientosSeleccionados: Asiento[] = [];
 
-  constructor(private location: Location) {}
+  constructor(
+    private location: Location,
+    private router: Router,
+  ) {}
 
   volver() {
     this.location.back();
+  }
+
+  continuarPago() {
+    this.router.navigate(['/checkout/confirmacion']);
   }
 }

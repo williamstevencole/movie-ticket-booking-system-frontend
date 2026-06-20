@@ -1,0 +1,211 @@
+<main class="confirmation-page">
+
+    <section class="page-card">
+
+
+
+        <header class="page-header">
+
+            <h1>
+                Confirmar reserva
+            </h1>
+
+            <p>
+                Revisa los detalles antes de continuar al pago.
+            </p>
+
+        </header>
+
+
+
+        <section class="checkout-layout">
+
+
+
+            <!-- MOVIE SIDE CARD -->
+
+            <aside class="movie-summary">
+
+                <div class="movie-poster" [class]="pelicula.poster">
+                </div>
+            </aside>
+
+
+
+
+            <!-- DETAILS -->
+
+            <section class="details">
+
+                <div class="reservation-row">
+
+                    <span>
+                        Reserva
+                    </span>
+
+                    <strong>
+                        #CT-48291
+                    </strong>
+
+                </div>
+
+                <section class="card">
+
+
+                    <h2>
+                        Película
+                    </h2>
+
+
+
+                    <div class="row">
+
+                        <span>
+                            Nombre
+                        </span>
+
+                        <strong>
+                            {{ pelicula.titulo }}
+                        </strong>
+
+                    </div>
+
+
+
+
+                    <div class="row">
+
+                        <span>
+                            Sala
+                        </span>
+
+
+                        <strong>
+                            {{ sala() }}
+                        </strong>
+
+                    </div>
+
+
+
+
+                    <div class="row">
+
+                        <span>
+                            Horario
+                        </span>
+
+
+                        <strong>
+                            {{ horario() }}
+                        </strong>
+
+                    </div>
+
+
+
+                </section>
+
+
+
+
+
+                <section class="card">
+
+
+                    <h2>
+                        Asientos
+                    </h2>
+
+
+
+                    <div class="seat-tags">
+
+
+                        @for (asiento of asientos(); track asiento) {
+
+
+                        <span>
+                            {{ asiento }}
+                        </span>
+
+
+                        }
+
+
+                    </div>
+
+
+                </section>
+
+
+
+
+
+                <section class="card">
+
+
+                    <h2>
+                        Resumen
+                    </h2>
+
+
+
+                    <div class="row">
+
+                        <span>
+                            Cantidad
+                        </span>
+
+
+                        <strong>
+                            {{ asientos().length }}
+                        </strong>
+
+
+                    </div>
+
+
+
+
+
+                    <div class="row">
+
+                        <span>
+                            Subtotal
+                        </span>
+
+
+                        <strong>
+                            ${{ subtotal() }}
+                        </strong>
+
+
+                    </div>
+
+
+
+                </section>
+
+                <section class="actions">
+
+                    <button class="btn btn-danger" (click)="volver()">
+                        Volver
+                    </button>
+
+
+                    <button class="btn btn-primary">
+                        Continuar al pago
+                    </button>
+
+                </section>
+
+
+            </section>
+
+
+        </section>
+
+
+    </section>
+</main>
