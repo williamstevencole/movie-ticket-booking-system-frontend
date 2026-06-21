@@ -224,6 +224,7 @@ export class AdminSidebarComponent {
           icon: LucideUndo2,
           count: 3,
           urgent: true,
+          routerLink: '/admin/reembolsos',
         },
       ],
     },

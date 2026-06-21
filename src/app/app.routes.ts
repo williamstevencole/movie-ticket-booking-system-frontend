@@ -216,6 +216,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/reembolsos',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/reembolsos/reembolsos.component').then(
+        (m) => m.AdminReembolsosComponent,
+      ),
+  },
+  {
     path: 'admin/cupones',
     pathMatch: 'full',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
