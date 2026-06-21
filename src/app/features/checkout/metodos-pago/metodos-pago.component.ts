@@ -3,11 +3,12 @@ import { MOCK_PELICULA_DETALLE } from '../../../mocks/data/cartelera-display.moc
 import { TarjetaComponent } from './tarjeta/tarjeta.component';
 import { EfectivoComponent } from './efectivo/efectivo.component';
 import { CuponComponent } from '../cupon/cupon.component';
+import { StepperComponent } from '../stepper/stepper.component';
 
 @Component({
   selector: 'app-metodos-pago',
   standalone: true,
-  imports: [TarjetaComponent, EfectivoComponent, CuponComponent],
+  imports: [TarjetaComponent, EfectivoComponent, CuponComponent, StepperComponent],
   templateUrl: './metodos-pago.component.html',
   styleUrl: './metodos-pago.component.scss',
 })

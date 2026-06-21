@@ -1,33 +1,69 @@
+/* ==========================================================
+   PAGE / COMPONENT BACKGROUND
+   Controls the whole seat selection screen
+========================================================== */
+
 :host {
     display: block;
     min-height: 100vh;
     background: var(--dark);
 }
 
+
 .page {
+
     max-width: 1500px;
-    margin: auto;
+    margin: 0 auto;
 
     padding: 80px 40px;
 
     min-height: 100vh;
 
-    position: relative;
 }
 
-.booking-layout {
 
-    width: 100%;
+/* ==========================================================
+   STEPPER
+   Progress indicator at the top
+========================================================== */
+
+app-stepper {
+
+    display: flex;
+    justify-content: center;
+
+    margin-bottom: var(--s10);
+
+}
+
+
+
+/* ==========================================================
+   MAIN BOOKING LAYOUT
+   Left = panel
+   Right = cinema + seats
+========================================================== */
+
+.booking-layout {
 
     display: grid;
 
     grid-template-columns: 300px auto;
 
-    gap: var(--s10);
+    gap: 60px;
 
-    align-items: center;
+    width: max-content;
+
+    margin: 0 auto;
+
+    align-items: start;
 
 }
+
+/* ==========================================================
+   LEFT SIDE
+   Movie info + selected seats panel
+========================================================== */
 
 .checkout-side {
 
@@ -37,119 +73,76 @@
 
     gap: var(--s6);
 
+    width: 300px;
+
 }
 
-/* HEADER */
-
-.header {
-
-    text-align: center;
-    margin-bottom: var(--s8);
-    max-width: 1000px;
-
-    .step {
-
-        color: var(--red);
-
-        font-size: 12px;
-        font-weight: 800;
-
-        text-transform: uppercase;
-
-        letter-spacing: 2px;
-
-        margin-bottom: var(--s2);
-
-    }
 
 
-    h1 {
+/* ==========================================================
+   CINEMA AREA
+   Screen + seat map + legend
+========================================================== */
 
-        font-size: 36px;
+.cinema-area {
 
-        font-weight: 800;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 
-        color: white;
-
-        margin-bottom: var(--s3);
-
-    }
-
-
-    p {
-
-        display: inline-flex;
-
-        align-items: center;
-
-        gap: var(--s2);
-
-        padding: 10px 20px;
-
-        border-radius: 999px;
-
-        background: var(--dark-2);
-
-        border: 1px solid rgba(255, 255, 255, .15);
-
-        color: rgba(255, 255, 255, .85);
-
-        font-size: 15px;
-
-        font-weight: 600;
-
-    }
-
-
-    strong {
-
-        color: var(--red);
-
-        font-weight: 800;
-
-    }
 }
 
-/* SCREEN */
+/* ==========================================================
+   SCREEN
+   Cinema screen visualization
+========================================================== */
+
 .cinema-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     margin-bottom: var(--s8);
-    text-align: center;
 }
 
 
 .screen {
-    width: 80%;
-    height: 0;
 
-    margin: 0 auto;
+    width: 560px;
+    height: 65px;
 
-    border-left: 60px solid transparent;
-    border-right: 60px solid transparent;
-    border-top: 25px solid var(--orange-soft);
+    background: #f8fafc;
 
-    filter:
-        drop-shadow(0 0 25px rgba(231, 133, 133, 0.286));
+    border-radius: 4px;
+
+    clip-path: polygon(0 0,
+            100% 0,
+            90% 100%,
+            10% 100%);
+
+    box-shadow:
+        0 10px 30px rgba(255, 255, 255, .18);
+
 }
-
 
 .cinema-screen span {
 
-    display: block;
-
-    margin-top: 15px;
+    margin-top: 16px;
 
     color: rgba(255, 255, 255, .45);
 
-    font-size: 16px;
+    font-size: 14px;
 
-    font-weight: 700;
+    font-weight: 800;
 
-    letter-spacing: 5px;
+    letter-spacing: 4px;
 
 }
 
 
-/* SEAT AREA */
+/* ==========================================================
+   SEAT MAP CONTAINER
+   Contains rows and legend
+========================================================== */
 
 .container_map {
 
@@ -165,17 +158,14 @@
 
 
 
+/* ==========================================================
+   SEAT MAP BOX
+   Dark card behind seats
+========================================================== */
+
 .seat-map {
 
-
-    padding: var(--s8) var(--s9);
-
-
-    border: none;
-
-    box-shadow: none;
-
-    border-radius: var(--r-lg);
+    padding: 45px;
 
     display: flex;
 
@@ -183,8 +173,7 @@
 
     gap: var(--s4);
 
-
-    padding: 45px;
+    border-radius: var(--r-lg);
 
     background: rgba(255, 255, 255, .04);
 
@@ -197,7 +186,10 @@
 
 
 
-/* ROWS */
+/* ==========================================================
+   SEAT ROWS
+   Letter + seats
+========================================================== */
 
 .row {
 
@@ -223,7 +215,6 @@
 }
 
 
-
 .seats {
 
     display: flex;
@@ -234,77 +225,121 @@
 
 
 
-/* CHAIRS */
+/* ==========================================================
+   INDIVIDUAL SEATS
+========================================================== */
 
 .seat {
 
     width: 44px;
+
     height: 44px;
 
     border-radius: 12px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     position: relative;
 
     font-weight: 800;
+
     font-size: 14px;
 
     transition: .18s ease;
 
 
+    .number {
+
+        font-size: 14px;
+
+        font-weight: 800;
+
+    }
+
+
+    /* VIP / ACCESSIBLE ICON */
+
     .seat-icon {
+
         position: absolute;
 
         top: 3px;
+
         right: 4px;
 
         font-size: 14px;
+
         font-weight: 900;
+
     }
 
 
-    .number {
-        font-size: 14px;
-        font-weight: 800;
-    }
 
-    /* TYPE COLORS */
+    /* ----------------------
+       NORMAL AVAILABLE SEAT
+    ---------------------- */
 
     &.available {
+
         background: var(--success);
-        border-color: var(--success);
+
     }
+
+
+
+    /* ----------------------
+       VIP TYPE
+    ---------------------- */
 
     &.vip {
+
         background: #fad57e;
+
         color: #652d0b;
+
     }
 
+
+
+    /* ----------------------
+       ACCESSIBLE TYPE
+    ---------------------- */
 
     &.accessible {
+
         background: #b2d3ff;
+
         color: #06243a;
+
     }
 
 
 
-    /* STATES OVERRIDE TYPES */
-
+    /* ----------------------
+       OCCUPIED STATE
+       Overrides seat type
+    ---------------------- */
 
     &.occupied {
 
         background: var(--surface-2);
-
-        border-color: var(--border-2);
 
         color: var(--text-2);
 
         cursor: not-allowed;
 
     }
+
+
+
+    /* ----------------------
+       BLOCKED STATE
+       System unavailable
+    ---------------------- */
 
     &.blocked {
 
@@ -315,14 +350,17 @@
                 #9ca3af 5px,
                 #9ca3af 10px);
 
-        border-color: #9ca3af;
-
         color: #57534e;
 
         cursor: not-allowed;
+
     }
 
-    /* SELECTED */
+
+
+    /* ----------------------
+       SELECTED STANDARD
+    ---------------------- */
 
     &.selected {
 
@@ -330,11 +368,11 @@
 
         color: #1c1917;
 
-        box-shadow:
-            0 0 12px rgba(182, 178, 173, 0.45);
-
     }
 
+
+
+    /* Selected VIP */
 
     &.vip.selected {
 
@@ -344,6 +382,9 @@
 
     }
 
+
+
+    /* Selected Accessible */
 
     &.accessible.selected {
 
@@ -355,18 +396,20 @@
 
 }
 
+
 .seat:hover {
 
     transform: translateY(-3px);
 
 }
 
-.seat.hidden-seat {
-    visibility: hidden;
-    pointer-events: none;
-}
 
-/* LEGEND */
+
+/* ==========================================================
+   LEGEND
+   Explains seat colors
+========================================================== */
+
 
 .legend {
 
@@ -374,25 +417,14 @@
 
     gap: var(--s4);
 
-
     padding: var(--s4) var(--s6);
-
 
     background: var(--dark-2);
 
-
     border-radius: var(--r-lg);
 
-
-    border:
-        1px solid rgba(255, 255, 255, .08);
-
-
-    box-shadow: var(--shadow);
-
-
-
 }
+
 
 
 .legend-item {
@@ -403,63 +435,46 @@
 
     gap: var(--s2);
 
-
     color: white;
 
-    font-size: 14px;
-
 }
+
+
 
 .box {
 
     width: 22px;
+
     height: 22px;
 
     border-radius: 6px;
 
     display: flex;
-    align-items: center;
-    justify-content: center;
 
-    font-size: 12px;
-    font-weight: 900;
+    align-items: center;
+
+    justify-content: center;
 
 }
 
-/* LEGEND COLORS */
+
+
+/* Legend states */
 
 .box.available {
-
     background: var(--success);
-
 }
 
 
 .box.occupied {
-
     background: var(--surface-2);
-
 }
 
 
 .box.selected {
-
     background: var(--warn);
-
 }
 
-.box.blocked {
-
-    background:
-        repeating-linear-gradient(45deg,
-            #d1d5db,
-            #d1d5db 5px,
-            #9ca3af 5px,
-            #9ca3af 10px);
-
-    border: 1px solid #9ca3af;
-
-}
 
 .box.vip {
 
@@ -482,71 +497,44 @@
 
 }
 
+
+.box.blocked {
+
+    background:
+        repeating-linear-gradient(45deg,
+            #d1d5db,
+            #d1d5db 5px,
+            #9ca3af 5px,
+            #9ca3af 10px);
+
+}
+
+
+
+/* ==========================================================
+   BUTTONS
+========================================================== */
+
+
 .back-button {
 
     position: absolute;
 
     top: var(--s6);
+
     left: var(--s6);
 
-
-    display: flex;
-    align-items: center;
-    gap: var(--s2);
-
-
-    padding: 10px 18px;
-
-
-    border-radius: 999px;
-
-
-    background: rgba(255, 255, 255, .08);
-
-    border: 1px solid rgba(255, 255, 255, .12);
-
-
-    color: white;
-
-    font-size: 14px;
-
-    font-weight: 700;
-
-
-    cursor: pointer;
-
-
-    transition:
-        background .18s ease,
-        transform .18s ease;
-
 }
 
-
-.back-button:hover {
-
-    background: rgba(255, 255, 255, .15);
-
-    transform: translateX(-3px);
-
-}
 
 .refresh-button {
 
-    margin-top: var(--s4);
-
     padding: 10px 18px;
 
     border-radius: 999px;
-
-    border: none;
 
     background: var(--orange);
 
     color: white;
-
-    font-weight: 700;
-
-    cursor: pointer;
 
 }

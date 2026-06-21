@@ -1,5 +1,7 @@
 :host {
     display: block;
+    min-height: 100vh;
+    background: var(--dark);
 }
 
 .payment-page {

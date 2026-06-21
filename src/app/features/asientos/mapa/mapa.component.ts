@@ -10,7 +10,7 @@ import { TipoAsiento } from './seat-types/seat-type.model';
 @Component({
   selector: 'app-mapa',
   standalone: true,
-  imports: [PanelLateralComponent, ErrorComponent],
+  imports: [PanelLateralComponent, ErrorComponent, StepperComponent],
   templateUrl: './mapa.component.html',
   styleUrl: './mapa.component.scss',
 })
@@ -110,7 +110,7 @@ export class MapaComponent {
   readonly salaBloqueada = computed(() =>
     this.asientos().every((asiento) => asiento.estado === 'bloqueado'),
   );
-  
+
   //---------------------------------------testing testing para mapa refresh
   simularCambio() {
     const nuevosAsientos: Asiento[] = this.asientos().map((asiento) => {
@@ -138,4 +138,5 @@ export class MapaComponent {
     };
   }
 }
-import { EstadoAsiento } from './seat-states/seat-state.model';
+import { EstadoAsiento } from './seat-states/seat-state.model';import { StepperComponent } from '../../checkout/stepper/stepper.component';
+

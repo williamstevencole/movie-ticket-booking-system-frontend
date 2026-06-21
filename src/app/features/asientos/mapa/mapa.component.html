@@ -1,36 +1,23 @@
 <main class="page">
 
+    <app-stepper class="dark-stepper"></app-stepper>
+
+
     <section class="booking-layout">
+
 
         <!-- LEFT SIDE -->
         <aside class="checkout-side">
-
-            <header class="header">
-
-                <h1>
-                    Elige tus asientos
-                </h1>
-
-                <p>
-                    Función
-                    <strong>{{ funcionId() }}</strong>
-                </p>
-
-            </header>
-
+            
 
             <app-panel-lateral [asientosSeleccionados]="asientosSeleccionados()">
             </app-panel-lateral>
-
-
 
         </aside>
 
         <!-- RIGHT SIDE -->
 
         <section class="cinema-area">
-
-
 
             <section class="cinema-screen">
 
@@ -43,8 +30,6 @@
             </section>
 
             <section class="container_map">
-
-
 
                 <section class="seat-map">
 

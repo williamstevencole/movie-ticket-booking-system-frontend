@@ -2,11 +2,12 @@ import { Component, signal } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { MOCK_PELICULA_DETALLE } from '../../../mocks/data/cartelera-display.mock';
+import { StepperComponent } from '../stepper/stepper.component';
 
 @Component({
   selector: 'app-confirmacion',
   standalone: true,
-  imports: [],
+  imports: [StepperComponent],
   templateUrl: './confirmacion.component.html',
   styleUrl: './confirmacion.component.scss',
 })

@@ -1,0 +1,47 @@
+
+<nav class="stepper">
+
+
+    @for(step of steps; track step.id) {
+
+
+        <div 
+            class="step"
+            [class.done]="getStatus(step) === 'done'"
+            [class.current]="getStatus(step) === 'current'"
+            [class.pending]="getStatus(step) === 'pending'"
+        >
+
+
+            <div class="circle">
+
+                @if(getStatus(step) === 'done') {
+
+                    ✓
+
+                } @else {
+
+                    {{ step.id }}
+
+                }
+
+            </div>
+
+
+
+            <span>
+                PASO {{step.id}}
+                <strong>
+                    {{step.label}}
+                </strong>
+            </span>
+
+
+
+        </div>
+
+
+    }
+
+
+</nav>
