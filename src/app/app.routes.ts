@@ -208,6 +208,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/precios',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/precios/precios.component').then(
+        (m) => m.AdminPreciosComponent,
+      ),
+  },
+  {
     path: 'admin/cupones',
     pathMatch: 'full',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
