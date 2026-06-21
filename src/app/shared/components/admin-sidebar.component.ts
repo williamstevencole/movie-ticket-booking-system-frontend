@@ -21,6 +21,7 @@ import {
   LucideChartColumn,
   LucideUsers,
   LucideUserRound,
+  LucideUserSearch,
   LucideNotebookText,
   LucideLogOut,
   type LucideIconInput,
@@ -225,6 +226,16 @@ export class AdminSidebarComponent {
           count: 3,
           urgent: true,
           routerLink: '/admin/reembolsos',
+        },
+      ],
+    },
+    {
+      title: 'Taquilla',
+      links: [
+        {
+          label: 'Buscar cliente',
+          icon: LucideUserSearch,
+          routerLink: '/admin/recepcionista/buscar-cliente',
         },
       ],
     },

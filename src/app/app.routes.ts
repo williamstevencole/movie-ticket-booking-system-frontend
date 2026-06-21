@@ -232,6 +232,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/recepcionista/buscar-cliente',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import(
+        './features/admin/recepcionista/buscar-cliente/buscar-cliente.component'
+      ).then((m) => m.RecepcionistaBuscarClienteComponent),
+  },
+  {
     path: 'admin/cupones',
     pathMatch: 'full',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
