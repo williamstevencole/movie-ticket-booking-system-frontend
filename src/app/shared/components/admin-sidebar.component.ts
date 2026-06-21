@@ -247,7 +247,11 @@ export class AdminSidebarComponent {
       title: 'Sistema',
       links: [
         { label: 'Clientes', icon: LucideUserRound, routerLink: '/admin/clientes' },
-        { label: 'Usuarios & roles', icon: LucideUsers },
+        {
+          label: 'Usuarios & roles',
+          icon: LucideUsers,
+          routerLink: '/admin/usuarios-roles',
+        },
         { label: 'Bitácora', icon: LucideNotebookText, routerLink: '/admin/bitacora' },
       ],
     },

@@ -14,6 +14,7 @@ import { PoliticasCancelacionService } from '../../shared/services/politicas-can
 import { TiposAsientoService } from '../../shared/services/tipos-asiento.service';
 import { ClientesService } from '../../shared/services/clientes.service';
 import { PreciosService } from '../../shared/services/precios.service';
+import { UsuariosService } from '../../shared/services/usuarios.service';
 
 import { MockCiudadesService } from '../../mocks/services/ciudades.mock.service';
 import { MockCinesService } from '../../mocks/services/cines.mock.service';
@@ -29,6 +30,7 @@ import { MockPoliticasCancelacionService } from '../../mocks/services/politicas-
 import { MockTiposAsientoService } from '../../mocks/services/tipos-asiento.mock.service';
 import { MockClientesService } from '../../mocks/services/clientes.mock.service';
 import { MockPreciosService } from '../../mocks/services/precios.mock.service';
+import { MockUsuariosService } from '../../mocks/services/usuarios.mock.service';
 
 export const dataProviders: Provider[] = [
   { provide: CiudadesService, useClass: MockCiudadesService },
@@ -45,4 +47,5 @@ export const dataProviders: Provider[] = [
   { provide: TiposAsientoService, useClass: MockTiposAsientoService },
   { provide: ClientesService, useClass: MockClientesService },
   { provide: PreciosService, useClass: MockPreciosService },
+  { provide: UsuariosService, useClass: MockUsuariosService },
 ];
