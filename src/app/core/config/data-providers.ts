@@ -11,6 +11,7 @@ import { ReservasService } from '../../shared/services/reservas.service';
 import { PagosService } from '../../shared/services/pagos.service';
 import { ReembolsosService } from '../../shared/services/reembolsos.service';
 import { PoliticasCancelacionService } from '../../shared/services/politicas-cancelacion.service';
+import { BoletosService } from '../../shared/services/boletos.service';
 
 import { MockCiudadesService } from '../../mocks/services/ciudades.mock.service';
 import { MockCinesService } from '../../mocks/services/cines.mock.service';
@@ -23,6 +24,7 @@ import { MockReservasService } from '../../mocks/services/reservas.mock.service'
 import { MockPagosService } from '../../mocks/services/pagos.mock.service';
 import { MockReembolsosService } from '../../mocks/services/reembolsos.mock.service';
 import { MockPoliticasCancelacionService } from '../../mocks/services/politicas-cancelacion.mock.service';
+import { MockBoletosService } from '../../mocks/services/boletos.mock.service';
 
 export const dataProviders: Provider[] = [
   { provide: CiudadesService, useClass: MockCiudadesService },
@@ -36,4 +38,5 @@ export const dataProviders: Provider[] = [
   { provide: PagosService, useClass: MockPagosService },
   { provide: ReembolsosService, useClass: MockReembolsosService },
   { provide: PoliticasCancelacionService, useClass: MockPoliticasCancelacionService },
+  { provide: BoletosService, useClass: MockBoletosService },
 ];
