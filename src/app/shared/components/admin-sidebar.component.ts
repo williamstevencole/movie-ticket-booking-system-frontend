@@ -21,6 +21,7 @@ import {
   LucideChartColumn,
   LucideUsers,
   LucideUserRound,
+  LucideUserSearch,
   LucideNotebookText,
   LucideLogOut,
   type LucideIconInput,
@@ -187,7 +188,11 @@ export class AdminSidebarComponent {
           icon: LucideSofa,
           routerLink: '/admin/tipos-asiento',
         },
-        { label: 'Precios por cine', icon: LucideBanknote },
+        {
+          label: 'Precios por cine',
+          icon: LucideBanknote,
+          routerLink: '/admin/precios',
+        },
       ],
     },
     {
@@ -220,6 +225,17 @@ export class AdminSidebarComponent {
           icon: LucideUndo2,
           count: 3,
           urgent: true,
+          routerLink: '/admin/reembolsos',
+        },
+      ],
+    },
+    {
+      title: 'Taquilla',
+      links: [
+        {
+          label: 'Buscar cliente',
+          icon: LucideUserSearch,
+          routerLink: '/admin/recepcionista/buscar-cliente',
         },
       ],
     },
@@ -242,7 +258,11 @@ export class AdminSidebarComponent {
       title: 'Sistema',
       links: [
         { label: 'Clientes', icon: LucideUserRound, routerLink: '/admin/clientes' },
-        { label: 'Usuarios & roles', icon: LucideUsers },
+        {
+          label: 'Usuarios & roles',
+          icon: LucideUsers,
+          routerLink: '/admin/usuarios-roles',
+        },
         { label: 'Bitácora', icon: LucideNotebookText, routerLink: '/admin/bitacora' },
       ],
     },

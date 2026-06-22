@@ -208,6 +208,38 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/precios',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/precios/precios.component').then(
+        (m) => m.AdminPreciosComponent,
+      ),
+  },
+  {
+    path: 'admin/reembolsos',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/reembolsos/reembolsos.component').then(
+        (m) => m.AdminReembolsosComponent,
+      ),
+  },
+  {
+    path: 'admin/usuarios-roles',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/usuarios-roles/usuarios-roles.component').then(
+        (m) => m.AdminUsuariosRolesComponent,
+      ),
+  },
+  {
+    path: 'admin/recepcionista/buscar-cliente',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import(
+        './features/admin/recepcionista/buscar-cliente/buscar-cliente.component'
+      ).then((m) => m.RecepcionistaBuscarClienteComponent),
+  },
+  {
     path: 'admin/cupones',
     pathMatch: 'full',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],

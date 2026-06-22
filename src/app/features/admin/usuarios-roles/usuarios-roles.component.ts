@@ -1,0 +1,584 @@
+import { Component, computed, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import {
+  LucidePlus,
+  LucideSearch,
+  LucidePencil,
+  LucideKeyRound,
+  LucidePower,
+  LucidePowerOff,
+  LucideX,
+  LucideUsers,
+  LucideShieldCheck,
+  LucideTriangleAlert,
+  LucideUserRound,
+  LucideCheck,
+} from '@lucide/angular';
+
+import {
+  RolStaff,
+  UsuarioStaff,
+  UsuariosService,
+} from '../../../shared/services/usuarios.service';
+import { CinesService } from '../../../shared/services/cines.service';
+import { AdminSidebarComponent } from '../../../shared/components/admin-sidebar.component';
+
+type Toast = { kind: 'ok' | 'err'; text: string } | null;
+type ModalMode =
+  | { kind: 'closed' }
+  | { kind: 'create' }
+  | { kind: 'edit'; usuario: UsuarioStaff };
+type CineLite = { id: string; nombre: string };
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+@Component({
+  selector: 'app-admin-usuarios-roles',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    AdminSidebarComponent,
+    LucidePlus,
+    LucideSearch,
+    LucidePencil,
+    LucideKeyRound,
+    LucidePower,
+    LucidePowerOff,
+    LucideX,
+    LucideUsers,
+    LucideShieldCheck,
+    LucideTriangleAlert,
+    LucideUserRound,
+    LucideCheck,
+  ],
+  template: `
+    <div class="admin-body">
+      <app-admin-sidebar />
+      <main class="admin-main">
+        <div class="shell">
+          <header class="topbar">
+            <div class="crumb">
+              <a routerLink="/admin">Admin</a>
+              <span aria-hidden="true">·</span>
+              <span class="crumb-current">Usuarios &amp; roles</span>
+            </div>
+            <div class="head-row">
+              <div>
+                <h1>Usuarios &amp; roles</h1>
+                <p class="lead">
+                  Gestiona el staff y sus accesos. {{ count('admin') }}
+                  administradores · {{ count('recepcionista') }} recepcionistas.
+                </p>
+              </div>
+              @if (tab() === 'usuarios') {
+                <button class="btn btn-primary" (click)="openCreate()">
+                  <svg lucidePlus [size]="16"></svg>
+                  <span>Nuevo usuario</span>
+                </button>
+              }
+            </div>
+          </header>
+
+          <section class="tabs" role="tablist">
+            <button
+              class="tab"
+              role="tab"
+              [class.on]="tab() === 'usuarios'"
+              (click)="tab.set('usuarios')"
+            >
+              <svg lucideUsers [size]="15"></svg>
+              <span>Usuarios</span>
+            </button>
+            <button
+              class="tab"
+              role="tab"
+              [class.on]="tab() === 'roles'"
+              (click)="tab.set('roles')"
+            >
+              <svg lucideShieldCheck [size]="15"></svg>
+              <span>Roles</span>
+            </button>
+          </section>
+
+          @if (tab() === 'usuarios') {
+            <section class="toolbar">
+              <label class="search">
+                <svg lucideSearch [size]="16"></svg>
+                <input
+                  class="search-input"
+                  type="text"
+                  placeholder="Buscar por nombre o email…"
+                  [ngModel]="searchTerm()"
+                  (ngModelChange)="searchTerm.set($event)"
+                />
+              </label>
+              <div class="seg">
+                @for (r of rolFilters; track r.key) {
+                  <button
+                    class="seg-btn"
+                    [class.on]="rolFilter() === r.key"
+                    (click)="rolFilter.set(r.key)"
+                  >
+                    {{ r.label }}
+                  </button>
+                }
+              </div>
+              <span class="result-count tnum">
+                {{ filtered().length }} de {{ usuarios().length }}
+              </span>
+            </section>
+
+            <section class="card">
+              @if (filtered().length === 0) {
+                <div class="empty">
+                  <span class="empty-mark">
+                    <svg lucideUserRound [size]="22"></svg>
+                  </span>
+                  <h3>Sin resultados</h3>
+                  <p>Nada coincide con los filtros actuales.</p>
+                </div>
+              } @else {
+                <div class="table-scroll">
+                  <table class="tbl">
+                    <thead>
+                      <tr>
+                        <th>Usuario</th>
+                        <th>Rol</th>
+                        <th>Cines asignados</th>
+                        <th>Último acceso</th>
+                        <th>Estado</th>
+                        <th class="col-acc" aria-label="Acciones"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (u of filtered(); track u.id) {
+                        <tr [class.is-inactive]="!u.activo">
+                          <td>
+                            <div class="user-cell">
+                              <span class="avatar">{{ initials(u.nombre) }}</span>
+                              <div>
+                                <div class="nombre">{{ u.nombre }}</div>
+                                <div class="email">{{ u.email }}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <span class="rol-badge" [class.admin]="u.rol === 'admin'">
+                              {{ rolLabel(u.rol) }}
+                            </span>
+                          </td>
+                          <td class="muted">{{ cinesLabel(u) }}</td>
+                          <td class="muted tnum">{{ fmtAcceso(u.ultimoAcceso) }}</td>
+                          <td>
+                            <span
+                              class="estado-badge"
+                              [class.activo]="u.activo"
+                              [class.inactivo]="!u.activo"
+                            >
+                              {{ u.activo ? 'Activo' : 'Inactivo' }}
+                            </span>
+                          </td>
+                          <td class="col-acc">
+                            <div class="row-acc">
+                              <button
+                                class="icon-btn"
+                                (click)="openEdit(u)"
+                                title="Editar"
+                                aria-label="Editar usuario"
+                              >
+                                <svg lucidePencil [size]="15"></svg>
+                              </button>
+                              <button
+                                class="icon-btn"
+                                (click)="resetPassword(u)"
+                                title="Resetear contraseña"
+                                aria-label="Resetear contraseña"
+                              >
+                                <svg lucideKeyRound [size]="15"></svg>
+                              </button>
+                              <button
+                                class="icon-btn"
+                                [class.danger]="u.activo"
+                                (click)="toggle(u)"
+                                [title]="u.activo ? 'Desactivar' : 'Activar'"
+                              >
+                                @if (u.activo) {
+                                  <svg lucidePower [size]="15"></svg>
+                                } @else {
+                                  <svg lucidePowerOff [size]="15"></svg>
+                                }
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </section>
+          } @else {
+            <section class="roles-grid">
+              <article class="role-card">
+                <header>
+                  <span class="role-mark admin"><svg lucideShieldCheck [size]="18"></svg></span>
+                  <div>
+                    <h3>Administrador</h3>
+                    <span class="role-count">{{ count('admin') }} usuarios</span>
+                  </div>
+                </header>
+                <ul class="perms">
+                  <li><svg lucideCheck [size]="14"></svg> Acceso a todos los cines</li>
+                  <li><svg lucideCheck [size]="14"></svg> Gestión de catálogo, funciones y precios</li>
+                  <li><svg lucideCheck [size]="14"></svg> Procesar reembolsos y políticas</li>
+                  <li><svg lucideCheck [size]="14"></svg> Administrar usuarios y roles</li>
+                </ul>
+              </article>
+              <article class="role-card">
+                <header>
+                  <span class="role-mark"><svg lucideUserRound [size]="18"></svg></span>
+                  <div>
+                    <h3>Recepcionista</h3>
+                    <span class="role-count">{{ count('recepcionista') }} usuarios</span>
+                  </div>
+                </header>
+                <ul class="perms">
+                  <li><svg lucideCheck [size]="14"></svg> Acceso solo al cine asignado</li>
+                  <li><svg lucideCheck [size]="14"></svg> Buscar clientes y vender en taquilla</li>
+                  <li><svg lucideCheck [size]="14"></svg> Cobrar reservas en efectivo</li>
+                  <li class="off">Sin acceso a configuración del sistema</li>
+                </ul>
+              </article>
+            </section>
+          }
+        </div>
+      </main>
+    </div>
+
+    <!-- Crear / editar -->
+    @if (modal().kind !== 'closed') {
+      <div class="overlay" (click)="closeModal()">
+        <div class="dialog" (click)="$event.stopPropagation()">
+          <header class="dlg-head">
+            <h2>{{ modal().kind === 'create' ? 'Nuevo usuario' : 'Editar usuario' }}</h2>
+            <button class="icon-btn" (click)="closeModal()" aria-label="Cerrar">
+              <svg lucideX [size]="16"></svg>
+            </button>
+          </header>
+          <div class="dlg-body">
+            <div class="field">
+              <label for="u-nombre">Nombre completo</label>
+              <input
+                id="u-nombre"
+                class="input"
+                type="text"
+                maxlength="60"
+                placeholder="Ej. Ana López"
+                [ngModel]="formNombre()"
+                (ngModelChange)="formNombre.set($event)"
+                autocomplete="off"
+              />
+            </div>
+            <div class="field mt">
+              <label for="u-email">Email</label>
+              <input
+                id="u-email"
+                class="input"
+                type="email"
+                placeholder="usuario@cinetario.com"
+                [ngModel]="formEmail()"
+                (ngModelChange)="formEmail.set($event)"
+                autocomplete="off"
+              />
+            </div>
+            <div class="field mt">
+              <label>Rol</label>
+              <div class="seg seg-block">
+                <button
+                  class="seg-btn"
+                  [class.on]="formRol() === 'recepcionista'"
+                  (click)="formRol.set('recepcionista')"
+                >
+                  Recepcionista
+                </button>
+                <button
+                  class="seg-btn"
+                  [class.on]="formRol() === 'admin'"
+                  (click)="formRol.set('admin')"
+                >
+                  Administrador
+                </button>
+              </div>
+            </div>
+
+            @if (formRol() === 'recepcionista') {
+              <div class="field mt">
+                <label>Cines asignados</label>
+                <div class="cine-list">
+                  @for (c of cines(); track c.id) {
+                    <label class="cine-opt" [class.on]="isCineOn(c.id)">
+                      <input
+                        type="checkbox"
+                        [checked]="isCineOn(c.id)"
+                        (change)="toggleCine(c.id)"
+                      />
+                      <span>{{ c.nombre }}</span>
+                    </label>
+                  }
+                </div>
+              </div>
+            } @else {
+              <div class="info-row mt">
+                <svg lucideShieldCheck [size]="15"></svg>
+                <span>Los administradores tienen acceso a <strong>todos los cines</strong>.</span>
+              </div>
+            }
+
+            @if (modalError()) {
+              <div class="alert">
+                <svg lucideTriangleAlert [size]="14"></svg>
+                <span>{{ modalError() }}</span>
+              </div>
+            }
+          </div>
+          <footer class="dlg-foot">
+            <button class="btn" (click)="closeModal()">Cancelar</button>
+            <button class="btn btn-primary" [disabled]="!canSubmit()" (click)="submitModal()">
+              {{ modal().kind === 'create' ? 'Crear usuario' : 'Guardar cambios' }}
+            </button>
+          </footer>
+        </div>
+      </div>
+    }
+
+    <!-- Resultado reset password -->
+    @if (resetResult(); as res) {
+      <div class="overlay" (click)="resetResult.set(null)">
+        <div class="dialog dialog-sm" (click)="$event.stopPropagation()">
+          <header class="dlg-head">
+            <h2>Contraseña temporal</h2>
+            <button class="icon-btn" (click)="resetResult.set(null)" aria-label="Cerrar">
+              <svg lucideX [size]="16"></svg>
+            </button>
+          </header>
+          <div class="dlg-body">
+            <p class="confirm-text">
+              Se generó una contraseña temporal para
+              <strong>{{ res.nombre }}</strong>. Compártela de forma segura; se
+              le pedirá cambiarla al ingresar.
+            </p>
+            <div class="pwd-box">
+              <code>{{ res.pwd }}</code>
+              <button class="btn btn-sm" (click)="copyPwd(res.pwd)">Copiar</button>
+            </div>
+          </div>
+          <footer class="dlg-foot">
+            <button class="btn btn-primary" (click)="resetResult.set(null)">Entendido</button>
+          </footer>
+        </div>
+      </div>
+    }
+
+    @if (toast(); as t) {
+      <div class="toast" [class.ok]="t.kind === 'ok'" [class.err]="t.kind === 'err'">
+        {{ t.text }}
+      </div>
+    }
+  `,
+  styleUrl: './usuarios-roles.component.scss',
+})
+export class AdminUsuariosRolesComponent {
+  private svc = inject(UsuariosService);
+  private cinesSvc = inject(CinesService);
+
+  readonly rolFilters: { key: 'todos' | RolStaff; label: string }[] = [
+    { key: 'todos', label: 'Todos' },
+    { key: 'admin', label: 'Admins' },
+    { key: 'recepcionista', label: 'Recepción' },
+  ];
+
+  readonly tab = signal<'usuarios' | 'roles'>('usuarios');
+  readonly usuarios = signal<UsuarioStaff[]>([]);
+  readonly cines = signal<CineLite[]>([]);
+  readonly searchTerm = signal('');
+  readonly rolFilter = signal<'todos' | RolStaff>('todos');
+
+  readonly modal = signal<ModalMode>({ kind: 'closed' });
+  readonly modalError = signal<string | null>(null);
+  readonly formNombre = signal('');
+  readonly formEmail = signal('');
+  readonly formRol = signal<RolStaff>('recepcionista');
+  readonly formCines = signal<string[]>([]);
+
+  readonly resetResult = signal<{ nombre: string; pwd: string } | null>(null);
+  readonly toast = signal<Toast>(null);
+
+  private cineNombreById = new Map<string, string>();
+
+  readonly filtered = computed(() => {
+    const q = this.searchTerm().trim().toLowerCase();
+    const rol = this.rolFilter();
+    return this.usuarios().filter((u) => {
+      if (rol !== 'todos' && u.rol !== rol) return false;
+      if (!q) return true;
+      return (
+        u.nombre.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+      );
+    });
+  });
+
+  readonly canSubmit = computed(() => {
+    if (!this.formNombre().trim()) return false;
+    if (!EMAIL_RE.test(this.formEmail().trim())) return false;
+    if (this.formRol() === 'recepcionista' && this.formCines().length === 0) {
+      return false;
+    }
+    return true;
+  });
+
+  constructor() {
+    this.refresh();
+    this.cinesSvc.list({ limit: 100 }).subscribe((page) => {
+      const lite = page.data.map((c) => ({ id: c.id, nombre: c.nombre }));
+      this.cines.set(lite);
+      this.cineNombreById = new Map(lite.map((c) => [c.id, c.nombre]));
+    });
+  }
+
+  count(rol: RolStaff): number {
+    return this.usuarios().filter((u) => u.rol === rol).length;
+  }
+
+  initials(nombre: string): string {
+    return nombre
+      .split(' ')
+      .filter((p) => p.length)
+      .slice(0, 2)
+      .map((p) => p[0]!.toUpperCase())
+      .join('');
+  }
+
+  rolLabel(rol: RolStaff): string {
+    return rol === 'admin' ? 'Administrador' : 'Recepcionista';
+  }
+
+  cinesLabel(u: UsuarioStaff): string {
+    if (u.rol === 'admin') return 'Todos los cines';
+    if (u.cines.length === 0) return '—';
+    return u.cines.map((id) => this.cineNombreById.get(id) ?? id).join(', ');
+  }
+
+  fmtAcceso(iso: string | null): string {
+    if (!iso) return 'Nunca';
+    return new Date(iso).toLocaleDateString('es-HN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  }
+
+  // ── crear / editar ──
+
+  openCreate() {
+    this.formNombre.set('');
+    this.formEmail.set('');
+    this.formRol.set('recepcionista');
+    this.formCines.set([]);
+    this.modalError.set(null);
+    this.modal.set({ kind: 'create' });
+  }
+
+  openEdit(u: UsuarioStaff) {
+    this.formNombre.set(u.nombre);
+    this.formEmail.set(u.email);
+    this.formRol.set(u.rol);
+    this.formCines.set([...u.cines]);
+    this.modalError.set(null);
+    this.modal.set({ kind: 'edit', usuario: u });
+  }
+
+  closeModal() {
+    this.modal.set({ kind: 'closed' });
+    this.modalError.set(null);
+  }
+
+  isCineOn(id: string): boolean {
+    return this.formCines().includes(id);
+  }
+
+  toggleCine(id: string) {
+    this.formCines.update((arr) =>
+      arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id],
+    );
+  }
+
+  submitModal() {
+    if (!this.canSubmit()) return;
+    const payload = {
+      nombre: this.formNombre().trim(),
+      email: this.formEmail().trim(),
+      rol: this.formRol(),
+      cines: this.formCines(),
+    };
+    const mode = this.modal();
+
+    if (mode.kind === 'create') {
+      this.svc.create(payload).subscribe({
+        next: () => {
+          this.refresh();
+          this.closeModal();
+          this.showToast('ok', `${payload.nombre} creado`);
+        },
+        error: (e) => this.modalError.set(e?.message ?? 'No se pudo crear'),
+      });
+    } else if (mode.kind === 'edit') {
+      this.svc.update(mode.usuario.id, payload).subscribe({
+        next: () => {
+          this.refresh();
+          this.closeModal();
+          this.showToast('ok', `${payload.nombre} actualizado`);
+        },
+        error: (e) => this.modalError.set(e?.message ?? 'No se pudo guardar'),
+      });
+    }
+  }
+
+  // ── acciones de fila ──
+
+  toggle(u: UsuarioStaff) {
+    this.svc.setActivo(u.id, !u.activo).subscribe({
+      next: () => {
+        this.refresh();
+        this.showToast('ok', `${u.nombre} ${u.activo ? 'desactivado' : 'activado'}`);
+      },
+      error: (e) => this.showToast('err', e?.message ?? 'No se pudo actualizar'),
+    });
+  }
+
+  resetPassword(u: UsuarioStaff) {
+    this.svc.resetPassword(u.id).subscribe({
+      next: (res) => this.resetResult.set({ nombre: u.nombre, pwd: res.tempPassword }),
+      error: (e) => this.showToast('err', e?.message ?? 'No se pudo resetear'),
+    });
+  }
+
+  copyPwd(pwd: string) {
+    navigator.clipboard?.writeText(pwd).then(
+      () => this.showToast('ok', 'Contraseña copiada'),
+      () => this.showToast('err', 'No se pudo copiar'),
+    );
+  }
+
+  private refresh() {
+    this.svc.list().subscribe((data) => this.usuarios.set(data));
+  }
+
+  private showToast(kind: 'ok' | 'err', text: string) {
+    this.toast.set({ kind, text });
+    setTimeout(() => this.toast.set(null), 3200);
+  }
+}

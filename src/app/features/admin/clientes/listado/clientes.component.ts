@@ -11,10 +11,6 @@ import {
 } from '@lucide/angular';
 
 import { Cliente, ClientesService } from '../../../../shared/services/clientes.service';
-import {
-  Ciudad,
-  CiudadesService,
-} from '../../../../shared/services/ciudades.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 import { PagerComponent } from '../../../../shared/components/pager.component';
 
@@ -85,17 +81,6 @@ type EstadoFiltro = 'todos' | 'activos' | 'bloqueados';
               >Bloqueados</button>
             </div>
 
-            <select
-              class="select-filter"
-              [value]="idCiudad()"
-              (change)="onCiudadChange($event)"
-            >
-              <option value="">Todas las ciudades</option>
-              @for (c of ciudades(); track c.id) {
-                <option [value]="c.id">{{ c.nombre }}</option>
-              }
-            </select>
-
             <span class="result-count tnum">
               {{ filtered().length }} de {{ clientes().length }}
             </span>
@@ -108,7 +93,7 @@ type EstadoFiltro = 'todos' | 'activos' | 'bloqueados';
                   <svg lucideUserRound [size]="22"></svg>
                 </span>
                 <h3>Sin clientes</h3>
-                @if (busqueda() || idCiudad() || estadoFiltro() !== 'todos') {
+                @if (busqueda() || estadoFiltro() !== 'todos') {
                   <p>No hay clientes que coincidan con los filtros.</p>
                 } @else {
                   <p>Aún no hay clientes registrados.</p>
@@ -213,13 +198,10 @@ type EstadoFiltro = 'todos' | 'activos' | 'bloqueados';
 })
 export class AdminClientesComponent {
   private clientesSvc = inject(ClientesService);
-  private ciudadesSvc = inject(CiudadesService);
 
   readonly clientes = signal<Cliente[]>([]);
-  readonly ciudades = signal<Ciudad[]>([]);
 
   readonly busqueda = signal<string>('');
-  readonly idCiudad = signal<string>('');
   readonly estadoFiltro = signal<EstadoFiltro>('todos');
 
   readonly page = signal(1);
@@ -227,22 +209,14 @@ export class AdminClientesComponent {
   readonly toast = signal<Toast>(null);
   readonly bloqueando = signal<string | null>(null);
 
-  readonly ciudadesById = computed(() => {
-    const map = new Map<string, Ciudad>();
-    for (const c of this.ciudades()) map.set(c.id, c);
-    return map;
-  });
-
   readonly totalActivos = computed(
     () => this.clientes().filter((c) => c.estado === 'activo').length,
   );
 
   readonly filtered = computed(() => {
     const needle = this.busqueda().trim().toLowerCase();
-    const ciudad = this.idCiudad();
     const estado = this.estadoFiltro();
     return this.clientes().filter((c) => {
-      if (ciudad && c.id_ciudad !== ciudad) return false;
       if (estado === 'activos' && c.estado !== 'activo') return false;
       if (estado === 'bloqueados' && c.estado !== 'bloqueado') return false;
       if (needle) {
@@ -261,7 +235,6 @@ export class AdminClientesComponent {
 
   constructor() {
     this.clientesSvc.list().subscribe((lista) => this.clientes.set(lista));
-    this.ciudadesSvc.list().subscribe((lista) => this.ciudades.set(lista));
 
     effect(() => {
       const total = this.filtered().length;
@@ -280,19 +253,9 @@ export class AdminClientesComponent {
     this.page.set(1);
   }
 
-  onCiudadChange(e: Event) {
-    this.idCiudad.set((e.target as HTMLSelectElement).value);
-    this.page.set(1);
-  }
-
   onPageSizeChange(size: number) {
     this.pageSize.set(size);
     this.page.set(1);
-  }
-
-  ciudadNombre(id: string | null): string {
-    if (!id) return '—';
-    return this.ciudadesById().get(id)?.nombre ?? '—';
   }
 
   iniciales(nombre: string): string {
