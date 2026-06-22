@@ -1,169 +1,26 @@
 .stepper {
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 40px;
-
-    margin-bottom: 32px;
-
-    color: var(--text);
-    
-    margin: 1 auto;
-
+  display: flex; gap: var(--s2);
+  padding: var(--s5) 0;
 }
-
-
-
-
 .step {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 12px;
-
-    color: rgba(255, 255, 255, .45);
-
+  display: flex; align-items: center; gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
 }
-
-
-
-.circle {
-
-    width: 38px;
-
-    height: 38px;
-
-    border-radius: 50%;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    font-weight: 800;
-
-    border: 2px solid rgba(255, 255, 255, .2);
-
+.step .n {
+  width: 28px; height: 28px;
+  background: var(--surface); color: var(--text-3);
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px;
+  flex-shrink: 0;
 }
-
-
-
-span {
-
-    display: flex;
-
-    flex-direction: column;
-
-    font-size: 12px;
-
-    text-transform: uppercase;
-
-}
-
-
-
-strong {
-
-    font-size: 14px;
-
-    color: white;
-
-}
-
-
-
-/* COMPLETED */
-
-.step.done {
-
-
-    .circle {
-
-        background: #22c55e;
-
-        border-color: #22c55e;
-
-        color: white;
-
-    }
-
-
-}
-
-
-
-/* CURRENT */
-
-.step.current {
-
-
-    .circle {
-
-        border-color: var(--red);
-
-        color: white;
-
-        box-shadow:
-            0 0 0 5px rgba(220, 38, 38, .18);
-
-    }
-
-
-    strong {
-
-        color: var(--red);
-
-    }
-
-}
-
-
-
-/* PENDING */
-
-.step.pending {
-
-
-    opacity: .45;
-
-
-}
-
-
-/* DARK VERSION */
-:host-context(.dark-stepper) {
-
-    .step {
-        color: rgba(255, 255, 255, .5);
-    }
-
-    .step strong {
-        color: white;
-    }
-
-    .step.pending {
-        color: rgba(255, 255, 255, .4);
-    }
-
-}
-
-
-/* LIGHT VERSION */
-:host-context(.light-stepper) {
-
-    .step {
-        color: var(--text-3);
-    }
-
-    .step strong {
-        color: var(--text);
-    }
-
-}
+.step.done { background: var(--bg); border-color: var(--success); }
+.step.done .n { background: var(--success); color: white; }
+.step.now { background: var(--bg); border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft); }
+.step.now .n { background: var(--red); color: white; }
+.step .lbl { font-size: 11px; color: var(--text-3); font-weight: 700; letter-spacing: 0.04em; }
+.step .ttl { font-weight: 700; font-size: 14px; }

@@ -1,172 +1,29 @@
-<main class="confirmation-page">
-
-
-    <section class="page-card">
-
-
-        <app-stepper class="light-stepper"></app-stepper>
-
-        <header class="page-header">
-
-
-
-            <h1>
-                Confirmar reserva
-            </h1>
-
-            <p>
-                Revisa los detalles antes de continuar al pago.
-            </p>
-
-        </header>
-
-
-
-        <section class="checkout-layout">
-
-
-
-            <!-- MOVIE SIDE CARD -->
-
-            <aside class="movie-summary">
-
-                <div class="movie-poster" [class]="pelicula.poster">
-                </div>
-            </aside>
-
-
-
-
-            <!-- DETAILS -->
-
-            <section class="details">
-
-                <div class="reservation-row">
-
-                    <span>
-                        Reserva
-                    </span>
-
-                    <strong>
-                        #CT-48291
-                    </strong>
-
-                </div>
-                <section class="info-grid">
-
-                    <section class="card">
-
-
-                        <h2>
-                            Película
-                        </h2>
-
-
-
-                        <div class="row">
-
-                            <span>
-                                Nombre
-                            </span>
-
-                            <strong>
-                                {{ pelicula.titulo }}
-                            </strong>
-
-                        </div>
-
-
-
-
-                        <div class="row">
-
-                            <span>
-                                Sala
-                            </span>
-
-
-                            <strong>
-                                {{ sala() }}
-                            </strong>
-
-                        </div>
-
-
-
-
-                        <div class="row">
-
-                            <span>
-                                Horario
-                            </span>
-
-
-                            <strong>
-                                {{ horario() }}
-                            </strong>
-
-                        </div>
-
-
-
-                    </section>
-
-
-
-
-
-                    <section class="card">
-
-
-                        <h2>
-                            Asientos
-                        </h2>
-
-
-
-                        <div class="seat-tags">
-
-
-                            @for (asiento of asientos(); track asiento) {
-
-
-                            <span>
-                                {{ asiento }}
-                            </span>
-
-
-                            }
-
-
-                        </div>
-
-
-                    </section>
-                </section>
-
-                <app-resumen [cantidad]="asientos().length" [subtotal]="subtotal()" [cargoServicio]="2">
-                </app-resumen>
-
-                <section class="actions">
-
-                    <button class="btn btn-danger" (click)="volver()">
-                        Volver
-                    </button>
-
-                    <button class="btn btn-primary" (click)="continuarPago()">
-
-                        Continuar al pago
-
-                    </button>
-
-                </section>
-
-
-            </section>
-
-
-        </section>
-
-
-    </section>
-</main>
+<app-appbar />
+<section class="confirmacion-page">
+  <div class="wrap-tight">
+    <app-stepper />
+
+    <div class="form-card">
+      <div class="head">
+        <span class="num">!</span>
+        <div>
+          <h3>Revisa los detalles antes de pagar</h3>
+          <p class="sub">Verifica película, sala y asientos.</p>
+        </div>
+      </div>
+      <div class="body">
+        <div class="prev-row"><span class="lbl">Película</span><span class="v">{{ pelicula }}</span></div>
+        <div class="prev-row"><span class="lbl">Cine</span><span class="v">{{ cine }} · {{ sala }}</span></div>
+        <div class="prev-row"><span class="lbl">Fecha</span><span class="v">{{ fechaHora | date:'EEE d MMM, h:mm a' }}</span></div>
+        <div class="prev-row"><span class="lbl">Asientos</span><span class="v">{{ asientos.join(', ') }}</span></div>
+        <div class="prev-row total"><span class="lbl">Total</span><span class="v tnum">L {{ total }}</span></div>
+
+        <div class="actions">
+          <a class="btn secondary" [routerLink]="['/sala']">Volver</a>
+          <a class="btn primary" [routerLink]="['/checkout/metodos-pago']">Continuar al pago</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<app-footer />

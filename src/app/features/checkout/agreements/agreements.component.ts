@@ -1,59 +1,27 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-agreements',
   standalone: true,
+  imports: [CommonModule],
   templateUrl: './agreements.component.html',
   styleUrl: './agreements.component.scss',
 })
-
 export class AgreementsComponent {
+  @Input() cinema = '';
+  @Output() politicaAceptada = new EventEmitter<boolean>();
+  @Output() recordatorios = new EventEmitter<boolean>();
 
-  @Input() visible = false;
+  readonly aceptaPolitica = signal(false);
+  readonly quiereRecordatorios = signal(false);
 
-  @Output() aceptar = new EventEmitter<void>();
-
-  @Output() cerrar = new EventEmitter<void>();
-
-  @Output() recordatorioCambio = new EventEmitter<boolean>();
-
-
-  aceptado = false;
-
-  recibirRecordatorios = false;
-
-
-  toggle() {
-    this.aceptado = !this.aceptado;
+  onPolitica(v: boolean): void {
+    this.aceptaPolitica.set(v);
+    this.politicaAceptada.emit(v);
   }
-
-
-  toggleRecordatorios() {
-
-    this.recibirRecordatorios = !this.recibirRecordatorios;
-
-    this.recordatorioCambio.emit(this.recibirRecordatorios);
-
+  onRecordatorios(v: boolean): void {
+    this.quiereRecordatorios.set(v);
+    this.recordatorios.emit(v);
   }
-
-
-  confirmar() {
-
-    if (!this.aceptado) return;
-
-    this.aceptar.emit();
-
-  }
-
-
-  cerrarModal() {
-
-    this.aceptado = false;
-
-    this.recibirRecordatorios = false;
-
-    this.cerrar.emit();
-
-  }
-
 }

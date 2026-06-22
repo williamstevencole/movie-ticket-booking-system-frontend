@@ -1,12 +1,12 @@
 import { Component, computed, Input, OnDestroy, signal } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
-import { AgreementsComponent } from '../../agreements/agreements.component';
+import { LucideBanknote } from '@lucide/angular';
 
 @Component({
   selector: 'app-efectivo',
   standalone: true,
-  imports: [AgreementsComponent],
+  imports: [LucideBanknote],
   templateUrl: './efectivo.component.html',
   styleUrl: './efectivo.component.scss',
 })

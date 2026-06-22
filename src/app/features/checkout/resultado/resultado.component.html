@@ -1,220 +1,34 @@
-<main class="result-page">
-
-
-  <section class="result-card">
-
-
-    @if(pagoExitoso()) {
-
-
-    <section class="status success">
-
-
-      <div class="icon">
-        ✓
+<app-appbar />
+<section class="resultado-page">
+  <div class="wrap-tight">
+    @if (resultado === 'exito') {
+      <div class="resultado-card exito">
+        <div class="ico"><svg lucideCheck [size]="36" [strokeWidth]="3"></svg></div>
+        <h1>¡Reserva confirmada!</h1>
+        <p>Tu boleto se envió a <strong>{{ email }}</strong>.</p>
+        <div class="resumen-mini">
+          <div><span class="lbl">Reserva</span><span class="v">{{ numeroReserva }}</span></div>
+          <div><span class="lbl">Película</span><span class="v">{{ pelicula }}</span></div>
+          <div><span class="lbl">Cine</span><span class="v">{{ cine }}</span></div>
+          <div><span class="lbl">Fecha</span><span class="v">{{ fechaHora | date:'EEE d MMM, h:mm a' }}</span></div>
+          <div><span class="lbl">Asientos</span><span class="v">{{ asientos.join(', ') }}</span></div>
+          <div><span class="lbl">Total</span><span class="v tnum">L {{ total }}</span></div>
+        </div>
+        <div class="actions">
+          <a class="btn primary" [routerLink]="['/mis-boletos']">Ver mis boletos</a>
+          <a class="btn secondary" [routerLink]="['/']">Volver al inicio</a>
+        </div>
       </div>
-
-
-      <h1>
-        Pago realizado
-      </h1>
-
-
-      <p>
-        Tu reserva fue confirmada correctamente.
-      </p>
-
-
-    </section>
-
-
-    }
-    @else {
-
-
-    <section class="status error">
-
-
-      <div class="icon">
-        ⚠
+    } @else {
+      <div class="resultado-card error">
+        <div class="ico"><svg lucideX [size]="36" [strokeWidth]="3"></svg></div>
+        <h1>Pago rechazado</h1>
+        <p>{{ mensajeError ?? 'Tu tarjeta fue rechazada. Intenta otra vez o usa otro método.' }}</p>
+        <div class="actions">
+          <a class="btn primary" [routerLink]="['/checkout/metodos-pago']">Reintentar</a>
+        </div>
       </div>
-
-
-      <h1>
-        Pago rechazado
-      </h1>
-
-
-      <p>
-        No fue posible procesar tu pago.
-      </p>
-
-
-    </section>
-
-
     }
-
-
-    @if(pagoExitoso()) {
-
-    <section class="result-content">
-
-      <section class="transaction-card">
-
-
-        <h2>
-          Detalle de transacción
-        </h2>
-
-
-
-        <div class="row">
-
-          <span>
-            Número de reserva
-          </span>
-
-
-          <strong>
-            {{ numeroReserva() }}
-          </strong>
-
-        </div>
-
-
-
-        <div class="row">
-
-          <span>
-            Método de pago
-          </span>
-
-
-          <strong>
-            {{ metodoPago() }}
-          </strong>
-
-        </div>
-
-
-
-        <div class="row">
-
-          <span>
-            Número de transacción
-          </span>
-
-
-          <strong>
-            {{ numeroTransaccion() }}
-          </strong>
-
-        </div>
-
-
-
-
-        <div class="row">
-
-          <span>
-            Fecha
-          </span>
-
-
-          <strong>
-            {{ fecha() }}
-          </strong>
-
-        </div>
-
-
-
-
-        <div class="row total">
-
-          <span>
-            Total
-          </span>
-
-
-          <strong>
-            ${{ monto() }}
-          </strong>
-
-        </div>
-
-
-
-      </section>
-
-
-      <section class="qr-card">
-
-        <h2>
-          Código QR del boleto
-        </h2>
-
-        <div class="qr-placeholder">
-
-          <span>
-            QR
-          </span>
-
-          <p>
-            Aquí aparecerá el código QR de tu boleto
-          </p>
-
-        </div>
-
-      </section>
-
-    </section>
-
-    <section class="actions">
-
-      <button class="secondary" (click)="volverInicio()">
-
-        Volver
-
-      </button>
-
-
-      <button class="primary" (click)="verBoletos()">
-
-        Ver mis boletos
-
-      </button>
-
-    </section>
-
-    }
-    @else {
-
-    <section class="actions">
-
-      <button class="secondary" (click)="volverInicio()">
-
-        Volver
-
-      </button>
-
-
-      <button class="primary" (click)="intentarNuevamente()">
-
-        Intentar nuevamente
-
-      </button>
-
-    </section>
-
-
-    }
-
-
-  </section>
-
-
-
-
-</main>
+  </div>
+</section>
+<app-footer />

@@ -1,232 +1,88 @@
-<main class="payment-page">
-
-
-    <section class="page-card">
-
-
-
-        <app-stepper class="light-stepper"></app-stepper>
-
-
-        <header class="page-header">
-
-            <h1>
-                Método de pago
-            </h1>
-
-
-            <p>
-                Selecciona cómo deseas pagar tu reserva.
-            </p>
-
-
-        </header>
-
-
-
-        <section class="payment-layout">
-
-
-
-            <!-- PAYMENT SIDE -->
-
-            <section class="payment-content">
-
-
-                <section class="card">
-
-
-                    <h2>
-                        Opciones de pago
-                    </h2>
-
-
-
-                    <div class="payment-options">
-
-
-                        <button [class.active]="metodoPago() === 'tarjeta'" (click)="metodoPago.set('tarjeta')">
-
-                            💳 Tarjeta
-
-                        </button>
-
-
-
-                        <button [class.active]="metodoPago() === 'efectivo'" (click)="metodoPago.set('efectivo')">
-
-                            💵 Efectivo
-
-                        </button>
-
-
-                    </div>
-
-
-                </section>
-
-
-
-
-                @if(metodoPago() === 'tarjeta') {
-
-
-                <app-tarjeta></app-tarjeta>
-
-
-                }
-
-
-
-                @if(metodoPago() === 'efectivo') {
-
-
-                <app-efectivo [fechaHora]="fechaHoraFuncion"></app-efectivo>
-
-
-                }
-
-
-
-            </section>
-
-
-
-            <!-- SUMMARY SIDE -->
-
-            <section class="checkout-summary">
-
-
-
-                <section class="card summary">
-
-
-
-                    <h2>
-                        Detalles de la reserva
-                    </h2>
-
-
-
-                    <div class="reservation-row">
-
-
-                        <span>
-                            Reserva
-                        </span>
-
-
-                        <strong>
-                            {{ numeroReserva() }}
-                        </strong>
-
-
-                    </div>
-
-
-
-
-                    <div class="row">
-
-
-                        <span>
-                            Película
-                        </span>
-
-
-                        <strong>
-                            {{ pelicula.titulo }}
-                        </strong>
-
-
-                    </div>
-
-
-
-
-
-                    <div class="row">
-
-
-                        <span>
-                            Sala
-                        </span>
-
-
-                        <strong>
-                            {{ sala() }}
-                        </strong>
-
-
-                    </div>
-
-
-
-
-
-                    <div class="row">
-
-
-                        <span>
-                            Horario
-                        </span>
-
-
-                        <strong>
-                            {{ horario() }}
-                        </strong>
-
-
-                    </div>
-
-
-
-
-
-                    <div class="row">
-
-
-                        <span>
-                            Asientos
-                        </span>
-
-
-                        <strong>
-                            {{ asientos().join(', ') }}
-                        </strong>
-
-
-                    </div>
-
-
-
-                </section>
-
-
-
-
-
-                <section class="card summary">
-                    <app-cupon></app-cupon>
-                </section>
-
-
-
-                <app-resumen [cantidad]="asientos().length" [subtotal]="subtotal()" [cargoServicio]="2">
-                </app-resumen>
-
-
-
-
-            </section>
-
-
-
-        </section>
-
-
-    </section>
-
-
-
-</main>
+<app-appbar />
+<section class="checkout-page">
+  <div class="wrap">
+    <app-stepper />
+
+    <div class="checkout-layout">
+      <div class="main">
+        <div class="form-card">
+          <div class="head">
+            <span class="num">1</span>
+            <div>
+              <h3>Método de pago</h3>
+              <p class="sub">Elige cómo deseas pagar tu reserva.</p>
+            </div>
+          </div>
+          <div class="body">
+            <div class="methods">
+              <button
+                type="button"
+                class="method"
+                [class.sel]="metodoPago() === 'tarjeta'"
+                (click)="metodoPago.set('tarjeta')"
+              >
+                <span class="method-ico"><svg lucideCreditCard [size]="22"></svg></span>
+                <div>
+                  <div class="method-ttl">Tarjeta</div>
+                  <div class="method-sub">Visa, Master, Amex</div>
+                </div>
+              </button>
+              <button
+                type="button"
+                class="method"
+                [class.sel]="metodoPago() === 'efectivo'"
+                (click)="metodoPago.set('efectivo')"
+              >
+                <span class="method-ico"><svg lucideBanknote [size]="22"></svg></span>
+                <div>
+                  <div class="method-ttl">Efectivo</div>
+                  <div class="method-sub">Pago en taquilla hasta 30 min antes</div>
+                </div>
+              </button>
+            </div>
+
+            @if (metodoPago() === 'tarjeta') {
+              <app-tarjeta />
+            } @else {
+              <app-efectivo [fechaHora]="fechaHoraFuncion" />
+            }
+          </div>
+        </div>
+
+        <app-cupon
+          [precioOriginal]="precioOriginal()"
+          (descuentoAplicado)="onDescuentoAplicado($event)"
+        />
+
+        <app-agreements
+          [cinema]="cine()"
+          (politicaAceptada)="politicaAceptada.set($event)"
+          (recordatorios)="recordatorios.set($event)"
+        />
+      </div>
+
+      <aside class="aside">
+        <app-resumen
+          [subtotal]="precioOriginal()"
+          [descuento]="descuento()"
+          [cargoServicio]="15"
+          [pelicula]="pelicula()"
+          [cine]="cine()"
+          [sala]="sala()"
+          [fechaHora]="fechaHoraFuncion"
+          [asientos]="asientos()"
+        />
+
+        <button
+          type="button"
+          class="pagar-btn"
+          [disabled]="!politicaAceptada() || (metodoPago() === 'efectivo' && !efectivoDisponible())"
+          (click)="pagar()"
+        >
+          Pagar L {{ totalFinal() + 15 }}
+        </button>
+      </aside>
+    </div>
+  </div>
+</section>
+<app-footer />

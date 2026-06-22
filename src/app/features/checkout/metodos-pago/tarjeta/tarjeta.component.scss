@@ -1,147 +1,18 @@
-.card {
-
-    background: white;
-
-    border: 1px solid var(--border);
-
-    border-radius: var(--r-lg);
-
-    padding: var(--s5);
-
-    box-shadow: var(--shadow-sm);
-
-
-
-    h2 {
-
-        margin: 0 0 var(--s5);
-
-        font-size: 18px;
-
-        font-weight: 800;
-
-    }
-
+.tarjeta-form { display: flex; flex-direction: column; gap: var(--s3); }
+.tarjeta-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); }
+.tarjeta-form .field { display: flex; flex-direction: column; gap: 6px; }
+.tarjeta-form label {
+  font-size: 11px; font-weight: 700; color: var(--text-3);
+  text-transform: uppercase; letter-spacing: 0.04em;
 }
-
-
-.field {
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: var(--s2);
-
-    margin-bottom: var(--s4);
-
-
-
-    label {
-
-        font-size: 14px;
-
-        font-weight: 700;
-
-    }
-
-
-    input {
-
-        height: 45px;
-
-        border-radius: var(--r);
-
-        border: 1px solid var(--border);
-
-        padding: 0 var(--s3);
-
-        font-size: 14px;
-
-
-        &:focus {
-
-            outline: none;
-
-            border-color: var(--red);
-
-        }
-
-    }
-
+.tarjeta-form input {
+  padding: var(--s3) var(--s4);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 180ms var(--ease);
 }
-
-
-.error {
-
-    margin: 0;
-
-    color: var(--red);
-
-    font-size: 13px;
-
-    font-weight: 600;
-
-    line-height: 1.3;
-
-}
-
-.actions {
-
-    display: flex;
-
-    justify-content: flex-end;
-
-    gap: var(--s3);
-
-    margin-top: var(--s6);
-
-}
-
-.btn {
-
-    height: 48px;
-
-    padding: 0 var(--s6);
-
-    border-radius: 999px;
-
-    font-weight: 700;
-
-    cursor: pointer;
-
-}
-
-
-.btn-primary {
-
-    background: var(--red);
-
-    color: white;
-
-    border: 1px solid var(--red);
-
-}
-
-
-.btn-danger {
-
-    background: white;
-
-    color: var(--red);
-
-    border: 1px solid var(--red);
-
-}
-
-@media(max-width: 800px) {
-
-
-    .payment-layout {
-
-        grid-template-columns: 1fr;
-
-    }
-
-
+.tarjeta-form input:focus {
+  outline: 0; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft);
 }

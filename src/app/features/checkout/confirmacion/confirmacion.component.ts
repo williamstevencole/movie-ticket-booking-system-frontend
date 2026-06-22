@@ -1,38 +1,22 @@
-import { Component, signal } from '@angular/core';
-import { Location } from '@angular/common';
-import { Router } from '@angular/router';
-import { MOCK_PELICULA_DETALLE } from '../../../mocks/data/cartelera-display.mock';
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { StepperComponent } from '../stepper/stepper.component';
-import { ResumenComponent } from '../resumen/resumen.component';
+import { AppbarComponent } from '../../../shared/components/appbar/appbar.component';
+import { FooterComponent } from '../../../shared/components/footer/footer.component';
 
 @Component({
   selector: 'app-confirmacion',
   standalone: true,
-  imports: [StepperComponent, ResumenComponent],
+  imports: [CommonModule, RouterLink, StepperComponent, AppbarComponent, FooterComponent],
   templateUrl: './confirmacion.component.html',
   styleUrl: './confirmacion.component.scss',
 })
 export class ConfirmacionComponent {
-  constructor(
-    private location: Location,
-    private router: Router,
-  ) {}
-
-  readonly sala = signal('Sala 5');
-
-  readonly horario = signal('Hoy · 8:30 PM');
-
-  readonly asientos = signal(['A3', 'A4']);
-
-  readonly subtotal = signal(12);
-
-  pelicula = MOCK_PELICULA_DETALLE;
-
-  volver() {
-    this.location.back();
-  }
-
-  continuarPago() {
-    this.router.navigate(['/checkout/metodos-pago']);
-  }
+  @Input() pelicula = 'Spider-Man: Across the Spider-Verse';
+  @Input() cine = 'Cinetario Mall';
+  @Input() sala = 'Sala 4';
+  @Input() fechaHora = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+  @Input() asientos: string[] = ['A3', 'A4'];
+  @Input() total = 215;
 }

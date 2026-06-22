@@ -1,12 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
-import { AgreementsComponent } from '../../agreements/agreements.component';
 
 @Component({
   selector: 'app-tarjeta',
   standalone: true,
-  imports: [AgreementsComponent],
+  imports: [],
   templateUrl: './tarjeta.component.html',
   styleUrl: './tarjeta.component.scss',
 })

@@ -1,23 +1,21 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-resumen',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './resumen.component.html',
   styleUrl: './resumen.component.scss',
 })
 export class ResumenComponent {
-  // Cantidad de asientos seleccionados
-  cantidad = input<number>(0);
-
-  // Precio total de boletos antes del cargo
-  subtotal = input<number>(0);
-
-  // Cargo configurable desde mock
-  cargoServicio = input<number>(0);
-
-  total = computed(() => this.subtotal() + this.cargoServicio());
-
-  tieneCargo = computed(() => this.cargoServicio() > 0);
+  @Input() pelicula = '';
+  @Input() cine = '';
+  @Input() sala = '';
+  @Input() fechaHora = '';
+  @Input() asientos: string[] = [];
+  @Input() subtotal = 0;
+  @Input() descuento = 0;
+  @Input() cargoServicio = 15;
+  @Input() numeroReserva: string | null = null;
 }

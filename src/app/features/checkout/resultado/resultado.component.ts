@@ -1,37 +1,25 @@
-import { Component, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { AppbarComponent } from '../../../shared/components/appbar/appbar.component';
+import { FooterComponent } from '../../../shared/components/footer/footer.component';
+import { LucideCheck, LucideX } from '@lucide/angular';
 
 @Component({
   selector: 'app-resultado',
   standalone: true,
+  imports: [CommonModule, RouterLink, AppbarComponent, FooterComponent, LucideCheck, LucideX],
   templateUrl: './resultado.component.html',
   styleUrl: './resultado.component.scss',
 })
 export class ResultadoComponent {
-  constructor(private router: Router) {}
-
-  // true = éxito | false = error
-  readonly pagoExitoso = signal(true);
-
-  readonly numeroReserva = signal('#CT-48291');
-
-  readonly metodoPago = signal('Tarjeta');
-
-  readonly monto = signal(12);
-
-  readonly numeroTransaccion = signal('TRX-849201');
-
-  readonly fecha = signal('19/06/2026');
-
-  volverInicio() {
-    this.router.navigate(['/']);
-  }
-
-  verBoletos() {
-    this.router.navigate(['/mis-boletos']);
-  }
-
-  intentarNuevamente() {
-    this.router.navigate(['/checkout/metodos-pago']);
-  }
+  @Input() resultado: 'exito' | 'error' = 'exito';
+  @Input() email = 'tu@email.com';
+  @Input() numeroReserva = '#CT-48291';
+  @Input() pelicula = 'Spider-Man: Across the Spider-Verse';
+  @Input() cine = 'Cinetario Mall';
+  @Input() fechaHora = new Date().toISOString();
+  @Input() asientos: string[] = ['A3', 'A4'];
+  @Input() total = 215;
+  @Input() mensajeError: string | null = null;
 }

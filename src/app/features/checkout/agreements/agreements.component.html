@@ -1,70 +1,30 @@
-@if(visible) {
-
-<div class="overlay">
-
-    <section class="modal">
-
-        <h2>
-            Confirmar compra
-        </h2>
-
-
-        <p>
-            Antes de continuar debes aceptar la política de cancelación
-            del cine y los términos y condiciones.
-        </p>
-
-
-        <label class="checkbox">
-
-            <input type="checkbox" [checked]="aceptado" (change)="toggle()">
-
-            <span>
-                Acepto la política de cancelación y los términos y condiciones.
-            </span>
-
-        </label>
-
-        <label class="checkbox optional">
-
-            <input type="checkbox" [checked]="recibirRecordatorios" (change)="toggleRecordatorios()">
-
-            <span>
-                Quiero recibir recordatorios por correo el día de mi función.
-            </span>
-
-        </label>
-
-
-
-        <button class="policy-link">
-
-            Ver política de cancelación
-
-        </button>
-
-
-
-        <div class="actions">
-
-            <button class="cancel" (click)="cerrarModal()">
-
-                Cancelar
-
-            </button>
-
-
-            <button class="confirm" [disabled]="!aceptado" (click)="confirmar()">
-
-                Aceptar
-
-            </button>
-
-        </div>
-
-
-    </section>
-
+<div class="form-card">
+  <div class="head">
+    <span class="num">3</span>
+    <div>
+      <h3>Te enviamos el boleto</h3>
+      <p class="sub">Confirma los términos antes de pagar.</p>
+    </div>
+  </div>
+  <div class="body">
+    <label class="agreement">
+      <input
+        type="checkbox"
+        [checked]="aceptaPolitica()"
+        (change)="onPolitica($any($event.target).checked)"
+      />
+      <span>
+        Acepto la <a href="#" (click)="$event.preventDefault()">política de cancelación de {{ cinema }}</a>
+        y los términos y condiciones.
+      </span>
+    </label>
+    <label class="agreement opt">
+      <input
+        type="checkbox"
+        [checked]="quiereRecordatorios()"
+        (change)="onRecordatorios($any($event.target).checked)"
+      />
+      <span>Quiero recibir recordatorios por correo el día de mi función.</span>
+    </label>
+  </div>
 </div>
-
-}
