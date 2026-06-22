@@ -1,0 +1,20 @@
+.refund-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--s5);
+}
+.refund-card h3 { margin: 0 0 var(--s4); font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
+.monto-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding-bottom: var(--s4);
+  border-bottom: 1px solid var(--divider);
+  margin-bottom: var(--s4);
+}
+.monto-row .pct { font-size: 14px; font-weight: 700; color: var(--text-2); }
+.monto-row .monto { font-size: 28px; font-weight: 800; color: var(--red-ink); }
+.metodo-row { display: flex; flex-direction: column; gap: var(--s2); }
+.metodo-row .lbl { font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; }
+.nota { font-size: 13px; color: var(--text-2); margin: var(--s4) 0 0; }
+.nota.warn { color: var(--orange-ink); }

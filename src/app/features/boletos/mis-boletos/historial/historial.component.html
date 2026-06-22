@@ -1,0 +1,27 @@
+<section class="historial-section">
+  <h2>Historial reciente</h2>
+  <div class="table-wrap">
+    <table class="historial">
+      <thead>
+        <tr>
+          <th>Película</th>
+          <th>Fecha</th>
+          <th class="col-asientos">Asientos</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (h of items; track h.id) {
+          <tr>
+            <td>{{ h.pelicula }}</td>
+            <td>{{ h.fecha }}</td>
+            <td class="col-asientos">{{ h.asientos }}</td>
+            <td>
+              <span class="pill" [class]="'st-' + h.estado">{{ etiquetaEstado(h.estado) }}</span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

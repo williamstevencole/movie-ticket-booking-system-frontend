@@ -1,0 +1,16 @@
+<button class="resend" (click)="reenviar()" [disabled]="reenviando">
+
+
+    @if(reenviando){
+
+    Espera {{segundos}}s
+
+    }
+    @else {
+
+    ✉ Reenviar
+
+    }
+
+
+</button>

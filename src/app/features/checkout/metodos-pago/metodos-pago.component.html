@@ -1,0 +1,88 @@
+<app-appbar />
+<section class="checkout-page">
+  <div class="wrap">
+    <app-stepper />
+
+    <div class="checkout-layout">
+      <div class="main">
+        <div class="form-card">
+          <div class="head">
+            <span class="num">1</span>
+            <div>
+              <h3>Método de pago</h3>
+              <p class="sub">Elige cómo deseas pagar tu reserva.</p>
+            </div>
+          </div>
+          <div class="body">
+            <div class="methods">
+              <button
+                type="button"
+                class="method"
+                [class.sel]="metodoPago() === 'tarjeta'"
+                (click)="metodoPago.set('tarjeta')"
+              >
+                <span class="method-ico"><svg lucideCreditCard [size]="22"></svg></span>
+                <div>
+                  <div class="method-ttl">Tarjeta</div>
+                  <div class="method-sub">Visa, Master, Amex</div>
+                </div>
+              </button>
+              <button
+                type="button"
+                class="method"
+                [class.sel]="metodoPago() === 'efectivo'"
+                (click)="metodoPago.set('efectivo')"
+              >
+                <span class="method-ico"><svg lucideBanknote [size]="22"></svg></span>
+                <div>
+                  <div class="method-ttl">Efectivo</div>
+                  <div class="method-sub">Pago en taquilla hasta 30 min antes</div>
+                </div>
+              </button>
+            </div>
+
+            @if (metodoPago() === 'tarjeta') {
+              <app-tarjeta />
+            } @else {
+              <app-efectivo [fechaHora]="fechaHoraFuncion" />
+            }
+          </div>
+        </div>
+
+        <app-cupon
+          [precioOriginal]="precioOriginal()"
+          (descuentoAplicado)="onDescuentoAplicado($event)"
+        />
+
+        <app-agreements
+          [cinema]="cine()"
+          (politicaAceptada)="politicaAceptada.set($event)"
+          (recordatorios)="recordatorios.set($event)"
+        />
+      </div>
+
+      <aside class="aside">
+        <app-resumen
+          [subtotal]="precioOriginal()"
+          [descuento]="descuento()"
+          [cargoServicio]="15"
+          [pelicula]="pelicula()"
+          [cine]="cine()"
+          [sala]="sala()"
+          [fechaHora]="fechaHoraFuncion"
+          [asientos]="asientos()"
+        />
+
+        <button
+          type="button"
+          class="pagar-btn"
+          [disabled]="!politicaAceptada() || (metodoPago() === 'efectivo' && !efectivoDisponible())"
+          (click)="pagar()"
+        >
+          Pagar L {{ totalFinal() + 15 }}
+        </button>
+      </aside>
+    </div>
+  </div>
+</section>
+<app-footer />

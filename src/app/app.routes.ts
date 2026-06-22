@@ -57,17 +57,48 @@ export const routes: Routes = [
   },
   {
     path: 'pelicula/:id',
-    canActivate: [locationGuard],
     loadComponent: () =>
       import('./features/pelicula/detalle/detalle.component').then(
         (m) => m.PeliculaDetalleComponent,
       ),
   },
   {
+    path: 'sala/:id',
+    canActivate: [locationGuard],
+    loadComponent: () =>
+      import('./features/asientos/mapa/mapa.component').then(
+        (m) => m.MapaComponent,
+      ),
+  },
+  {
+    path: 'checkout/confirmacion',
+    canActivate: [locationGuard],
+    loadComponent: () =>
+      import('./features/checkout/confirmacion/confirmacion.component').then(
+        (m) => m.ConfirmacionComponent,
+      ),
+  },
+  {
+    path: 'checkout/metodos-pago',
+    canActivate: [locationGuard],
+    loadComponent: () =>
+      import('./features/checkout/metodos-pago/metodos-pago.component').then(
+        (m) => m.MetodosPagoComponent,
+      ),
+  },
+  {
+    path: 'checkout/resultado',
+    canActivate: [locationGuard],
+    loadComponent: () =>
+      import('./features/checkout/resultado/resultado.component').then(
+        (m) => m.ResultadoComponent,
+      ),
+  },
+  {
     path: 'mis-boletos',
     canActivate: [authGuard, locationGuard],
     loadComponent: () =>
-      import('./features/boletos/mis-boletos.component').then(
+      import('./features/boletos/mis-boletos/mis-boletos.component').then(
         (m) => m.MisBoletosComponent,
       ),
   },
@@ -77,6 +108,22 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/boletos/detalle/reserva-detalle-cliente.component').then(
         (m) => m.ReservaDetalleClienteComponent,
+      ),
+  },
+  {
+    path: 'cancelar/:id',
+    canActivate: [authGuard, locationGuard],
+    loadComponent: () =>
+      import('./features/cancelacion/cancelar/cancelar.component').then(
+        (m) => m.CancelarComponent,
+      ),
+  },
+  {
+    path: 'reembolsos/:id',
+    canActivate: [authGuard, locationGuard],
+    loadComponent: () =>
+      import('./features/boletos/mis-boletos/reembolsos/reembolsos.component').then(
+        (m) => m.ReembolsosComponent,
       ),
   },
   { path: 'cupones', redirectTo: 'cuenta/cupones', pathMatch: 'full' },
@@ -333,9 +380,9 @@ export const routes: Routes = [
     pathMatch: 'full',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
-      import(
-        './features/admin/reservas/listado/reservas-listado.component'
-      ).then((m) => m.AdminReservasListadoComponent),
+      import('./features/admin/reservas/listado/reservas-listado.component').then(
+        (m) => m.AdminReservasListadoComponent,
+      ),
   },
   {
     path: 'admin/reservas/:id/cancelar',
@@ -349,17 +396,17 @@ export const routes: Routes = [
     path: 'admin/reservas/:id',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
-      import(
-        './features/admin/reservas/detalle/reserva-detalle.component'
-      ).then((m) => m.AdminReservaDetalleComponent),
+      import('./features/admin/reservas/detalle/reserva-detalle.component').then(
+        (m) => m.AdminReservaDetalleComponent,
+      ),
   },
   {
     path: 'admin/pagos',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
-      import(
-        './features/admin/pagos/pagos-listado.component'
-      ).then((m) => m.AdminPagosListadoComponent),
+      import('./features/admin/pagos/pagos-listado.component').then(
+        (m) => m.AdminPagosListadoComponent,
+      ),
   },
   {
     path: 'admin/clientes',
@@ -402,14 +449,22 @@ export const routes: Routes = [
     path: 'admin/reportes/estadisticas-cancelacion',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
-      import(
-        './features/admin/reportes/estadisticas-cancelacion/estadisticas-cancelacion.component'
-      ).then((m) => m.AdminReporteEstadisticasCancelacionComponent),
+      import('./features/admin/reportes/estadisticas-cancelacion/estadisticas-cancelacion.component').then(
+        (m) => m.AdminReporteEstadisticasCancelacionComponent,
+      ),
   },
   {
     path: 'admin/reportes/pagos-reembolsos',
     redirectTo: 'admin/pagos',
     pathMatch: 'full',
+  },
+  {
+    path: 'proximos-estrenos',
+    canActivate: [locationGuard],
+    loadComponent: () =>
+      import('./features/proximos-estrenos/proximos-estrenos.component').then(
+        (m) => m.ProximosEstrenosComponent,
+      ),
   },
   { path: '**', redirectTo: '' },
 ];

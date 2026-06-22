@@ -1,0 +1,38 @@
+@if (reembolsos().length > 0) {
+  <section class="reembolsos-section">
+    <div class="head">
+      <h2>Reembolsos en proceso</h2>
+      <button type="button" class="actualizar-btn" (click)="actualizarEstado()">Actualizar estado</button>
+    </div>
+
+    <div class="lista">
+      @for (r of reembolsos(); track r.id) {
+        <article class="reembolso">
+          @if (boletoForReembolso(r); as b) {
+            <img class="poster" [src]="b.pelicula.poster_url ?? ''" [alt]="b.pelicula.titulo" />
+            <div class="info">
+              <h3>{{ b.pelicula.titulo }}</h3>
+              <p>Reserva #{{ b.numero_reserva }} · {{ r.created_at | date:'d MMM y' }}</p>
+              <p class="metodo">
+                @if (b.tarjeta_mask) {
+                  Tarjeta {{ b.tarjeta_mask }}
+                } @else {
+                  Efectivo (taquilla)
+                }
+              </p>
+            </div>
+          } @else {
+            <div class="info">
+              <h3>Reembolso #{{ r.id }}</h3>
+              <p>{{ r.created_at | date:'d MMM y' }}</p>
+            </div>
+          }
+          <div class="estado">
+            <span class="pill" [class]="'st-' + r.estado">{{ r.estado }}</span>
+            <strong class="monto tnum">L {{ r.monto }}</strong>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+}

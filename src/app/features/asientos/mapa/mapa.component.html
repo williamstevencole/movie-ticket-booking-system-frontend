@@ -1,0 +1,80 @@
+<app-appbar />
+
+<app-funcion-bar
+  [pelicula]="pelicula()"
+  [cine]="cine()"
+  [sala]="sala()"
+  [fechaHora]="fechaHora()"
+  [duracionMin]="duracionMin()"
+  [idioma]="idioma()"
+  [posterUrl]="posterUrl()"
+/>
+
+<section class="seat-page">
+  <div class="seat-shell">
+    <div class="seat-stage">
+      <div class="screen-zone">
+        <div class="screen-bar"></div>
+        <div class="screen-lbl">PANTALLA</div>
+      </div>
+
+      <div class="seats">
+        @for (fila of filas(); track fila.letra) {
+          <div class="row">
+            <span class="row-letra">{{ fila.letra }}</span>
+            @for (asiento of fila.asientos; track asiento.codigo) {
+              <button
+                type="button"
+                class="seat"
+                [class.taken]="asiento.estado === 'ocupado'"
+                [class.selected]="estaSeleccionado(asiento.codigo)"
+                [class.vip]="asiento.tipo === 'vip'"
+                [class.accesible]="asiento.tipo === 'accesible'"
+                [class.bloqueado]="asiento.estado === 'bloqueado'"
+                [disabled]="asiento.estado === 'ocupado' || asiento.estado === 'bloqueado'"
+                [attr.aria-label]="'Asiento ' + asiento.codigo"
+                (click)="toggle(asiento)"
+              >
+                @if (asiento.tipo === 'accesible') { ♿ }
+                @else if (asiento.tipo === 'vip') { ★ }
+                @else { {{ asiento.codigo.slice(2) }} }
+              </button>
+            }
+            <span class="row-letra">{{ fila.letra }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="leyenda">
+        <span class="chip"><span class="sw"></span>Disponible</span>
+        <span class="chip"><span class="sw sel"></span>Seleccionado</span>
+        <span class="chip"><span class="sw taken"></span>Ocupado</span>
+        <span class="chip"><span class="sw vip"></span>VIP · L 180</span>
+        <span class="chip"><span class="sw accesible"></span>Accesible · L 90</span>
+        <span class="chip"><span class="sw bloqueado"></span>Bloqueado</span>
+      </div>
+    </div>
+
+    <aside class="side">
+      <app-timer [duracionSegundos]="600" (expirado)="onTimerExpirado()" />
+      <app-panel-lateral
+        [asientos]="asientosSeleccionadosDetallados()"
+        [cargoServicio]="cargoServicio()"
+      />
+      <app-cta
+        [habilitado]="asientosSeleccionados().length > 0"
+        [total]="total()"
+        (continuar)="continuarAPago()"
+      />
+    </aside>
+  </div>
+
+  @if (errorAsiento()) {
+    <app-seat-error
+      [asiento]="errorAsiento()!"
+      (cerrar)="errorAsiento.set(null)"
+    />
+  }
+</section>
+
+<app-footer />

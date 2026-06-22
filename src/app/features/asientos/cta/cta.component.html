@@ -1,0 +1,11 @@
+<button
+  type="button"
+  class="cta-btn"
+  [disabled]="!habilitado"
+  (click)="continuar.emit()"
+>
+  <span class="lbl">Confirmar y continuar al pago</span>
+  @if (habilitado) {
+    <span class="total tnum">L {{ total }}</span>
+  }
+</button>

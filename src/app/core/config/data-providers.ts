@@ -11,6 +11,7 @@ import { ReservasService } from '../../shared/services/reservas.service';
 import { PagosService } from '../../shared/services/pagos.service';
 import { ReembolsosService } from '../../shared/services/reembolsos.service';
 import { PoliticasCancelacionService } from '../../shared/services/politicas-cancelacion.service';
+import { BoletosService } from '../../shared/services/boletos.service';
 import { TiposAsientoService } from '../../shared/services/tipos-asiento.service';
 import { ClientesService } from '../../shared/services/clientes.service';
 import { PreciosService } from '../../shared/services/precios.service';
@@ -27,6 +28,7 @@ import { MockReservasService } from '../../mocks/services/reservas.mock.service'
 import { MockPagosService } from '../../mocks/services/pagos.mock.service';
 import { MockReembolsosService } from '../../mocks/services/reembolsos.mock.service';
 import { MockPoliticasCancelacionService } from '../../mocks/services/politicas-cancelacion.mock.service';
+import { MockBoletosService } from '../../mocks/services/boletos.mock.service';
 import { MockTiposAsientoService } from '../../mocks/services/tipos-asiento.mock.service';
 import { MockClientesService } from '../../mocks/services/clientes.mock.service';
 import { MockPreciosService } from '../../mocks/services/precios.mock.service';
@@ -44,6 +46,7 @@ export const dataProviders: Provider[] = [
   { provide: PagosService, useClass: MockPagosService },
   { provide: ReembolsosService, useClass: MockReembolsosService },
   { provide: PoliticasCancelacionService, useClass: MockPoliticasCancelacionService },
+  { provide: BoletosService, useClass: MockBoletosService },
   { provide: TiposAsientoService, useClass: MockTiposAsientoService },
   { provide: ClientesService, useClass: MockClientesService },
   { provide: PreciosService, useClass: MockPreciosService },

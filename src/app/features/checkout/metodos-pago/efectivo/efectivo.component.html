@@ -1,0 +1,11 @@
+<div class="efectivo-card" [class.no-disponible]="!puedeUsar()">
+  <div class="ico"><svg lucideBanknote [size]="24"></svg></div>
+  <div class="content">
+    <strong>Pago en taquilla</strong>
+    @if (puedeUsar()) {
+      <p>Tienes hasta 30 minutos antes de la función para pagar.</p>
+    } @else {
+      <p>Faltan menos de 30 min para la función — no puedes pagar en taquilla.</p>
+    }
+  </div>
+</div>

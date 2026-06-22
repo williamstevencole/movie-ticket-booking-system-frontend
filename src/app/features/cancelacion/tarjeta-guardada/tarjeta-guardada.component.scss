@@ -1,0 +1,76 @@
+.refund-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: var(--s4);
+
+    background: var(--bg-soft);
+
+    border: 1px solid var(--border);
+
+    border-radius: var(--r-lg);
+
+    padding: var(--s5);
+
+}
+
+
+
+.icon {
+
+    width: 48px;
+
+    height: 48px;
+
+    min-width: 48px;
+
+    border-radius: 50%;
+
+    background: white;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    font-size: 24px;
+
+}
+
+
+
+.content {
+
+
+    h3 {
+
+        margin: 0 0 6px;
+
+        font-size: 15px;
+
+        font-weight: 800;
+
+    }
+
+
+    p {
+
+        margin: 0;
+
+        color: var(--text-2);
+
+        font-size: 14px;
+
+    }
+
+
+    strong {
+
+        color: var(--text);
+
+    }
+
+}

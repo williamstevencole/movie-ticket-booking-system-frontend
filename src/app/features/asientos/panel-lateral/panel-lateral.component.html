@@ -1,0 +1,37 @@
+<div class="panel">
+  <div class="panel-head">
+    <h3>Tus asientos</h3>
+    <span class="ct">{{ asientosList().length }}</span>
+  </div>
+
+  @if (asientosList().length === 0) {
+    <p class="empty">Selecciona uno o más asientos del mapa.</p>
+  } @else {
+    <ul class="selected-list">
+      @for (a of asientosList(); track a.codigo) {
+        <li>
+          <span class="codigo">{{ a.codigo }}</span>
+          <span class="badge" [class.vip]="a.tipo === 'vip'" [class.accesible]="a.tipo === 'accesible'">
+            {{ badgeTipo(a.tipo) }}
+          </span>
+          <span class="precio tnum">L {{ a.precio }}</span>
+        </li>
+      }
+    </ul>
+
+    <div class="totals">
+      <div class="line">
+        <span class="lbl">Subtotal</span>
+        <span class="v tnum">L {{ subtotal() }}</span>
+      </div>
+      <div class="line">
+        <span class="lbl">Cargo por servicio</span>
+        <span class="v tnum">L {{ cargoServicio }}</span>
+      </div>
+      <div class="line total">
+        <span class="lbl">Total</span>
+        <span class="v tnum">L {{ subtotal() + cargoServicio }}</span>
+      </div>
+    </div>
+  }
+</div>

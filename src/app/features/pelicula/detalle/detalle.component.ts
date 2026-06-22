@@ -36,9 +36,8 @@ import { PeliculasRelacionadasComponent } from '../relacionadas/relacionadas.com
 export class PeliculaDetalleComponent {
   readonly nav = [
     { label: 'Cartelera', route: '/cartelera', active: true },
-    { label: 'Próximos estrenos' },
-    { label: 'Promociones' },
-    { label: 'Cines' },
+    { label: 'Próximos estrenos', route: '/proximos-estrenos' },
+    { label: 'Promociones', route: '/cupones' },
     { label: 'Mis boletos', route: '/mis-boletos' },
   ];
 

@@ -1,0 +1,29 @@
+<app-appbar />
+<section class="confirmacion-page">
+  <div class="wrap-tight">
+    <app-stepper />
+
+    <div class="form-card">
+      <div class="head">
+        <span class="num">!</span>
+        <div>
+          <h3>Revisa los detalles antes de pagar</h3>
+          <p class="sub">Verifica película, sala y asientos.</p>
+        </div>
+      </div>
+      <div class="body">
+        <div class="prev-row"><span class="lbl">Película</span><span class="v">{{ pelicula }}</span></div>
+        <div class="prev-row"><span class="lbl">Cine</span><span class="v">{{ cine }} · {{ sala }}</span></div>
+        <div class="prev-row"><span class="lbl">Fecha</span><span class="v">{{ fechaHora | date:'EEE d MMM, h:mm a' }}</span></div>
+        <div class="prev-row"><span class="lbl">Asientos</span><span class="v">{{ asientos.join(', ') }}</span></div>
+        <div class="prev-row total"><span class="lbl">Total</span><span class="v tnum">L {{ total }}</span></div>
+
+        <div class="actions">
+          <a class="btn secondary" [routerLink]="['/sala']">Volver</a>
+          <a class="btn primary" [routerLink]="['/checkout/metodos-pago']">Continuar al pago</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<app-footer />

@@ -1,0 +1,18 @@
+.tarjeta-form { display: flex; flex-direction: column; gap: var(--s3); }
+.tarjeta-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); }
+.tarjeta-form .field { display: flex; flex-direction: column; gap: 6px; }
+.tarjeta-form label {
+  font-size: 11px; font-weight: 700; color: var(--text-3);
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.tarjeta-form input {
+  padding: var(--s3) var(--s4);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 180ms var(--ease);
+}
+.tarjeta-form input:focus {
+  outline: 0; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft);
+}

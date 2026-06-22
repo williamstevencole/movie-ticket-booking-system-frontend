@@ -1,0 +1,19 @@
+<div class="refund-card">
+  <h3>Reembolso estimado</h3>
+
+  <div class="monto-row">
+    <span class="pct tnum">{{ porcentajeEstimado }}%</span>
+    <span class="monto tnum">L {{ montoReembolso }}</span>
+  </div>
+
+  <div class="metodo-row">
+    <span class="lbl">Método</span>
+    <app-tarjeta-guardada [tarjetaMask]="tarjetaMask" [tarjetaBrand]="tarjetaBrand" />
+  </div>
+
+  @if (porcentajeEstimado > 0) {
+    <p class="nota">El reembolso aparecerá en 3-5 días hábiles.</p>
+  } @else {
+    <p class="nota warn">Sin reembolso por la cercanía a la función.</p>
+  }
+</div>

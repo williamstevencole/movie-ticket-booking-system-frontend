@@ -27,3 +27,8 @@ yarn-error.log
 
 # misc
 .env.local
+
+# Accidental git output redirects
+/dsd
+/how *
+/next

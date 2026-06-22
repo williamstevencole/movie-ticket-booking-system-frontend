@@ -1,0 +1,64 @@
+<app-appbar />
+<section class="cancel-page">
+  <div class="wrap">
+    <h1 class="page-title">Cancelar reserva</h1>
+
+    @if (reserva) {
+      <div class="cancel-layout">
+        <div class="main">
+          <div class="res-card">
+            <img class="p" [src]="reserva.pelicula.poster_url ?? ''" [alt]="reserva.pelicula.titulo" />
+            <div>
+              <h2 class="ttl">{{ reserva.pelicula.titulo }}</h2>
+              <p class="where">{{ reserva.cine.nombre }} · {{ reserva.sala.nombre }}</p>
+              <div class="meta-grid">
+                <div class="cell">
+                  <div class="l">FECHA</div>
+                  <div class="v">{{ reserva.fecha_hora | date:'EEE d MMM' }}</div>
+                </div>
+                <div class="cell">
+                  <div class="l">HORA</div>
+                  <div class="v">{{ reserva.fecha_hora | date:'h:mm a' }}</div>
+                </div>
+                <div class="cell">
+                  <div class="l">ASIENTOS</div>
+                  <div class="v">{{ reserva.asientos_codigos.join(', ') }}</div>
+                </div>
+                <div class="cell">
+                  <div class="l">PAGADO</div>
+                  <div class="v tnum">L {{ reserva.monto_total }} {{ reserva.tarjeta_mask ? '(' + reserva.tarjeta_mask + ')' : '' }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <app-tiempo-restante [fechaHora]="reserva.fecha_hora" variante="banner" />
+
+          <app-politicas-card />
+
+          <div class="actions">
+            <a class="btn secondary" [routerLink]="['/mis-boletos']">Volver</a>
+            <button type="button" class="btn danger" (click)="confirmar()">Cancelar reserva</button>
+          </div>
+        </div>
+
+        <aside class="refund-side">
+          <app-refund-side
+            [tarjetaMask]="reserva.tarjeta_mask"
+            [tarjetaBrand]="reserva.tarjeta_brand"
+            [montoPagado]="reserva.monto_total"
+            [porcentajeEstimado]="porcentajeEstimado()"
+          />
+        </aside>
+      </div>
+    }
+
+    @if (mostrarConfirmacion()) {
+      <app-politicas-cancelacion
+        [boleto]="reserva!"
+        (cerrar)="mostrarConfirmacion.set(false)"
+      />
+    }
+  </div>
+</section>
+<app-footer />

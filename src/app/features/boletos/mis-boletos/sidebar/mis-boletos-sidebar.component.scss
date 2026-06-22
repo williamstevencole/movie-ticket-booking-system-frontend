@@ -1,0 +1,36 @@
+.acc-side {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--s5);
+  height: fit-content;
+  box-shadow: var(--shadow-sm);
+}
+.acc-side .user {
+  display: flex; align-items: center; gap: var(--s3);
+  padding-bottom: var(--s4);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--s4);
+}
+.acc-side .user .av {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--red); color: white;
+  font-weight: 800; font-size: 17px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.acc-side .user .name { font-weight: 700; font-size: 15px; }
+.acc-side .user .email { font-size: 12px; color: var(--text-2); }
+.acc-nav { display: flex; flex-direction: column; gap: 2px; }
+.acc-nav a {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+}
+.acc-nav a:hover { background: var(--bg-soft); }
+.acc-nav a.on { background: var(--red-soft); color: var(--red); font-weight: 700; }
+.acc-nav a .ct { font-size: 11px; font-weight: 700; background: var(--surface); padding: 2px 8px; border-radius: 999px; color: var(--text-2); }
+.acc-nav a.on .ct { background: var(--red); color: white; }

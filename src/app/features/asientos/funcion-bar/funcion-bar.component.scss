@@ -1,0 +1,69 @@
+.funcion-bar {
+  background: var(--bg-soft);
+  border-bottom: 1px solid var(--border);
+  padding: var(--s4) 0;
+}
+
+.funcion-bar-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--s6);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--s5);
+  align-items: center;
+}
+
+.funcion-bar .film-mini {
+  width: 56px;
+  height: 84px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.funcion-bar .info {
+  display: flex;
+  align-items: center;
+  gap: var(--s5);
+  flex-wrap: wrap;
+}
+
+.funcion-bar .ttl {
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.015em;
+}
+
+.funcion-bar .sub {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.funcion-bar .where-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.funcion-bar .row {
+  display: flex;
+  gap: var(--s4);
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.funcion-bar .row .item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.funcion-bar .row .lbl {
+  color: var(--text-3);
+  font-weight: 600;
+}
+
+.funcion-bar .row .v {
+  font-weight: 700;
+}

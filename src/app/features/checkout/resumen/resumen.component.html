@@ -1,0 +1,36 @@
+<div class="resumen-card">
+  <div class="head">
+    <h3>Resumen</h3>
+    <span class="reserva">#{{ numeroReserva ?? '—' }}</span>
+  </div>
+  <div class="film">
+    <strong>{{ pelicula }}</strong>
+    <p>{{ cine }} · {{ sala }}</p>
+    <p>{{ fechaHora | date:'EEE d MMM, h:mm a' }}</p>
+  </div>
+  <div class="asientos">
+    @for (a of asientos; track a) {
+      <span class="chip">{{ a }}</span>
+    }
+  </div>
+  <div class="totals">
+    <div class="line">
+      <span class="lbl">Subtotal</span>
+      <span class="v tnum">L {{ subtotal }}</span>
+    </div>
+    @if (descuento > 0) {
+      <div class="line discount">
+        <span class="lbl">Descuento</span>
+        <span class="v tnum">− L {{ descuento }}</span>
+      </div>
+    }
+    <div class="line">
+      <span class="lbl" title="Recargo por procesamiento de pago online">Cargo por servicio</span>
+      <span class="v tnum">L {{ cargoServicio }}</span>
+    </div>
+    <div class="line total">
+      <span class="lbl">Total</span>
+      <span class="v tnum">L {{ subtotal - descuento + cargoServicio }}</span>
+    </div>
+  </div>
+</div>

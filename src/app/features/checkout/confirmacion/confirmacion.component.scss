@@ -1,0 +1,22 @@
+.confirmacion-page { background: var(--bg-soft); padding: var(--s5) 0 var(--s9); }
+.prev-row {
+  display: flex; justify-content: space-between;
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--divider);
+  font-size: 14px;
+}
+.prev-row:last-of-type { border-bottom: 0; }
+.prev-row .lbl { color: var(--text-2); }
+.prev-row .v { font-weight: 700; }
+.prev-row.total { border-top: 1px solid var(--border); padding-top: var(--s4); font-size: 16px; }
+.prev-row.total .v { font-size: 18px; font-weight: 800; }
+.actions { display: flex; gap: var(--s3); margin-top: var(--s5); justify-content: flex-end; }
+.btn {
+  padding: var(--s3) var(--s5);
+  border-radius: var(--r);
+  font-size: 14px; font-weight: 700;
+}
+.btn.primary { background: var(--red); color: white; }
+.btn.primary:hover { background: var(--red-hover); }
+.btn.secondary { background: var(--surface); color: var(--text); }
+.btn.secondary:hover { background: var(--surface-2); }

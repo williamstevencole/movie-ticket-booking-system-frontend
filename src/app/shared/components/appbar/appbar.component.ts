@@ -137,10 +137,9 @@ export class AppbarComponent {
   private host = inject(ElementRef<HTMLElement>);
 
   @Input() navItems: AppNavItem[] = [
-    { label: 'Cartelera', route: '/', active: true },
-    { label: 'Próximos estrenos' },
-    { label: 'Promociones' },
-    { label: 'Cines' },
+    { label: 'Cartelera', route: '/' },
+    { label: 'Próximos estrenos', route: '/proximos-estrenos' },
+    { label: 'Promociones', route: '/cupones' },
     { label: 'Mis boletos', route: '/mis-boletos' },
   ];
   @Input() showLogout = true;

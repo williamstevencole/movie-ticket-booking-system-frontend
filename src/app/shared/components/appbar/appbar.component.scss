@@ -48,17 +48,7 @@
   cursor: pointer;
 }
 .appnav a:hover { color: white; }
-.appnav a.on { color: white; }
-.appnav a.on::after {
-  content: '';
-  position: absolute;
-  bottom: -19px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--red);
-  border-radius: 2px 2px 0 0;
-}
+.appnav a.on { color: white; font-weight: 700; }
 .app-right { display: flex; align-items: center; gap: var(--s3); }
 .citychip {
   display: inline-flex;

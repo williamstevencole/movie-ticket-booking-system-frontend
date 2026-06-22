@@ -1,0 +1,37 @@
+<div class="funcion-bar">
+  <div class="funcion-bar-inner">
+    @if (posterUrl) {
+      <img class="film-mini" [src]="posterUrl" [alt]="pelicula" />
+    } @else {
+      <div class="film-mini" style="background: var(--surface-2);"></div>
+    }
+    <div class="info">
+      <div class="where-stack">
+        <div class="ttl">{{ pelicula }}</div>
+        <div class="sub">{{ cine }} · {{ sala }}</div>
+      </div>
+      <div class="row">
+        <span class="item">
+          <span class="lbl">FECHA</span>
+          <span class="v">{{ fechaHora | date:'EEE d MMM' }}</span>
+        </span>
+        <span class="item">
+          <span class="lbl">HORA</span>
+          <span class="v">{{ fechaHora | date:'h:mm a' }}</span>
+        </span>
+        @if (duracionMin) {
+          <span class="item">
+            <span class="lbl">DUR</span>
+            <span class="v">{{ duracionMin }} min</span>
+          </span>
+        }
+        @if (idioma) {
+          <span class="item">
+            <span class="lbl">IDIOMA</span>
+            <span class="v">{{ idioma }}</span>
+          </span>
+        }
+      </div>
+    </div>
+  </div>
+</div>

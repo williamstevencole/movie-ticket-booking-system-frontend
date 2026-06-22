@@ -1,0 +1,15 @@
+.cta-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%;
+  padding: var(--s4) var(--s5);
+  background: var(--red);
+  color: white;
+  border-radius: var(--r);
+  font-size: 15px; font-weight: 800;
+  letter-spacing: -0.01em;
+  transition: background 180ms var(--ease);
+  box-shadow: var(--shadow);
+}
+.cta-btn:not(:disabled):hover { background: var(--red-hover); }
+.cta-btn:disabled { background: var(--surface-2); color: var(--text-3); cursor: not-allowed; box-shadow: none; }
+.cta-btn .total { font-size: 16px; }

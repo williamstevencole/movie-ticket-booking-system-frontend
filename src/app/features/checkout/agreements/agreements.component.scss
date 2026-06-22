@@ -1,0 +1,15 @@
+.agreement {
+  display: grid; grid-template-columns: 20px 1fr; gap: var(--s3); align-items: start;
+  padding: var(--s3) 0;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.agreement + .agreement { border-top: 1px solid var(--divider); }
+.agreement input {
+  width: 18px; height: 18px;
+  accent-color: var(--red);
+  margin-top: 2px;
+}
+.agreement a { color: var(--red); font-weight: 700; text-decoration: underline; }
+.agreement.opt span { color: var(--text-2); }

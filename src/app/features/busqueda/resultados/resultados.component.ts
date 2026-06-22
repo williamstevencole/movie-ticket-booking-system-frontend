@@ -26,9 +26,8 @@ export class BusquedaResultadosComponent implements OnInit {
 
   readonly nav = [
     { label: 'Cartelera', route: '/cartelera' },
-    { label: 'Próximos estrenos' },
-    { label: 'Promociones' },
-    { label: 'Cines' },
+    { label: 'Próximos estrenos', route: '/proximos-estrenos' },
+    { label: 'Promociones', route: '/cupones' },
     { label: 'Mis boletos', route: '/mis-boletos' },
   ];
 

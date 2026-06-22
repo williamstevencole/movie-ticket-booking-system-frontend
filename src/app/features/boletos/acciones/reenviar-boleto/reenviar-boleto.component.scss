@@ -1,0 +1,38 @@
+.resend {
+
+    height: 36px;
+
+    padding: 0 16px;
+
+    border-radius: 10px;
+
+    border: 1px solid var(--red);
+
+    background: white;
+
+    color: var(--red);
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+
+    transition: .2s ease;
+
+
+    &:hover {
+
+        background: var(--red-soft);
+
+    }
+
+
+    &:disabled {
+
+        opacity: .5;
+
+        cursor: not-allowed;
+
+    }
+
+}

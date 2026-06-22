@@ -1,0 +1,26 @@
+.stepper {
+  display: flex; gap: var(--s2);
+  padding: var(--s5) 0;
+}
+.step {
+  display: flex; align-items: center; gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+}
+.step .n {
+  width: 28px; height: 28px;
+  background: var(--surface); color: var(--text-3);
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px;
+  flex-shrink: 0;
+}
+.step.done { background: var(--bg); border-color: var(--success); }
+.step.done .n { background: var(--success); color: white; }
+.step.now { background: var(--bg); border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft); }
+.step.now .n { background: var(--red); color: white; }
+.step .lbl { font-size: 11px; color: var(--text-3); font-weight: 700; letter-spacing: 0.04em; }
+.step .ttl { font-weight: 700; font-size: 14px; }

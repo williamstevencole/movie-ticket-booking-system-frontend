@@ -1,0 +1,21 @@
+.timer-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: var(--s3) var(--s4);
+  display: flex; align-items: center; gap: var(--s3);
+  box-shadow: var(--shadow-sm);
+}
+.timer-card .ico {
+  width: 32px; height: 32px;
+  background: var(--surface); color: var(--text-2);
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.timer-card .content { display: flex; flex-direction: column; }
+.timer-card .lbl { font-size: 11px; color: var(--text-3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.timer-card .val { font-size: 18px; font-weight: 800; }
+.timer-card.urgente { border-color: var(--red); background: var(--red-soft); }
+.timer-card.urgente .ico { background: var(--red); color: white; }
+.timer-card.urgente .val { color: var(--red-ink); }

@@ -1,0 +1,40 @@
+<div class="form-card">
+  <div class="head">
+    <span class="num">2</span>
+    <div>
+      <h3>Código de descuento</h3>
+      <p class="sub">¿Tienes un cupón?</p>
+    </div>
+  </div>
+  <div class="body">
+    @if (!aplicado()) {
+      <div class="cupon-input-row">
+        <input
+          type="text"
+          [value]="codigo()"
+          (input)="codigo.set($any($event.target).value)"
+          placeholder="CINE25"
+          autocomplete="off"
+        />
+        <button
+          type="button"
+          class="aplicar-btn"
+          [disabled]="!codigo().length"
+          (click)="aplicar()"
+        >Aplicar</button>
+      </div>
+      @if (error()) {
+        <p class="cupon-error">{{ error() }}</p>
+      }
+    } @else {
+      <div class="cupon-aplicado">
+        <span class="check"><svg lucideCheck [size]="16"></svg></span>
+        <div>
+          <strong>{{ codigo() }} aplicado</strong>
+          <p>Descuento de L {{ descuento() }}</p>
+        </div>
+        <button type="button" class="quitar" (click)="quitar()">Quitar</button>
+      </div>
+    }
+  </div>
+</div>

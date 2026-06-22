@@ -1,0 +1,44 @@
+.cupon-input-row {
+  display: grid; grid-template-columns: 1fr auto; gap: var(--s2);
+}
+.cupon-input-row input {
+  padding: var(--s3) var(--s4);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.cupon-input-row input:focus {
+  outline: 0; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-soft);
+}
+.aplicar-btn {
+  padding: var(--s3) var(--s5);
+  background: var(--ink); color: white;
+  border-radius: var(--r-sm);
+  font-weight: 700; font-size: 14px;
+}
+.aplicar-btn:disabled { background: var(--surface-2); color: var(--text-3); cursor: not-allowed; }
+.cupon-error { color: var(--red); font-size: 13px; margin: var(--s2) 0 0; }
+
+.cupon-aplicado {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--s3);
+  padding: var(--s4);
+  background: oklch(0.95 0.06 145);
+  border: 1px solid var(--success);
+  border-radius: var(--r-sm);
+}
+.cupon-aplicado .check {
+  width: 28px; height: 28px;
+  background: var(--success); color: white;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 800;
+}
+.cupon-aplicado strong { font-weight: 800; font-size: 14px; }
+.cupon-aplicado p { margin: 2px 0 0; font-size: 12px; color: var(--text-2); }
+.cupon-aplicado .quitar {
+  font-size: 12px; color: var(--red); font-weight: 700;
+  text-decoration: underline;
+}

@@ -1,0 +1,84 @@
+<app-appbar [navItems]="nav" />
+
+<section class="account-shell">
+  <div class="wrap">
+    <div class="account-grid">
+      <app-mis-boletos-sidebar
+        [userName]="userName"
+        [userEmail]="userEmail"
+        [countProximos]="proximos().length"
+        [countPasados]="pasados().length"
+        [countCancelados]="cancelados().length"
+        [activeView]="vistaActual()"
+        (viewChange)="cambiarVista($event)"
+      />
+
+      <div class="main">
+        @if (vistaActual() === 'boletos') {
+          <h1 class="page-title">Mis boletos</h1>
+
+          <div class="ticket-tabs">
+            <button class="ticket-tab" [class.on]="filtroBoletos() === 'proximos'" (click)="cambiarFiltro('proximos')">
+              Próximos <span class="ct">{{ proximos().length }}</span>
+            </button>
+            <button class="ticket-tab" [class.on]="filtroBoletos() === 'pasados'" (click)="cambiarFiltro('pasados')">
+              Pasados <span class="ct">{{ pasados().length }}</span>
+            </button>
+            <button class="ticket-tab" [class.on]="filtroBoletos() === 'cancelados'" (click)="cambiarFiltro('cancelados')">
+              Cancelados <span class="ct">{{ cancelados().length }}</span>
+            </button>
+          </div>
+
+          @if (boletosFiltrados().length === 0) {
+            <div class="empty-state">
+              <p>No hay boletos en esta categoría.</p>
+              <a class="btn primary" (click)="irCartelera()">Ver cartelera</a>
+            </div>
+          } @else {
+            <div class="tickets">
+              @for (boleto of boletosFiltrados(); track boleto.id) {
+                <article class="ticket">
+                  <div class="film">
+                    @if (boleto.pelicula.poster_url) {
+                      <img class="poster" [src]="boleto.pelicula.poster_url" [alt]="boleto.pelicula.titulo" />
+                    } @else {
+                      <div class="poster placeholder"></div>
+                    }
+                    <div class="meta">
+                      <h3>{{ boleto.pelicula.titulo }}</h3>
+                      <p class="where">{{ boleto.cine.nombre }} · {{ boleto.sala.nombre }}</p>
+                      <p class="when">{{ boleto.fecha_hora | date:'EEE d MMM, h:mm a' }}</p>
+                      <div class="seats">
+                        @for (s of boleto.asientos_codigos; track s) {
+                          <span class="seat-chip">{{ s }}</span>
+                        }
+                      </div>
+                      @if (filtroBoletos() === 'proximos') {
+                        <app-tiempo-restante [fechaHora]="boleto.fecha_hora" variante="pill" />
+                      }
+                    </div>
+                    <app-qr [numeroReserva]="boleto.numero_reserva" />
+                  </div>
+                  <div class="actions">
+                    <app-descargar-boleto [boleto]="boleto" />
+                    @if (puedeReenviar(boleto)) {
+                      <app-reenviar-boleto [boleto]="boleto" />
+                    }
+                    <span class="reserva-num">#{{ boleto.numero_reserva }}</span>
+                  </div>
+                </article>
+              }
+            </div>
+          }
+
+        }
+
+        @if (vistaActual() === 'reembolsos') {
+          <app-reembolsos />
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<app-footer />

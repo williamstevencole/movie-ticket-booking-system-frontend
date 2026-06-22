@@ -1,0 +1,35 @@
+@if(!pasado) {
+
+
+    @if(variante === 'pill') {
+
+        <span class="pill" [class]="tono">
+
+            <span class="dot"></span>
+
+            {{ textoCorto }}
+
+        </span>
+
+    }
+
+
+    @if(variante === 'banner') {
+
+        <div class="banner">
+
+            <span>
+                ⏱
+            </span>
+
+
+            <p>
+                {{ textoCorto }} es su función.
+            </p>
+
+        </div>
+
+    }
+
+
+}
