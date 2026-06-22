@@ -9,6 +9,9 @@
             <p>
                 Revisa los detalles de tu reserva antes de continuar.
             </p>
+
+            <app-tiempo-restante variante="banner" [fechaFuncion]="'2026-06-25T19:30:00'">
+            </app-tiempo-restante>
         </header>
 
 
@@ -46,7 +49,10 @@
 
 
             <div class="refund">
-                <h3>Reembolso estimado</h3>
+
+                <h3>
+                    Reembolso estimado
+                </h3>
 
                 <span>
                     L 240.00
@@ -55,7 +61,18 @@
                 <small>
                     Según la política de cancelación aplicada.
                 </small>
+
             </div>
+
+
+            <app-tarjeta-guardada [metodoPago]="'tarjeta'" [ultimosDigitos]="'4242'">
+            </app-tarjeta-guardada>
+
+
+        </div>
+
+
+        <div class="actions">
 
 
         </div>

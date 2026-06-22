@@ -12,6 +12,7 @@
 }
 
 
+
 .cancel-card {
 
     background: white;
@@ -28,6 +29,7 @@
 }
 
 
+
 /* HEADER */
 
 header {
@@ -38,17 +40,26 @@ header {
 
 
     h1 {
+
         margin: 0;
+
         font-size: 32px;
+
         font-weight: 900;
+
         letter-spacing: -0.5px;
+
     }
 
 
     p {
+
         margin-top: 8px;
+
         color: var(--text-2);
+
         font-size: 15px;
+
     }
 
 }
@@ -75,6 +86,8 @@ header {
 }
 
 
+
+/* DETAILS */
 
 .details {
 
@@ -112,8 +125,9 @@ header {
 
 
 
-/* REFUND */
 
+
+/* REFUND */
 
 .refund {
 
@@ -132,26 +146,31 @@ header {
     border: 1px solid #dbeafe;
 
 
+
     h3 {
 
         margin: 0 0 12px;
 
         font-size: 16px;
 
+        font-weight: 800;
+
     }
+
 
 
     span {
 
         display: block;
 
-        font-size: 36px;
+        font-size: 32px;
 
         font-weight: 900;
 
         color: #2563eb;
 
     }
+
 
 
     small {
@@ -168,8 +187,21 @@ header {
 
 
 
-/* BUTTONS */
+/* TARJETA GUARDADA */
 
+app-tarjeta-guardada {
+
+    display: block;
+
+    margin-top: 24px;
+
+}
+
+
+
+
+
+/* BUTTONS */
 
 .actions {
 
@@ -238,6 +270,7 @@ button:hover {
 }
 
 
+
 .danger:hover {
 
     background: #b91c1c;
@@ -246,8 +279,9 @@ button:hover {
 
 
 
-/* SUCCESS MODAL */
 
+
+/* SUCCESS MODAL */
 
 .overlay {
 
@@ -271,25 +305,34 @@ button:hover {
 
 
 
+
+
 .success-modal {
 
 
     width: min(420px, 90%);
 
+
     background: white;
+
 
     border-radius: 24px;
 
+
     padding: 40px 32px;
 
+
     text-align: center;
+
 
     box-shadow:
         0 25px 60px rgba(0, 0, 0, .25);
 
 
+
     animation:
         appear .25s ease;
+
 
 
 
@@ -299,6 +342,7 @@ button:hover {
         width: 72px;
 
         height: 72px;
+
 
         margin: 0 auto 20px;
 
@@ -315,14 +359,19 @@ button:hover {
 
         font-size: 38px;
 
+
         font-weight: 900;
 
 
         background: #dcfce7;
 
+
         color: #16a34a;
 
+
     }
+
+
 
 
 
@@ -338,6 +387,8 @@ button:hover {
 
 
 
+
+
     p {
 
         color: var(--text-2);
@@ -345,6 +396,8 @@ button:hover {
         margin-bottom: 28px;
 
     }
+
+
 
 
 
@@ -359,6 +412,9 @@ button:hover {
     }
 
 
+
+
+
     button:hover {
 
         background: #1d4ed8;
@@ -366,6 +422,8 @@ button:hover {
     }
 
 }
+
+
 
 
 
@@ -389,5 +447,54 @@ button:hover {
             scale(1) translateY(0);
 
     }
+
+}
+
+
+
+
+
+/* RESPONSIVE */
+
+@media(max-width:700px) {
+
+
+    .wrap {
+
+        padding: var(--s5);
+
+    }
+
+
+
+    .cancel-card {
+
+        padding: 24px;
+
+    }
+
+
+
+    .details {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+
+    .actions {
+
+        flex-direction: column-reverse;
+
+
+        button {
+
+            width: 100%;
+
+        }
+
+    }
+
 
 }

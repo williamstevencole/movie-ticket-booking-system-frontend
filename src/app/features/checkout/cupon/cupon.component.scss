@@ -1,15 +1,17 @@
 .coupon {
 
     display: flex;
+
     flex-direction: column;
-    gap: var(--s4);
+
+    gap: 8px;
 
 
     h2 {
 
         margin: 0;
 
-        font-size: 18px;
+        font-size: 14px;
 
         font-weight: 800;
 
@@ -18,33 +20,39 @@
 }
 
 
+
 .coupon-row {
 
     display: flex;
 
-    gap: var(--s3);
+    gap: 8px;
 
 
     input {
 
         flex: 1;
 
-        height: 45px;
+        min-width: 0;
+
+        height: 34px;
 
         border-radius: var(--r);
 
         border: 1px solid var(--border);
 
-        padding: 0 var(--s3);
+        padding: 0 10px;
+
+        font-size: 12px;
 
     }
 
 
+
     button {
 
-        height: 45px;
+        height: 34px;
 
-        padding: 0 var(--s5);
+        padding: 0 14px;
 
         border-radius: var(--r);
 
@@ -54,13 +62,25 @@
 
         border: none;
 
+        font-size: 12px;
+
         font-weight: 700;
 
         cursor: pointer;
 
+        transition: .18s ease;
+
+
+        &:hover {
+
+            background: var(--red-hover);
+
+        }
+
     }
 
 }
+
 
 
 .success {
@@ -69,18 +89,21 @@
 
     color: #16a34a;
 
-    font-size: 14px;
+    font-size: 11px;
 
     font-weight: 700;
 
 }
 
 
-@media(max-width:800px){
+
+@media (max-width: 800px) {
 
     .coupon-row {
 
         flex-direction: column;
+
+        gap: 8px;
 
     }
 

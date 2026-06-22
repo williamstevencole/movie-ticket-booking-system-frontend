@@ -1,0 +1,29 @@
+.download {
+
+    height: 36px;
+
+    padding: 0 16px;
+
+    border-radius: 999px;
+
+    border: 1px solid var(--border);
+
+    background: white;
+
+    color: var(--text);
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+
+    transition: .2s ease;
+
+
+    &:hover {
+
+        background: var(--bg-soft);
+
+    }
+
+}

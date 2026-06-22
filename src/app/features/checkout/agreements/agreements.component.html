@@ -1,0 +1,70 @@
+@if(visible) {
+
+<div class="overlay">
+
+    <section class="modal">
+
+        <h2>
+            Confirmar compra
+        </h2>
+
+
+        <p>
+            Antes de continuar debes aceptar la política de cancelación
+            del cine y los términos y condiciones.
+        </p>
+
+
+        <label class="checkbox">
+
+            <input type="checkbox" [checked]="aceptado" (change)="toggle()">
+
+            <span>
+                Acepto la política de cancelación y los términos y condiciones.
+            </span>
+
+        </label>
+
+        <label class="checkbox optional">
+
+            <input type="checkbox" [checked]="recibirRecordatorios" (change)="toggleRecordatorios()">
+
+            <span>
+                Quiero recibir recordatorios por correo el día de mi función.
+            </span>
+
+        </label>
+
+
+
+        <button class="policy-link">
+
+            Ver política de cancelación
+
+        </button>
+
+
+
+        <div class="actions">
+
+            <button class="cancel" (click)="cerrarModal()">
+
+                Cancelar
+
+            </button>
+
+
+            <button class="confirm" [disabled]="!aceptado" (click)="confirmar()">
+
+                Aceptar
+
+            </button>
+
+        </div>
+
+
+    </section>
+
+</div>
+
+}

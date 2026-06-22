@@ -3,6 +3,8 @@
 
     <section class="page-card">
 
+
+
         <app-stepper class="light-stepper"></app-stepper>
 
 
@@ -17,22 +19,31 @@
                 Selecciona cómo deseas pagar tu reserva.
             </p>
 
+
         </header>
+
+
 
         <section class="payment-layout">
 
+
+
+            <!-- PAYMENT SIDE -->
 
             <section class="payment-content">
 
 
                 <section class="card">
 
+
                     <h2>
                         Opciones de pago
                     </h2>
 
 
+
                     <div class="payment-options">
+
 
                         <button [class.active]="metodoPago() === 'tarjeta'" (click)="metodoPago.set('tarjeta')">
 
@@ -41,178 +52,181 @@
                         </button>
 
 
+
                         <button [class.active]="metodoPago() === 'efectivo'" (click)="metodoPago.set('efectivo')">
 
                             💵 Efectivo
 
                         </button>
 
+
                     </div>
+
 
                 </section>
 
 
 
+
                 @if(metodoPago() === 'tarjeta') {
+
 
                 <app-tarjeta></app-tarjeta>
 
+
                 }
+
 
 
                 @if(metodoPago() === 'efectivo') {
 
+
                 <app-efectivo></app-efectivo>
+
 
                 }
 
 
+
             </section>
 
 
 
-            <!-- SUMMARY -->
+            <!-- SUMMARY SIDE -->
 
-
-            <section class="card summary">
-
-
-                <app-cupon></app-cupon>
-                <h2>
-                    Resumen
-                </h2>
-
-                <div class="reservation-row">
-
-                    <span>
-                        Reserva
-                    </span>
-
-
-                    <strong>
-                        {{ numeroReserva() }}
-                    </strong>
-
-                </div>
-
-
-                <div class="row">
-
-                    <span>
-                        Película
-                    </span>
-
-
-                    <strong>
-                        {{ pelicula.titulo }}
-                    </strong>
-
-                </div>
+            <section class="checkout-summary">
 
 
 
-
-                <div class="row">
-
-                    <span>
-                        Sala
-                    </span>
-
-
-                    <strong>
-                        {{ sala() }}
-                    </strong>
-
-                </div>
+                <section class="card summary">
 
 
 
-
-                <div class="row">
-
-                    <span>
-                        Horario
-                    </span>
-
-
-                    <strong>
-                        {{ horario() }}
-                    </strong>
-
-                </div>
+                    <h2>
+                        Detalles de la reserva
+                    </h2>
 
 
 
+                    <div class="reservation-row">
 
-                <div class="row">
-
-                    <span>
-                        Asientos
-                    </span>
-
-
-                    <strong>
-                        {{ asientos().join(', ') }}
-                    </strong>
-
-                </div>
-
-                <div class="discount-summary">
-
-                    <div class="discount-row">
 
                         <span>
-                            Precio original
+                            Reserva
                         </span>
 
-                        <strong class="original-price">
-                            ${{ precioOriginal() }}
+
+                        <strong>
+                            {{ numeroReserva() }}
                         </strong>
+
 
                     </div>
 
 
-                    @if(descuentoAplicado()) {
 
-                    <div class="discount-row">
+
+                    <div class="row">
+
 
                         <span>
-                            Cupón aplicado
+                            Película
                         </span>
 
-                        <strong class="discount">
-                            -${{ descuento() }}
+
+                        <strong>
+                            {{ pelicula.titulo }}
                         </strong>
+
 
                     </div>
 
-                    }
-
-                </div>
 
 
 
-                <div class="total">
 
-                    <span>
-                        Total
-                    </span>
+                    <div class="row">
 
-                    <strong>
-                        ${{ totalFinal() }}
-                    </strong>
 
-                </div>
+                        <span>
+                            Sala
+                        </span>
+
+
+                        <strong>
+                            {{ sala() }}
+                        </strong>
+
+
+                    </div>
+
+
+
+
+
+                    <div class="row">
+
+
+                        <span>
+                            Horario
+                        </span>
+
+
+                        <strong>
+                            {{ horario() }}
+                        </strong>
+
+
+                    </div>
+
+
+
+
+
+                    <div class="row">
+
+
+                        <span>
+                            Asientos
+                        </span>
+
+
+                        <strong>
+                            {{ asientos().join(', ') }}
+                        </strong>
+
+
+                    </div>
+
+
+
+                </section>
+
+
+
+
+
+                <section class="card summary">
+                    <app-cupon></app-cupon>
+                </section>
+
+
+
+                <app-resumen [cantidad]="asientos().length" [subtotal]="subtotal()" [cargoServicio]="2">
+                </app-resumen>
+
 
 
 
             </section>
+
 
 
         </section>
 
 
     </section>
+
 
 
 </main>

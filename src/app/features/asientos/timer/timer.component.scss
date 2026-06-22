@@ -1,27 +1,27 @@
 :host {
-    display:block;
+    display: block;
 }
 
 
 .timer-card {
 
-    display:flex;
+    display: flex;
 
-    align-items:center;
+    align-items: center;
 
-    gap:var(--s4);
-
-
-    padding:var(--s5);
+    gap: 12px;
 
 
-    background:var(--dark-2);
+    padding: 14px;
 
 
-    border-radius:var(--r-lg);
+    background: var(--dark-2);
 
 
-    border:1px solid rgba(255,255,255,.08);
+    border-radius: var(--r-lg);
+
+
+    border: 1px solid rgba(255, 255, 255, .08);
 
 }
 
@@ -29,25 +29,25 @@
 
 .icon {
 
-    width:45px;
+    width: 36px;
 
-    height:45px;
-
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
+    height: 36px;
 
 
-    font-size:24px;
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
 
 
-    background:rgba(255,255,255,.08);
+    font-size: 18px;
 
 
-    border-radius:var(--r);
+    background: rgba(255, 255, 255, .08);
+
+
+    border-radius: var(--r);
 
 }
 
@@ -55,11 +55,11 @@
 
 span {
 
-    display:block;
+    display: block;
 
-    color:rgba(255,255,255,.55);
+    color: rgba(255, 255, 255, .55);
 
-    font-size:13px;
+    font-size: 11px;
 
 }
 
@@ -67,10 +67,10 @@ span {
 
 strong {
 
-    color:var(--orange);
+    color: var(--orange);
 
-    font-size:28px;
+    font-size: 20px;
 
-    font-weight:900;
+    font-weight: 900;
 
 }

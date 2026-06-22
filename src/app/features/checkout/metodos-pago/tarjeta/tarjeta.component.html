@@ -94,23 +94,20 @@
 
     <section class="actions">
 
-
         <button class="btn btn-danger" (click)="volver()">
-
             Volver
-
         </button>
 
 
-
-        <button class="btn btn-primary" (click)="pagar()">
-
+        <button class="btn btn-primary" (click)="abrirConfirmacion()">
             Confirmar pago
-
         </button>
-
 
     </section>
 
 
 </section>
+
+<app-agreements [visible]="mostrarPolitica" (aceptar)="pagar()" (cerrar)="mostrarPolitica = false"
+    (recordatorioCambio)="recordatorioCorreo = $event">
+</app-agreements>

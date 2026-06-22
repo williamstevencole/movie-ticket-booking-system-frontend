@@ -1,10 +1,12 @@
 import { Component, signal } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
+import { AgreementsComponent } from '../../agreements/agreements.component';
 
 @Component({
   selector: 'app-tarjeta',
   standalone: true,
+  imports: [AgreementsComponent],
   templateUrl: './tarjeta.component.html',
   styleUrl: './tarjeta.component.scss',
 })
@@ -19,13 +21,23 @@ export class TarjetaComponent {
 
   readonly cvv = signal('');
 
+  recordatorioCorreo = false;
+
+  mostrarPolitica = false;
+
   readonly errores = signal({
     tarjeta: '',
     expiracion: '',
     cvv: '',
   });
 
-  pagar() {
+  abrirConfirmacion() {
+    if (this.validarPago()) {
+      this.mostrarPolitica = true;
+    }
+  }
+
+  validarPago(): boolean {
     const nuevosErrores = {
       tarjeta: '',
       expiracion: '',
@@ -46,14 +58,10 @@ export class TarjetaComponent {
 
     this.errores.set(nuevosErrores);
 
-    const hayErrores = Object.values(nuevosErrores).some(
-      (error) => error !== '',
-    );
+    return !Object.values(nuevosErrores).some((error) => error !== '');
+  }
 
-    if (hayErrores) {
-      return;
-    }
-
+  pagar() {
     this.router.navigate(['/checkout/resultado']);
   }
 

@@ -5,7 +5,7 @@
 
 
         <app-stepper class="light-stepper"></app-stepper>
-        
+
         <header class="page-header">
 
 
@@ -52,144 +52,100 @@
                     </strong>
 
                 </div>
+                <section class="info-grid">
 
-                <section class="card">
-
-
-                    <h2>
-                        Película
-                    </h2>
+                    <section class="card">
 
 
-
-                    <div class="row">
-
-                        <span>
-                            Nombre
-                        </span>
-
-                        <strong>
-                            {{ pelicula.titulo }}
-                        </strong>
-
-                    </div>
+                        <h2>
+                            Película
+                        </h2>
 
 
 
+                        <div class="row">
 
-                    <div class="row">
+                            <span>
+                                Nombre
+                            </span>
 
-                        <span>
-                            Sala
-                        </span>
+                            <strong>
+                                {{ pelicula.titulo }}
+                            </strong>
 
-
-                        <strong>
-                            {{ sala() }}
-                        </strong>
-
-                    </div>
+                        </div>
 
 
 
 
-                    <div class="row">
+                        <div class="row">
 
-                        <span>
-                            Horario
-                        </span>
-
-
-                        <strong>
-                            {{ horario() }}
-                        </strong>
-
-                    </div>
+                            <span>
+                                Sala
+                            </span>
 
 
+                            <strong>
+                                {{ sala() }}
+                            </strong>
 
+                        </div>
+
+
+
+
+                        <div class="row">
+
+                            <span>
+                                Horario
+                            </span>
+
+
+                            <strong>
+                                {{ horario() }}
+                            </strong>
+
+                        </div>
+
+
+
+                    </section>
+
+
+
+
+
+                    <section class="card">
+
+
+                        <h2>
+                            Asientos
+                        </h2>
+
+
+
+                        <div class="seat-tags">
+
+
+                            @for (asiento of asientos(); track asiento) {
+
+
+                            <span>
+                                {{ asiento }}
+                            </span>
+
+
+                            }
+
+
+                        </div>
+
+
+                    </section>
                 </section>
 
-
-
-
-
-                <section class="card">
-
-
-                    <h2>
-                        Asientos
-                    </h2>
-
-
-
-                    <div class="seat-tags">
-
-
-                        @for (asiento of asientos(); track asiento) {
-
-
-                        <span>
-                            {{ asiento }}
-                        </span>
-
-
-                        }
-
-
-                    </div>
-
-
-                </section>
-
-
-
-
-
-                <section class="card">
-
-
-                    <h2>
-                        Resumen
-                    </h2>
-
-
-
-                    <div class="row">
-
-                        <span>
-                            Cantidad
-                        </span>
-
-
-                        <strong>
-                            {{ asientos().length }}
-                        </strong>
-
-
-                    </div>
-
-
-
-
-
-                    <div class="row">
-
-                        <span>
-                            Subtotal
-                        </span>
-
-
-                        <strong>
-                            ${{ subtotal() }}
-                        </strong>
-
-
-                    </div>
-
-
-
-                </section>
+                <app-resumen [cantidad]="asientos().length" [subtotal]="subtotal()" [cargoServicio]="2">
+                </app-resumen>
 
                 <section class="actions">
 

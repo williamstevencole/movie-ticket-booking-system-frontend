@@ -1,0 +1,132 @@
+<main class="wrap">
+
+    @if(reembolsos.length > 0) {
+
+    <section class="refund-container">
+
+        <header class="header">
+
+            <div>
+                <h1>Mis reembolsos</h1>
+
+                <p>
+                    Consulta el estado de tus devoluciones.
+                </p>
+            </div>
+
+
+            <button class="refresh" (click)="actualizarEstado()">
+                Actualizar estado
+            </button>
+
+        </header>
+
+
+
+        <section class="refund-list">
+
+
+            @for(reembolso of reembolsos; track reembolso.id) {
+
+
+            <article class="refund-card">
+
+
+                <img class="poster" src="assets/posters/spider-man.jpg" alt="Poster película">
+
+
+
+                <div class="refund-info">
+
+
+                    <h2>
+                        Spider-Man: Across the Spider-Verse
+                    </h2>
+
+
+                    <p>
+                        Reserva:
+                        <strong>
+                            RES-00001
+                        </strong>
+                    </p>
+
+
+                    <p>
+                        Fecha cancelación:
+                        <strong>
+                            {{reembolso.created_at | date}}
+                        </strong>
+                    </p>
+
+
+                    <p>
+                        Método:
+                        <strong>
+                            Tarjeta ****4242
+                        </strong>
+                    </p>
+
+
+                </div>
+
+
+
+
+                <div class="refund-status">
+
+
+                    <span class="status" [class.completed]="reembolso.estado === 'procesado'"
+                        [class.rejected]="reembolso.estado === 'rechazado'">
+
+                        @if(reembolso.estado === 'procesado') {
+                        Completado
+                        }
+
+                        @else if(reembolso.estado === 'rechazado') {
+                        Rechazado
+                        }
+
+                        @else {
+                        Procesando · 3-5 días
+                        }
+
+                    </span>
+
+
+
+                    <strong class="amount">
+                        L {{reembolso.monto}}
+                    </strong>
+
+
+
+                    @if(reembolso.estado === 'pendiente' && superaCincoDias(reembolso.created_at)) {
+
+                    <a class="contact" href="#">
+                        Contactar soporte
+                    </a>
+
+                    }
+
+
+                </div>
+
+
+
+            </article>
+
+
+            }
+
+
+        </section>
+
+
+    </section>
+
+
+    }
+
+
+</main>

@@ -4,16 +4,25 @@ import { TarjetaComponent } from './tarjeta/tarjeta.component';
 import { EfectivoComponent } from './efectivo/efectivo.component';
 import { CuponComponent } from '../cupon/cupon.component';
 import { StepperComponent } from '../stepper/stepper.component';
+import { ResumenComponent } from '../resumen/resumen.component';
 
 @Component({
   selector: 'app-metodos-pago',
   standalone: true,
-  imports: [TarjetaComponent, EfectivoComponent, CuponComponent, StepperComponent],
+  imports: [
+    TarjetaComponent,
+    EfectivoComponent,
+    CuponComponent,
+    StepperComponent,
+    ResumenComponent,
+  ],
   templateUrl: './metodos-pago.component.html',
   styleUrl: './metodos-pago.component.scss',
 })
 export class MetodosPagoComponent {
   pelicula = MOCK_PELICULA_DETALLE;
+
+  readonly politicaAceptada = signal(false);
 
   readonly numeroReserva = signal('#CT-48291');
 
@@ -22,6 +31,8 @@ export class MetodosPagoComponent {
   readonly horario = signal('Hoy · 8:30 PM');
 
   readonly asientos = signal(['A3', 'A4']);
+
+  readonly subtotal = signal(9);
 
   readonly total = signal(12);
 

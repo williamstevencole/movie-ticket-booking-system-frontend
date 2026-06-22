@@ -99,7 +99,7 @@ export const routes: Routes = [
     path: 'mis-boletos',
     canActivate: [authGuard, locationGuard],
     loadComponent: () =>
-      import('./features/boletos/mis-boletos.component').then(
+      import('./features/boletos/mis-boletos/mis-boletos.component').then(
         (m) => m.MisBoletosComponent,
       ),
   },
@@ -115,7 +115,7 @@ export const routes: Routes = [
     path: 'reembolsos/:id',
     canActivate: [authGuard, locationGuard],
     loadComponent: () =>
-      import('./features/boletos/reembolsos/reembolsos.component').then(
+      import('./features/boletos/mis-boletos/reembolsos/reembolsos.component').then(
         (m) => m.ReembolsosComponent,
       ),
   },

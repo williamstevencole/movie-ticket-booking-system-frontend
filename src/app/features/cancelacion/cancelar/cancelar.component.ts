@@ -4,11 +4,19 @@ import { MOCK_BOLETOS, BoletoMock } from '../../../mocks/data/boletos.mock';
 import { AppbarComponent } from '../../../shared/components/appbar/appbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { TarjetaGuardadaComponent } from '../tarjeta-guardada/tarjeta-guardada.component';
+import { TiempoRestanteComponent } from '../../boletos/mis-boletos/tiempo-restante/tiempo-restante.component';
 
 @Component({
   selector: 'app-cancelar',
   standalone: true,
-  imports: [CommonModule, AppbarComponent, FooterComponent],
+  imports: [
+    CommonModule,
+    AppbarComponent,
+    FooterComponent,
+    TarjetaGuardadaComponent,
+    TiempoRestanteComponent,
+  ],
   templateUrl: './cancelar.component.html',
   styleUrl: './cancelar.component.scss',
 })

@@ -1,0 +1,30 @@
+<section class="qr-stub">
+
+    <div class="qr-header">
+
+        <h3>
+            Código QR
+        </h3>
+
+        <p>
+            Presenta este código en taquilla
+        </p>
+
+    </div>
+
+
+    <div class="qr-code">
+        <qrcode
+            [qrdata]="codigoQR"
+            [width]="88"
+            [errorCorrectionLevel]="'M'">
+        </qrcode>
+    </div>
+
+
+    <strong class="backup-code">
+        {{ codigoRespaldo }}
+    </strong>
+
+
+</section>

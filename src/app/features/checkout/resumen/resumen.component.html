@@ -1,0 +1,85 @@
+<section class="summary-card">
+
+    <h2>
+        Resumen
+    </h2>
+
+
+    <div class="row">
+
+        <span>
+            Cantidad
+        </span>
+
+        <strong>
+            {{ cantidad() }}
+        </strong>
+
+    </div>
+
+
+
+    <div class="row">
+
+        <span>
+            Subtotal
+        </span>
+
+        <strong>
+            ${{ subtotal() }}
+        </strong>
+
+    </div>
+
+
+
+    <div class="row service-fee">
+
+        <span class="label">
+
+            Cargo por servicio
+
+            <span class="tooltip" title="Recargo por procesamiento de pago online">
+                ?
+            </span>
+
+        </span>
+
+
+        @if (tieneCargo()) {
+
+        <strong>
+            ${{ cargoServicio() }}
+        </strong>
+
+        } @else {
+
+        <strong class="free">
+            Gratis
+        </strong>
+
+        }
+
+    </div>
+
+
+
+    <div class="divider"></div>
+
+
+
+    <div class="row total">
+
+        <span>
+            Total
+        </span>
+
+
+        <strong>
+            ${{ total() }}
+        </strong>
+
+    </div>
+
+
+</section>

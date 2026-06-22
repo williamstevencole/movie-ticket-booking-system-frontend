@@ -56,123 +56,126 @@
     }
 
 
-
-    <section class="transaction-card">
-
-
-      <h2>
-        Detalle de transacción
-      </h2>
-
-
-
-      <div class="row">
-
-        <span>
-          Número de reserva
-        </span>
-
-
-        <strong>
-          {{ numeroReserva() }}
-        </strong>
-
-      </div>
-
-
-
-      <div class="row">
-
-        <span>
-          Método de pago
-        </span>
-
-
-        <strong>
-          {{ metodoPago() }}
-        </strong>
-
-      </div>
-
-
-
-      <div class="row">
-
-        <span>
-          Número de transacción
-        </span>
-
-
-        <strong>
-          {{ numeroTransaccion() }}
-        </strong>
-
-      </div>
-
-
-
-
-      <div class="row">
-
-        <span>
-          Fecha
-        </span>
-
-
-        <strong>
-          {{ fecha() }}
-        </strong>
-
-      </div>
-
-
-
-
-      <div class="row total">
-
-        <span>
-          Total
-        </span>
-
-
-        <strong>
-          ${{ monto() }}
-        </strong>
-
-      </div>
-
-
-
-    </section>
-
     @if(pagoExitoso()) {
 
-    <section class="qr-card">
+    <section class="result-content">
 
-      <h2>
-        Código QR del boleto
-      </h2>
+      <section class="transaction-card">
 
-      <div class="qr-placeholder">
 
-        <span>
-          QR
-        </span>
+        <h2>
+          Detalle de transacción
+        </h2>
 
-        <p>
-          Aquí aparecerá el código QR de tu boleto
-        </p>
 
-      </div>
+
+        <div class="row">
+
+          <span>
+            Número de reserva
+          </span>
+
+
+          <strong>
+            {{ numeroReserva() }}
+          </strong>
+
+        </div>
+
+
+
+        <div class="row">
+
+          <span>
+            Método de pago
+          </span>
+
+
+          <strong>
+            {{ metodoPago() }}
+          </strong>
+
+        </div>
+
+
+
+        <div class="row">
+
+          <span>
+            Número de transacción
+          </span>
+
+
+          <strong>
+            {{ numeroTransaccion() }}
+          </strong>
+
+        </div>
+
+
+
+
+        <div class="row">
+
+          <span>
+            Fecha
+          </span>
+
+
+          <strong>
+            {{ fecha() }}
+          </strong>
+
+        </div>
+
+
+
+
+        <div class="row total">
+
+          <span>
+            Total
+          </span>
+
+
+          <strong>
+            ${{ monto() }}
+          </strong>
+
+        </div>
+
+
+
+      </section>
+
+
+      <section class="qr-card">
+
+        <h2>
+          Código QR del boleto
+        </h2>
+
+        <div class="qr-placeholder">
+
+          <span>
+            QR
+          </span>
+
+          <p>
+            Aquí aparecerá el código QR de tu boleto
+          </p>
+
+        </div>
+
+      </section>
 
     </section>
-
 
     <section class="actions">
 
       <button class="secondary" (click)="volverInicio()">
 
-        Volver al inicio
+        Volver
 
       </button>
 
@@ -184,7 +187,6 @@
       </button>
 
     </section>
-
 
     }
     @else {

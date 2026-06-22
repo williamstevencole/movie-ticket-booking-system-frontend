@@ -1,0 +1,94 @@
+<section class="history-card">
+
+    <header class="history-header">
+        <h2>Historial reciente</h2>
+        <p>Tus funciones anteriores</p>
+    </header>
+
+
+    <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Reserva</th>
+                    <th>Película</th>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Sala</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+
+
+            <tbody>
+
+                @for (boleto of historial; track boleto.id) {
+
+                <tr>
+
+                    <td>
+                        <strong>{{ boleto.id }}</strong>
+                    </td>
+
+
+                    <td>
+                        {{ boleto.pelicula }}
+                    </td>
+
+
+                    <td>
+                        {{ boleto.fecha }}
+                    </td>
+
+
+                    <td>
+                        {{ boleto.hora }}
+                    </td>
+
+
+                    <td>
+                        {{ boleto.sala }}
+                    </td>
+
+
+                    <td>
+
+                        @if (boleto.estado === 'ASISTIDA') {
+
+                        <span class="status attended">
+                            Asistida
+                        </span>
+
+                        }
+                        @else if (boleto.estado === 'NO_ASISTIDA') {
+
+                        <span class="status missed">
+                            No asistida
+                        </span>
+
+                        }
+                        @else {
+
+                        <span class="status cancelled">
+                            Cancelada
+                        </span>
+
+                        }
+
+                    </td>
+
+
+                </tr>
+
+                }
+
+            </tbody>
+
+
+        </table>
+
+    </div>
+
+</section>

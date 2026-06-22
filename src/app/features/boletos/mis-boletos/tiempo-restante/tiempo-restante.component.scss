@@ -1,0 +1,113 @@
+:host {
+    display: block;
+}
+
+
+
+.pill {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 6px 12px;
+
+    border-radius: 999px;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+}
+
+
+
+.dot {
+
+    width: 8px;
+
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: currentColor;
+
+}
+
+
+
+.normal {
+
+    background: #f1f5f9;
+
+    color: #475569;
+
+}
+
+
+
+.urgente {
+
+    background: #fee2e2;
+
+    color: #dc2626;
+
+}
+
+
+
+
+
+.banner {
+
+    margin-top: 24px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+
+    padding: 16px 20px;
+
+
+    border-radius: 16px;
+
+
+    background: #fff7ed;
+
+    border: 1px solid #fed7aa;
+
+
+    color: #c2410c;
+
+
+    font-weight: 700;
+
+
+
+    span {
+
+        font-size: 24px;
+
+    }
+
+
+    p {
+
+        margin: 0;
+
+    }
+
+}
+
+.muy-urgente {
+
+    background: #dc2626;
+
+    color: white;
+
+}

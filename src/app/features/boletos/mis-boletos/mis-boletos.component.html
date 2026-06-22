@@ -1,0 +1,352 @@
+<app-appbar [navItems]="nav" />
+
+<main class="wrap">
+
+    <header class="head">
+
+        <h1>
+            Mis boletos
+        </h1>
+
+        <p>
+            Acá vas a ver las funciones que ya reservaste.
+        </p>
+
+    </header>
+
+
+
+    <nav class="tabs">
+
+        <button [class.active]="vistaActual === 'activos'" (click)="cambiarVista('activos')">
+
+            Boletos
+
+        </button>
+
+
+
+        <button [class.active]="vistaActual === 'historial'" (click)="cambiarVista('historial')">
+
+            Historial
+
+        </button>
+
+
+
+        <button [class.active]="vistaActual === 'reembolsos'" (click)="cambiarVista('reembolsos')">
+
+            Reembolsos
+
+        </button>
+
+
+    </nav>
+
+
+
+
+    @if(vistaActual === 'activos') {
+
+
+    <nav class="ticket-tabs">
+
+
+        <button [class.active]="filtroBoletos === 'proximos'" (click)="cambiarFiltro('proximos')">
+
+            Próximos ({{ proximos.length }})
+
+        </button>
+
+
+
+        <button [class.active]="filtroBoletos === 'pasados'" (click)="cambiarFiltro('pasados')">
+
+            Pasados ({{ pasados.length }})
+
+        </button>
+
+
+
+        <button [class.active]="filtroBoletos === 'cancelados'" (click)="cambiarFiltro('cancelados')">
+
+            Cancelados ({{ cancelados.length }})
+
+        </button>
+
+
+    </nav>
+
+    @if(boletosFiltrados().length === 0) {
+
+    <section class="empty">
+
+        <div class="empty-card">
+
+            <div class="empty-icon">
+                🎬
+            </div>
+
+
+            <h2>
+                @if(filtroBoletos === 'proximos') {
+                No tienes funciones próximas
+                }
+
+                @if(filtroBoletos === 'pasados') {
+                No tienes historial todavía
+                }
+
+                @if(filtroBoletos === 'cancelados') {
+                No tienes boletos cancelados
+                }
+            </h2>
+
+
+            <p>
+                @if(filtroBoletos === 'proximos') {
+                Compra tus boletos y aparecerán aquí.
+                }
+
+                @if(filtroBoletos === 'pasados') {
+                Cuando asistas a una función aparecerá en tu historial.
+                }
+
+                @if(filtroBoletos === 'cancelados') {
+                Tus cancelaciones aparecerán reflejadas aquí.
+                }
+            </p>
+
+            <button class="empty-btn" (click)="irCartelera()">
+
+                Ver cartelera
+
+            </button>
+
+        </div>
+
+    </section>
+
+    } @else {
+
+    <section class="tickets">
+
+
+        @for (boleto of boletosFiltrados(); track boleto.id) {
+
+
+        <article class="ticket-card">
+
+
+            <div class="ticket-main">
+
+
+                <div class="ticket-info">
+
+
+                    <div class="status">
+
+                        {{ boleto.estado }}
+
+                    </div>
+
+                    <div class="details">
+
+                        <app-tiempo-restante [fechaFuncion]="boleto.fecha + ' ' + boleto.hora">
+                        </app-tiempo-restante>
+
+                    </div>
+                    
+                    <h2>
+                        {{ boleto.pelicula }}
+                    </h2>
+
+
+
+                    <p class="cinema">
+
+                        📍 {{ boleto.cine }}
+
+                    </p>
+
+
+
+
+                    <div class="details">
+
+
+                        <span>
+                            📅 {{ boleto.fecha }}
+                        </span>
+
+
+                        <span>
+                            🕒 {{ boleto.hora }}
+                        </span>
+
+
+                        <span>
+                            🎬 {{ boleto.sala }}
+                        </span>
+
+
+                    </div>
+
+
+
+
+
+                    <div class="seats">
+
+
+                        <strong>
+                            Asientos:
+                        </strong>
+
+
+
+                        @for(asiento of boleto.asientos; track asiento) {
+
+                        <span>
+                            {{ asiento }}
+                        </span>
+
+                        }
+
+
+                    </div>
+
+
+                </div>
+
+
+
+
+
+                <aside class="ticket-qr">
+
+
+                    <app-qr [boleto]="boleto">
+                    </app-qr>
+
+
+                </aside>
+
+
+            </div>
+
+
+
+
+
+            <div class="ticket-footer">
+
+
+                <div>
+
+                    Código:
+
+                    <strong>
+                        {{ boleto.id }}
+                    </strong>
+
+                </div>
+
+
+
+
+
+                <div class="ticket-actions">
+
+
+                    <app-descargar-boleto [boleto]="boleto">
+                    </app-descargar-boleto>
+
+
+
+
+                    <app-reenviar-boleto [boleto]="boleto">
+                    </app-reenviar-boleto>
+
+
+
+
+
+                    <button (click)="abrirPoliticas(boleto)">
+
+                        Cancelar boleto
+
+                    </button>
+
+
+
+
+
+                    @if(mostrarPoliticas) {
+
+
+                    <app-politicas-cancelacion [boleto]="selectedBoleto!" (cerrar)="mostrarPoliticas = false">
+                    </app-politicas-cancelacion>
+
+
+                    }
+
+
+                </div>
+
+
+            </div>
+
+
+
+        </article>
+
+
+        }
+
+
+    </section>
+
+
+    }
+
+
+    }
+
+
+
+
+
+    @if(vistaActual === 'reembolsos') {
+
+
+    <section class="refund-section">
+
+
+        <app-reembolsos></app-reembolsos>
+
+
+    </section>
+
+
+    }
+
+
+
+
+
+    @if(vistaActual === 'historial') {
+
+
+    <app-historial></app-historial>
+
+
+    }
+
+
+
+</main>
+
+
+
+<app-footer />

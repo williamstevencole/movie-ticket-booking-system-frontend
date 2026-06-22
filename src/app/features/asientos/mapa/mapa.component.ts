@@ -4,6 +4,8 @@ import { PanelLateralComponent } from '../panel-lateral/panel-lateral.component'
 import { Asiento } from './asiento.model';
 import { ErrorComponent } from '../error/error.component';
 import { TipoAsiento } from './seat-types/seat-type.model';
+import { EstadoAsiento } from './seat-states/seat-state.model';
+import { StepperComponent } from '../../checkout/stepper/stepper.component';
 
 //logica cambia despues
 
@@ -138,5 +140,3 @@ export class MapaComponent {
     };
   }
 }
-import { EstadoAsiento } from './seat-states/seat-state.model';import { StepperComponent } from '../../checkout/stepper/stepper.component';
-

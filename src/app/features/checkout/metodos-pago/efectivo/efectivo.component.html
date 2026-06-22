@@ -1,15 +1,54 @@
-<section class="card">
+<section class="card cash-card">
+
+    <div class="header">
+
+        <span class="icon">
+            💵
+        </span>
+
+        <div>
+            <h2>
+                Pago en taquilla
+            </h2>
+
+            <p>
+                Realiza el pago en efectivo hasta 30 minutos antes de la función.
+            </p>
+        </div>
+
+    </div>
 
 
-    <h2>
-        Pago en efectivo
-    </h2>
+    @if(!puedePagarTaquilla) {
+
+    <div class="warning">
+
+        ⚠️ No puedes seleccionar pago en taquilla.
+        La función comenzara pronto.
+
+    </div>
+
+    }
 
 
-    <p>
-        Realiza el pago en taquilla antes de la función.
-    </p>
+    @else {
 
+    <div class="instructions">
+
+        <h3>
+            Instrucciones
+        </h3>
+
+        <ul>
+            <li>Llega al cine antes de la función.</li>
+            <li>Presenta tu número de reserva.</li>
+            <li>Paga en efectivo en taquilla.</li>
+        </ul>
+
+    </div>
+
+
+    }
 
 
     <section class="actions">
@@ -23,9 +62,9 @@
 
 
 
-        <button class="btn btn-primary" (click)="continuar()">
+        <button class="btn btn-primary" [disabled]="!puedePagarTaquilla" (click)="abrirConfirmacion()">
 
-            Continuar
+            Reservar y pagar en taquilla
 
         </button>
 
@@ -34,3 +73,7 @@
 
 
 </section>
+
+<app-agreements [visible]="mostrarPolitica" (aceptar)="continuar()" (cerrar)="mostrarPolitica = false"
+    (recordatorioCambio)="recordatorioCorreo = $event">
+</app-agreements>
