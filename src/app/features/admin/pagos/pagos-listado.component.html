@@ -23,22 +23,22 @@
         </div>
         <div class="kpi">
           <span class="kpi-label">Cobrado</span>
-          <span class="kpi-value tnum">Q{{ kpis().cobrado | number }}</span>
+          <span class="kpi-value tnum">L {{ kpis().cobrado | number }}</span>
           <span class="kpi-sub">Pagos exitosos</span>
         </div>
         <div class="kpi">
           <span class="kpi-label">Descuentos</span>
-          <span class="kpi-value tnum">Q{{ kpis().descuentos | number }}</span>
+          <span class="kpi-value tnum">L {{ kpis().descuentos | number }}</span>
           <span class="kpi-sub">Cupones aplicados</span>
         </div>
         <div class="kpi refund">
           <span class="kpi-label">Reembolsado</span>
-          <span class="kpi-value tnum">Q{{ kpis().reembolsado | number }}</span>
+          <span class="kpi-value tnum">L {{ kpis().reembolsado | number }}</span>
           <span class="kpi-sub">{{ filteredReembolsos().length }} reembolsos</span>
         </div>
         <div class="kpi neto">
           <span class="kpi-label">Neto</span>
-          <span class="kpi-value tnum">Q{{ kpis().neto | number }}</span>
+          <span class="kpi-value tnum">L {{ kpis().neto | number }}</span>
           <span class="kpi-sub">Cobrado − reembolsado</span>
         </div>
       </section>
@@ -119,15 +119,15 @@
                         }
                       </span>
                     </td>
-                    <td class="right col-hide-sm tnum">Q{{ p.monto_original | number }}</td>
+                    <td class="right col-hide-sm tnum">L {{ p.monto_original | number }}</td>
                     <td class="right col-hide-sm tnum">
                       @if (p.monto_descuento > 0) {
-                        <span class="discount">−Q{{ p.monto_descuento | number }}</span>
+                        <span class="discount">−L {{ p.monto_descuento | number }}</span>
                       } @else {
                         <span class="col-sub">—</span>
                       }
                     </td>
-                    <td class="right col-num">Q{{ p.monto_final | number }}</td>
+                    <td class="right col-num">L {{ p.monto_final | number }}</td>
                     <td>
                       <span class="badge-state" [class]="'badge-state ' + p.estado">
                         <span class="glyph" aria-hidden="true"></span>

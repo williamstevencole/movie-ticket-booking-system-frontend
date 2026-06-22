@@ -98,12 +98,12 @@ type DistribucionRow = {
               </div>
               <div class="kpi refund">
                 <span class="kpi-label">Reembolsado</span>
-                <span class="kpi-value tnum">Q{{ kpis().reembolsado | number }}</span>
+                <span class="kpi-value tnum">L {{ kpis().reembolsado | number }}</span>
                 <span class="kpi-sub">total devuelto a clientes</span>
               </div>
               <div class="kpi neto">
                 <span class="kpi-label">Retenido</span>
-                <span class="kpi-value tnum">Q{{ kpis().retenido | number }}</span>
+                <span class="kpi-value tnum">L {{ kpis().retenido | number }}</span>
                 <span class="kpi-sub">lo que se queda el cine</span>
               </div>
             </section>
@@ -136,8 +136,8 @@ type DistribucionRow = {
                           <td>{{ row.cineNombre }}</td>
                           <td class="right tnum">{{ row.count | number }}</td>
                           <td class="right tnum">{{ row.pctPromedio | number: '1.1-1' }}%</td>
-                          <td class="right tnum">Q{{ row.reembolsado | number }}</td>
-                          <td class="right tnum">Q{{ row.retenido | number }}</td>
+                          <td class="right tnum">L {{ row.reembolsado | number }}</td>
+                          <td class="right tnum">L {{ row.retenido | number }}</td>
                         </tr>
                       }
                     </tbody>
@@ -147,8 +147,8 @@ type DistribucionRow = {
                         <td class="label">Total</td>
                         <td class="right tnum">{{ totalesDistribucion().count | number }}</td>
                         <td class="right">—</td>
-                        <td class="right tnum">Q{{ totalesDistribucion().reembolsado | number }}</td>
-                        <td class="right tnum">Q{{ totalesDistribucion().retenido | number }}</td>
+                        <td class="right tnum">L {{ totalesDistribucion().reembolsado | number }}</td>
+                        <td class="right tnum">L {{ totalesDistribucion().retenido | number }}</td>
                       </tr>
                     </tfoot>
                   </table>
@@ -170,7 +170,7 @@ type DistribucionRow = {
                           width="60"
                           [attr.height]="b.count / maxCount() * 150"
                           rx="3" class="bar">
-                      <title>{{ b.label }} — {{ b.count }} cancelaciones, Q{{ b.monto | number }}</title>
+                      <title>{{ b.label }} — {{ b.count }} cancelaciones, L {{ b.monto | number }}</title>
                     </rect>
                     <text x="40" y="200" text-anchor="middle" class="bar-label">{{ b.label }}</text>
                     <text x="40" [attr.y]="170 - (b.count / maxCount() * 150)"
@@ -360,7 +360,7 @@ export class AdminReporteEstadisticasCancelacionComponent {
     for (let i = 5; i >= 0; i--) {
       const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
       const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const label = d.toLocaleDateString('es-GT', { month: 'short', year: '2-digit' });
+      const label = d.toLocaleDateString('es-HN', { month: 'short', year: '2-digit' });
       buckets.push({ label, ym, count: 0, monto: 0 });
     }
     for (const r of this.reembolsos()) {

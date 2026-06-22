@@ -144,7 +144,7 @@
                   Pago
                 </span>
                 @if (pago(); as p) {
-                  <span class="panel-sub tnum">Q{{ p.monto_final | number }}</span>
+                  <span class="panel-sub tnum">L {{ p.monto_final | number }}</span>
                 }
               </header>
               <div class="panel-body">
@@ -168,12 +168,12 @@
                   @if (p.monto_descuento > 0) {
                     <div class="pay-line discount">
                       <span class="pay-label">Cupón {{ r.cupon_codigo }}</span>
-                      <span class="pay-val tnum">−Q{{ p.monto_descuento | number }}</span>
+                      <span class="pay-val tnum">−L {{ p.monto_descuento | number }}</span>
                     </div>
                   }
                   <div class="pay-line strong">
                     <span class="pay-label">Total cobrado</span>
-                    <span class="pay-val tnum">Q{{ p.monto_final | number }}</span>
+                    <span class="pay-val tnum">L {{ p.monto_final | number }}</span>
                   </div>
                 } @else {
                   <div class="pay-empty">Sin pago registrado.</div>
@@ -203,7 +203,7 @@
               <div class="refund-card">
                 <div class="rf-row">
                   <span>Monto pagado</span>
-                  <span class="tnum">Q{{ r.monto_total | number }}</span>
+                  <span class="tnum">L {{ r.monto_total | number }}</span>
                 </div>
                 <div class="rf-row">
                   <span>% según política</span>
@@ -211,7 +211,7 @@
                 </div>
                 <div class="rf-row total">
                   <span>Reembolso</span>
-                  <span class="tnum">Q{{ cancelMonto() | number }}</span>
+                  <span class="tnum">L {{ cancelMonto() | number }}</span>
                 </div>
               </div>
 
@@ -222,7 +222,7 @@
               <div class="cancel-actions">
                 <button type="button" class="btn-ghost" (click)="closeCancel()">No cancelar</button>
                 <button type="button" class="btn-danger" (click)="confirmCancel()">
-                  Cancelar y reembolsar Q{{ cancelMonto() | number }}
+                  Cancelar y reembolsar L {{ cancelMonto() | number }}
                 </button>
               </div>
             </div>
@@ -239,7 +239,7 @@
           <div class="action-bar-inner">
             <div class="ab-summary">
               <span class="ab-num tnum">{{ r.numero_reserva }}</span>
-              <span class="ab-sub">{{ cliente()?.nombre }} · Q{{ r.monto_total | number }}</span>
+              <span class="ab-sub">{{ cliente()?.nombre }} · L {{ r.monto_total | number }}</span>
             </div>
             <div class="ab-actions">
               @if (canSendTicket()) {

@@ -81,17 +81,17 @@ import {
             </div>
             <div class="kpi">
               <span class="kpi-label">Cobrado</span>
-              <span class="kpi-value tnum">Q{{ kpis().cobrado | number }}</span>
+              <span class="kpi-value tnum">L {{ kpis().cobrado | number }}</span>
               <span class="kpi-sub">Solo reservas pagadas</span>
             </div>
             <div class="kpi refund">
               <span class="kpi-label">Reembolsado</span>
-              <span class="kpi-value tnum">Q{{ kpis().reembolsado | number }}</span>
+              <span class="kpi-value tnum">L {{ kpis().reembolsado | number }}</span>
               <span class="kpi-sub">{{ kpis().reembolsadas }} reservas</span>
             </div>
             <div class="kpi neto">
               <span class="kpi-label">Neto</span>
-              <span class="kpi-value tnum">Q{{ kpis().neto | number }}</span>
+              <span class="kpi-value tnum">L {{ kpis().neto | number }}</span>
               <span class="kpi-sub">Cobrado − reembolsado</span>
             </div>
           </section>
@@ -153,7 +153,7 @@ import {
                           <div class="cell-sub">{{ fechaFuncion(r.id_funcion) | date: 'HH:mm' }}</div>
                         </td>
                         <td class="right tnum">{{ r.num_asientos }}</td>
-                        <td class="right tnum cell-strong">Q{{ r.monto_total | number }}</td>
+                        <td class="right tnum cell-strong">L {{ r.monto_total | number }}</td>
                         <td>
                           <span class="badge" [class]="'badge ' + r.estado">
                             {{ estadoLabel(r.estado) }}
@@ -165,7 +165,7 @@ import {
                   <tfoot>
                     <tr>
                       <td colspan="5" class="label">Totales</td>
-                      <td class="right tnum">Q{{ totalsRow() | number }}</td>
+                      <td class="right tnum">L {{ totalsRow() | number }}</td>
                       <td></td>
                     </tr>
                   </tfoot>

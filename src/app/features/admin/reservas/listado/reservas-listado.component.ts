@@ -166,7 +166,7 @@ interface Toast {
                           <div class="col-sub">{{ cineSala(r.id_funcion) }}</div>
                         </td>
                         <td class="right tnum">{{ r.num_asientos }}</td>
-                        <td class="right col-num">Q{{ r.monto_total | number }}</td>
+                        <td class="right col-num">L {{ r.monto_total | number }}</td>
                         <td>
                           <span class="badge-state" [class]="'badge-state ' + r.estado">
                             <span class="glyph" aria-hidden="true"></span>

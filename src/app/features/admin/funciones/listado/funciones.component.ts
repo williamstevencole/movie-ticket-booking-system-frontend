@@ -156,7 +156,7 @@ type Filtro = 'todas' | 'hoy' | 'proximas' | 'pasadas';
                           <div class="pelicula-cell">
                             <span class="pelicula-titulo">{{ peliculaTitulo(f.id_pelicula) }}</span>
                             <span class="pelicula-meta">
-                              {{ peliculaDuracion(f.id_pelicula) }} min · Q{{ f.precio_base }}
+                              {{ peliculaDuracion(f.id_pelicula) }} min · L {{ f.precio_base }}
                             </span>
                           </div>
                         </td>

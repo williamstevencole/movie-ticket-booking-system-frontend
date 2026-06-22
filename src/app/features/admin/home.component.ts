@@ -233,7 +233,7 @@ export class AdminHomeComponent implements OnInit {
   }
 
   private fmtQ(n: number): string {
-    return 'Q' + n.toLocaleString('es-GT', { maximumFractionDigits: 0 });
+    return 'L ' + n.toLocaleString('es-HN', { maximumFractionDigits: 0 });
   }
 
   statsComputed = computed<Stat[]>(() => {
@@ -252,7 +252,7 @@ export class AdminHomeComponent implements OnInit {
     return [
       {
         label: 'Reservas',
-        value: reservasInRange.length.toLocaleString('es-GT'),
+        value: reservasInRange.length.toLocaleString('es-HN'),
         delta: '—',
         deltaType: 'flat',
       },
