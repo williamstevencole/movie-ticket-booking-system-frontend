@@ -1,29 +1,7 @@
-<section class="timer-card">
-
-
-    <div class="icon">
-        <strong>
-        ⏱
-        </strong>
-    </div>
-
-
-    <div>
-
-        <span>
-            Tiempo restante
-        </span>
-
-
-        <strong>
-
-            {{ formato(minutos()) }}:
-            {{ formato(segundos()) }}
-
-        </strong>
-
-
-    </div>
-
-
-</section>
+<div class="timer-card" [class.urgente]="urgente()">
+  <div class="ico">⏱</div>
+  <div class="content">
+    <span class="lbl">Asientos bloqueados</span>
+    <span class="val tnum">{{ mm() }}:{{ ss() }}</span>
+  </div>
+</div>

@@ -1,71 +1,49 @@
-import { Component, OnDestroy, signal } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  computed,
+  signal,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-timer',
   standalone: true,
+  imports: [CommonModule],
   templateUrl: './timer.component.html',
   styleUrl: './timer.component.scss',
 })
-export class TimerComponent implements OnDestroy {
+export class TimerComponent implements OnInit, OnDestroy {
+  @Input() duracionSegundos = 600;
+  @Output() expirado = new EventEmitter<void>();
 
-  private interval?: ReturnType<typeof setInterval>;
+  readonly restantes = signal(0);
+  private tickHandle: ReturnType<typeof setInterval> | null = null;
 
-  readonly minutos = signal(10);
-  readonly segundos = signal(0);
+  readonly mm = computed(() => String(Math.floor(this.restantes() / 60)).padStart(2, '0'));
+  readonly ss = computed(() => String(this.restantes() % 60).padStart(2, '0'));
+  readonly urgente = computed(() => this.restantes() < 120);
 
-
-  constructor() {
-
-    this.interval = setInterval(() => {
-
-      this.tick();
-
+  ngOnInit(): void {
+    this.restantes.set(this.duracionSegundos);
+    this.tickHandle = setInterval(() => {
+      const r = this.restantes() - 1;
+      if (r <= 0) {
+        this.restantes.set(0);
+        if (this.tickHandle !== null) clearInterval(this.tickHandle);
+        this.tickHandle = null;
+        this.expirado.emit();
+      } else {
+        this.restantes.set(r);
+      }
     }, 1000);
-
   }
 
-
-
-  private tick() {
-
-    if (
-      this.minutos() === 0 &&
-      this.segundos() === 0
-    ) {
-      return;
-    }
-
-
-    if (this.segundos() === 0) {
-
-      this.minutos.update(value => value - 1);
-
-      this.segundos.set(59);
-
-    } else {
-
-      this.segundos.update(value => value - 1);
-
-    }
-
+  ngOnDestroy(): void {
+    if (this.tickHandle !== null) clearInterval(this.tickHandle);
   }
-
-
-
-  ngOnDestroy() {
-
-    clearInterval(this.interval);
-
-  }
-
-
-
-  formato(valor:number) {
-
-    return valor
-      .toString()
-      .padStart(2,'0');
-
-  }
-
 }

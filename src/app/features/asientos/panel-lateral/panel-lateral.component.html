@@ -1,125 +1,37 @@
-<aside class="panel">
+<div class="panel">
+  <div class="panel-head">
+    <h3>Tus asientos</h3>
+    <span class="ct">{{ asientosList().length }}</span>
+  </div>
 
+  @if (asientosList().length === 0) {
+    <p class="empty">Selecciona uno o más asientos del mapa.</p>
+  } @else {
+    <ul class="selected-list">
+      @for (a of asientosList(); track a.codigo) {
+        <li>
+          <span class="codigo">{{ a.codigo }}</span>
+          <span class="badge" [class.vip]="a.tipo === 'vip'" [class.accesible]="a.tipo === 'accesible'">
+            {{ badgeTipo(a.tipo) }}
+          </span>
+          <span class="precio tnum">L {{ a.precio }}</span>
+        </li>
+      }
+    </ul>
 
-    <section class="show-info">
-
-        <div class="movie-icon">
-            🎬
-        </div>
-
-
-        <div class="show-details">
-
-            <h3>
-                Nombre de la película
-            </h3>
-
-            <span>
-                Sala 5
-            </span>
-
-            <span>
-                Hoy · 8:30 PM
-            </span>
-
-        </div>
-
-    </section>
-
-    <app-timer></app-timer>
-
-
-    <section class="summary-card">
-
-        <h2>
-            Resumen
-        </h2>
-
-
-        <div class="selected-seats">
-
-            <span>
-                Asientos seleccionados
-            </span>
-
-            <div class="seat-tags">
-
-                @for (asiento of asientosSeleccionados; track asiento.id) {
-
-                <div class="seat-tag">
-
-                    <strong class="seat-number">
-                        {{ asiento.fila }}{{ asiento.numero }}
-                    </strong>
-
-
-                    <div class="seat-info">
-
-                        @if(asiento.tipo === 'vip') {
-                        <span class="seat-type vip">
-                            ⭐ VIP · Reclinable
-                        </span>
-                        }
-
-                        @if(asiento.tipo === 'accesible') {
-                        <span class="seat-type accessible">
-                            ♿ Accesible
-                        </span>
-                        }
-
-                        @if(asiento.tipo === 'estandar') {
-                        <span class="seat-type standard">
-                            Estándar
-                        </span>
-                        }
-
-                    </div>
-
-                </div>
-
-                }
-
-            </div>
-
-        </div>
-
-
-
-        <div class="summary-item">
-
-            <span>
-                Cantidad
-            </span>
-
-            <strong>
-                2
-            </strong>
-
-        </div>
-
-
-
-        <div class="summary-item">
-
-            <span>
-                Subtotal
-            </span>
-
-            <strong>
-                $12.00
-            </strong>
-
-        </div>
-
-
-
-        <p class="limit">
-            Máximo 6 asientos por reserva
-        </p>
-
-
-    </section>
-
-    <app-cta (cancelar)="volver()" (continuar)="continuarPago()">
-    </app-cta>
-</aside>
+    <div class="totals">
+      <div class="line">
+        <span class="lbl">Subtotal</span>
+        <span class="v tnum">L {{ subtotal() }}</span>
+      </div>
+      <div class="line">
+        <span class="lbl">Cargo por servicio</span>
+        <span class="v tnum">L {{ cargoServicio }}</span>
+      </div>
+      <div class="line total">
+        <span class="lbl">Total</span>
+        <span class="v tnum">L {{ subtotal() + cargoServicio }}</span>
+      </div>
+    </div>
+  }
+</div>

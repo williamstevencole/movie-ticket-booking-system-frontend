@@ -1,62 +1,15 @@
-.cta {
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 10px;
-
+.cta-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%;
+  padding: var(--s4) var(--s5);
+  background: var(--red);
+  color: white;
+  border-radius: var(--r);
+  font-size: 15px; font-weight: 800;
+  letter-spacing: -0.01em;
+  transition: background 180ms var(--ease);
+  box-shadow: var(--shadow);
 }
-
-
-button {
-
-    height: 40px;
-
-    border-radius: 999px;
-
-    font-size: 13px;
-
-    font-weight: 800;
-
-    cursor: pointer;
-
-    transition: .2s ease;
-
-}
-
-.continue {
-
-    background: var(--red);
-
-    color: white;
-
-    border: none;
-
-
-    &:hover {
-
-        background: var(--red-hover);
-
-        transform: translateY(-2px);
-
-    }
-
-}
-
-.cancel {
-
-    background: transparent;
-
-    color: white;
-
-    border: 1px solid rgba(255, 255, 255, .2);
-
-
-    &:hover {
-
-        background: rgba(255, 255, 255, .08);
-
-    }
-
-}
+.cta-btn:not(:disabled):hover { background: var(--red-hover); }
+.cta-btn:disabled { background: var(--surface-2); color: var(--text-3); cursor: not-allowed; box-shadow: none; }
+.cta-btn .total { font-size: 16px; }

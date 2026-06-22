@@ -1,24 +1,10 @@
-<section class="seat-error">
-
-    <div class="icon">
-        ⚠
+<div class="overlay" role="alert">
+  <div class="alert-banner warn floating">
+    <div class="ico">⚠</div>
+    <div class="msg">
+      El asiento <strong>{{ asiento }}</strong> acaba de tomarse por otro usuario.
+      Selecciona otro.
     </div>
-
-
-    <div class="message">
-
-        <h3>
-            Asiento no disponible
-        </h3>
-
-
-        <p>
-            El asiento
-            <strong>{{ asiento }}</strong>
-            fue tomado por otro usuario.
-            Por favor selecciona otro asiento.
-        </p>
-
-    </div>
-
-</section>
+    <button type="button" class="close" (click)="cerrar.emit()" aria-label="Cerrar">×</button>
+  </div>
+</div>

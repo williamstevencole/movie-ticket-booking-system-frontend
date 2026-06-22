@@ -1,82 +1,24 @@
-.seat-error {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: var(--s4);
-
-    padding: var(--s5);
-
-
-    background: rgba(239, 68, 68, .12);
-
-    border: 1px solid rgba(239, 68, 68, .35);
-
-    border-radius: var(--r-lg);
-
-
+.overlay {
+  position: fixed;
+  inset: auto var(--s6) var(--s7) auto;
+  z-index: 60;
+  max-width: 420px;
 }
-
-
-.icon {
-
-    width: 45px;
-    height: 45px;
-
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-
-    border-radius: 50%;
-
-
-    background: rgba(239, 68, 68, .2);
-
-
-    color: #ef4444;
-
-    font-size: 24px;
-
+.alert-banner.warn.floating {
+  background: var(--orange-soft);
+  border: 1px solid oklch(0.86 0.10 65);
+  border-radius: var(--r);
+  padding: var(--s4) var(--s5);
+  display: flex; gap: var(--s4); align-items: center;
+  box-shadow: var(--shadow-lg);
 }
-
-
-
-.message {
-
-
-    h3 {
-
-        margin: 0;
-
-        color: white;
-
-        font-size: 16px;
-
-        font-weight: 800;
-
-    }
-
-
-    p {
-
-        margin: 4px 0 0;
-
-
-        color: rgba(255, 255, 255, .65);
-
-        font-size: 14px;
-
-    }
-
-
-    strong {
-
-        color: white;
-
-    }
-
+.alert-banner .close {
+  margin-left: auto;
+  background: transparent; border: 0;
+  font-size: 22px; font-weight: 800; color: var(--orange-ink);
+  cursor: pointer;
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%;
 }
+.alert-banner .close:hover { background: rgba(0, 0, 0, 0.05); }

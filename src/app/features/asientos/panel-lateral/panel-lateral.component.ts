@@ -1,31 +1,35 @@
-import { Component, Input } from '@angular/core';
-import { Asiento } from '../mapa/asiento.model';
-import { TimerComponent } from '../timer/timer.component';
-import { CtaComponent } from '../cta/cta.component';
-import { Location } from '@angular/common';
-import { Router } from '@angular/router';
+import { Component, Input, computed, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+export type AsientoSeleccionado = {
+  codigo: string;
+  tipo: 'estandar' | 'vip' | 'accesible';
+  precio: number;
+};
 
 @Component({
   selector: 'app-panel-lateral',
   standalone: true,
-  imports: [TimerComponent, CtaComponent],
+  imports: [CommonModule],
   templateUrl: './panel-lateral.component.html',
   styleUrl: './panel-lateral.component.scss',
 })
 export class PanelLateralComponent {
-  @Input()
-  asientosSeleccionados: Asiento[] = [];
-
-  constructor(
-    private location: Location,
-    private router: Router,
-  ) {}
-
-  volver() {
-    this.location.back();
+  @Input({ required: true }) set asientos(v: AsientoSeleccionado[]) {
+    this._asientos.set(v);
   }
+  @Input() cargoServicio = 15;
 
-  continuarPago() {
-    this.router.navigate(['/checkout/confirmacion']);
+  private readonly _asientos = signal<AsientoSeleccionado[]>([]);
+  readonly asientosList = this._asientos.asReadonly();
+
+  readonly subtotal = computed(() =>
+    this._asientos().reduce((sum, a) => sum + a.precio, 0),
+  );
+
+  badgeTipo(tipo: 'estandar' | 'vip' | 'accesible'): string {
+    if (tipo === 'vip') return 'VIP · Reclinable';
+    if (tipo === 'accesible') return 'Accesible';
+    return 'Estándar';
   }
 }

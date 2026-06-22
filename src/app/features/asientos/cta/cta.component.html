@@ -1,16 +1,11 @@
-<section class="cta">
-
-    <button class="continue" (click)="continuar.emit()">
-
-        Confirmar y continuar al pago
-
-    </button>
-
-
-    <button class="cancel" (click)="cancelar.emit()">
-
-        Cancelar y volver
-
-    </button>
-
-</section>
+<button
+  type="button"
+  class="cta-btn"
+  [disabled]="!habilitado"
+  (click)="continuar.emit()"
+>
+  <span class="lbl">Confirmar y continuar al pago</span>
+  @if (habilitado) {
+    <span class="total tnum">L {{ total }}</span>
+  }
+</button>
