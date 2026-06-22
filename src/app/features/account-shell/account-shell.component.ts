@@ -41,7 +41,7 @@ export class AccountShellComponent {
   ];
 
   initials(): string {
-    const name = this.user()?.nombre ?? '?';
+    const name = this.user()?.nombre ?? '';
     return name
       .split(' ')
       .filter((p) => p.length > 0)

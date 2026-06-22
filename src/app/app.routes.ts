@@ -104,6 +104,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'mis-boletos/:numero',
+    canActivate: [authGuard, locationGuard],
+    loadComponent: () =>
+      import('./features/boletos/detalle/reserva-detalle-cliente.component').then(
+        (m) => m.ReservaDetalleClienteComponent,
+      ),
+  },
+  {
     path: 'cancelar/:id',
     canActivate: [authGuard, locationGuard],
     loadComponent: () =>
@@ -180,6 +188,120 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/admin/ciudades/ciudades.component').then(
         (m) => m.AdminCiudadesComponent,
+      ),
+  },
+  {
+    path: 'admin/cines',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/cines/listado/cines.component').then(
+        (m) => m.AdminCinesComponent,
+      ),
+  },
+  {
+    path: 'admin/cines/crear',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/cines/crear/cine-form.component').then(
+        (m) => m.AdminCineFormComponent,
+      ),
+  },
+  {
+    path: 'admin/cines/:id/editar',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/cines/editar/cine-editar.component').then(
+        (m) => m.AdminCineEditarComponent,
+      ),
+  },
+  {
+    path: 'admin/salas',
+    pathMatch: 'full',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/salas/listado/salas.component').then(
+        (m) => m.AdminSalasComponent,
+      ),
+  },
+  {
+    path: 'admin/salas/crear',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/salas/crear/sala-form.component').then(
+        (m) => m.AdminSalaFormComponent,
+      ),
+  },
+  {
+    path: 'admin/salas/:cineId/:salaId/editar',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/salas/editar/sala-editar.component').then(
+        (m) => m.AdminSalaEditarComponent,
+      ),
+  },
+  {
+    path: 'admin/salas/:cineId/:salaId/distribucion',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/salas/distribucion/distribucion.component').then(
+        (m) => m.AdminSalaDistribucionComponent,
+      ),
+  },
+  {
+    path: 'admin/tipos-asiento',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/tipos-asiento/tipos-asiento.component').then(
+        (m) => m.AdminTiposAsientoComponent,
+      ),
+  },
+  {
+    path: 'admin/precios',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/precios/precios.component').then(
+        (m) => m.AdminPreciosComponent,
+      ),
+  },
+  {
+    path: 'admin/reembolsos',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/reembolsos/reembolsos.component').then(
+        (m) => m.AdminReembolsosComponent,
+      ),
+  },
+  {
+    path: 'admin/usuarios-roles',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/usuarios-roles/usuarios-roles.component').then(
+        (m) => m.AdminUsuariosRolesComponent,
+      ),
+  },
+  {
+    path: 'admin/recepcionista/buscar-cliente',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import(
+        './features/admin/recepcionista/buscar-cliente/buscar-cliente.component'
+      ).then((m) => m.RecepcionistaBuscarClienteComponent),
+  },
+  {
+    path: 'admin/cupones',
+    pathMatch: 'full',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/cupones/listado/cupones.component').then(
+        (m) => m.AdminCuponesComponent,
+      ),
+  },
+  {
+    path: 'admin/cupones/crear',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/cupones/crear/cupon-form.component').then(
+        (m) => m.AdminCuponFormComponent,
       ),
   },
   {
@@ -264,6 +386,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/reservas/:id/cancelar',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import(
+        './features/admin/reservas/cancelar/reserva-cancelar.component'
+      ).then((m) => m.AdminReservaCancelarComponent),
+  },
+  {
     path: 'admin/reservas/:id',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
@@ -277,6 +407,22 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/admin/pagos/pagos-listado.component').then(
         (m) => m.AdminPagosListadoComponent,
+      ),
+  },
+  {
+    path: 'admin/clientes',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/clientes/listado/clientes.component').then(
+        (m) => m.AdminClientesComponent,
+      ),
+  },
+  {
+    path: 'admin/politicas',
+    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    loadComponent: () =>
+      import('./features/admin/politicas/configuracion/politicas-config.component').then(
+        (m) => m.AdminPoliticasConfigComponent,
       ),
   },
   {

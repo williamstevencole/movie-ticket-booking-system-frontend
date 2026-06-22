@@ -311,13 +311,13 @@ export class AdminReservaDetalleComponent {
       estado: next as Reserva['estado'],
       updated_at: new Date().toISOString(),
       notas_internas: `${this.motivos.find((m) => m.id === this.motivo())?.label}${
-        isRefund ? ` · reembolso ${this.cancelPercent()}% (Q${monto})` : ''
+        isRefund ? ` · reembolso ${this.cancelPercent()}% (L ${monto})` : ''
       }`,
     });
     this.cancelOpen.set(false);
     this.showToast(
       isRefund
-        ? `Reserva cancelada · Q${monto} reembolsados`
+        ? `Reserva cancelada · L ${monto} reembolsados`
         : `Reserva cancelada`,
     );
   }

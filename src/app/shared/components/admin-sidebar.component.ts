@@ -20,6 +20,8 @@ import {
   LucideUndo2,
   LucideChartColumn,
   LucideUsers,
+  LucideUserRound,
+  LucideUserSearch,
   LucideNotebookText,
   LucideLogOut,
   type LucideIconInput,
@@ -122,7 +124,7 @@ export class AdminSidebarComponent {
   readonly role = this.auth.role;
 
   initials(): string {
-    const name = this.user()?.nombre ?? '?';
+    const name = this.user()?.nombre ?? '';
     return name
       .split(' ')
       .filter((p) => p.length > 0)
@@ -175,10 +177,22 @@ export class AdminSidebarComponent {
           icon: LucideMapPin,
           routerLink: '/admin/ciudades',
         },
-        { label: 'Cines', icon: LucideBuilding2, count: 2 },
-        { label: 'Salas', icon: LucideArmchair, count: 11 },
-        { label: 'Tipos de asiento', icon: LucideSofa },
-        { label: 'Precios por cine', icon: LucideBanknote },
+        {
+          label: 'Cines',
+          icon: LucideBuilding2,
+          routerLink: '/admin/cines',
+        },
+        { label: 'Salas', icon: LucideArmchair, routerLink: '/admin/salas' },
+        {
+          label: 'Tipos de asiento',
+          icon: LucideSofa,
+          routerLink: '/admin/tipos-asiento',
+        },
+        {
+          label: 'Precios por cine',
+          icon: LucideBanknote,
+          routerLink: '/admin/precios',
+        },
       ],
     },
     {
@@ -195,13 +209,33 @@ export class AdminSidebarComponent {
           icon: LucideCreditCard,
           routerLink: '/admin/pagos',
         },
-        { label: 'Cupones', icon: LucideGift, count: 6 },
-        { label: 'Políticas cancelación', icon: LucideClipboardList },
+        {
+          label: 'Cupones',
+          icon: LucideGift,
+          count: 6,
+          routerLink: '/admin/cupones',
+        },
+        {
+          label: 'Políticas cancelación',
+          icon: LucideClipboardList,
+          routerLink: '/admin/politicas',
+        },
         {
           label: 'Reembolsos',
           icon: LucideUndo2,
           count: 3,
           urgent: true,
+          routerLink: '/admin/reembolsos',
+        },
+      ],
+    },
+    {
+      title: 'Taquilla',
+      links: [
+        {
+          label: 'Buscar cliente',
+          icon: LucideUserSearch,
+          routerLink: '/admin/recepcionista/buscar-cliente',
         },
       ],
     },
@@ -223,7 +257,12 @@ export class AdminSidebarComponent {
     {
       title: 'Sistema',
       links: [
-        { label: 'Usuarios & roles', icon: LucideUsers },
+        { label: 'Clientes', icon: LucideUserRound, routerLink: '/admin/clientes' },
+        {
+          label: 'Usuarios & roles',
+          icon: LucideUsers,
+          routerLink: '/admin/usuarios-roles',
+        },
         { label: 'Bitácora', icon: LucideNotebookText, routerLink: '/admin/bitacora' },
       ],
     },

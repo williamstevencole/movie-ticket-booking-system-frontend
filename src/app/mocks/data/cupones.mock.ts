@@ -18,6 +18,7 @@ export const MOCK_CUPONES: Cupon[] = [
     usos_actuales: 248,
     activo: true,
     created_at: '2026-03-01T00:00:00Z',
+    monto_descontado: 3224,
   },
   {
     id: '2',
@@ -29,6 +30,7 @@ export const MOCK_CUPONES: Cupon[] = [
     usos_actuales: 423,
     activo: true,
     created_at: '2026-04-10T00:00:00Z',
+    monto_descontado: 10980,
   },
   {
     id: '3',
@@ -40,6 +42,7 @@ export const MOCK_CUPONES: Cupon[] = [
     usos_actuales: 47,
     activo: true,
     created_at: '2026-05-15T00:00:00Z',
+    monto_descontado: 235,
   },
   {
     id: '4',
@@ -51,6 +54,7 @@ export const MOCK_CUPONES: Cupon[] = [
     usos_actuales: 89,
     activo: true,
     created_at: '2026-02-20T00:00:00Z',
+    monto_descontado: 1815,
   },
   {
     id: '5',
@@ -62,6 +66,7 @@ export const MOCK_CUPONES: Cupon[] = [
     usos_actuales: 312,
     activo: true,
     created_at: '2026-01-15T00:00:00Z',
+    monto_descontado: 9360,
   },
   {
     id: '6',
@@ -73,5 +78,6 @@ export const MOCK_CUPONES: Cupon[] = [
     usos_actuales: 967,
     activo: true,
     created_at: '2025-11-01T00:00:00Z',
+    monto_descontado: 28900,
   },
 ];

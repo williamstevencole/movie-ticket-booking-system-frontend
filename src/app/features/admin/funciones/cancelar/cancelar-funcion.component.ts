@@ -89,7 +89,7 @@ type Toast = { kind: 'ok' | 'err'; text: string } | null;
                 </div>
                 <div class="info-row">
                   <span class="label">Precio base</span>
-                  <span class="value tnum">Q{{ funcion()!.precio_base }}</span>
+                  <span class="value tnum">L {{ funcion()!.precio_base }}</span>
                 </div>
               </div>
             </section>
@@ -104,11 +104,11 @@ type Toast = { kind: 'ok' | 'err'; text: string } | null;
                 </div>
                 <div class="total refund">
                   <span class="total-label">Monto a reembolsar</span>
-                  <span class="total-value tnum">Q{{ montoReembolso() }}</span>
+                  <span class="total-value tnum">L {{ montoReembolso() }}</span>
                 </div>
                 <div class="total">
                   <span class="total-label">Monto retenido</span>
-                  <span class="total-value tnum">Q{{ montoRetenido() }}</span>
+                  <span class="total-value tnum">L {{ montoRetenido() }}</span>
                 </div>
               </div>
 
@@ -251,7 +251,7 @@ export class AdminCancelarFuncionComponent {
         this.saving.set(false);
         const reembolso = this.montoReembolso();
         const msg = reembolso > 0
-          ? `Función cancelada. Reembolso: Q${reembolso}`
+          ? `Función cancelada. Reembolso: L ${reembolso}`
           : 'Función cancelada';
         this.router.navigate(['/admin/funciones'], { state: { toast: msg } });
       },

@@ -157,7 +157,7 @@ export class AppbarComponent {
   });
 
   initials(): string {
-    const name = this.auth.user()?.nombre ?? '?';
+    const name = this.auth.user()?.nombre ?? '';
     return name
       .split(' ')
       .filter((p) => p.length > 0)

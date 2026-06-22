@@ -13,6 +13,35 @@ export type Reembolso = {
   created_at: string;
 };
 
+/* ───── Panel operacional admin (vista enriquecida) ───── */
+
+export type EstadoReembolsoAdmin =
+  | 'pendiente'
+  | 'procesando'
+  | 'completado'
+  | 'rechazado';
+
+export type MetodoReembolso = 'tarjeta' | 'efectivo';
+
+export type ReembolsoAdmin = {
+  id: string;
+  reserva: string;
+  cliente: string;
+  pelicula: string;
+  monto: number;
+  metodo: MetodoReembolso;
+  diasEnCola: number;
+  politica: string;
+  porcentaje: number;
+  estado: EstadoReembolsoAdmin;
+  motivoRechazo: string | null;
+  fechaProcesado: string | null;
+  created_at: string;
+};
+
 export abstract class ReembolsosService {
   abstract list(): Observable<Reembolso[]>;
+  abstract listAdmin(): Observable<ReembolsoAdmin[]>;
+  abstract procesar(id: string): Observable<ReembolsoAdmin>;
+  abstract rechazar(id: string, motivo: string): Observable<ReembolsoAdmin>;
 }

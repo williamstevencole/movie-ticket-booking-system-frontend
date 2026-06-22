@@ -1,0 +1,207 @@
+:host {
+  display: block;
+  height: 100vh;
+  background: var(--bg-soft);
+}
+
+.admin-body {
+  display: grid;
+  grid-template-columns: 248px 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+@media (max-width: 980px) {
+  .admin-body {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
+  }
+}
+
+.admin-main {
+  background: var(--bg-soft);
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100vh;
+}
+@media (max-width: 980px) {
+  .admin-main { height: auto; overflow: visible; }
+}
+
+.shell {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: var(--s7) var(--s6) var(--s9);
+}
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  font-size: 13px;
+  color: var(--text-3);
+  font-weight: 500;
+  margin-bottom: var(--s3);
+  a { color: var(--text-2); transition: color 180ms var(--ease); }
+  a:hover { color: var(--red); }
+  .crumb-current { color: var(--text); font-weight: 600; }
+}
+
+.head-row {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--s5);
+  flex-wrap: wrap;
+  margin-bottom: var(--s6);
+  h1 {
+    font-size: clamp(26px, 3vw, 34px);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+  }
+  .lead {
+    margin: 6px 0 0;
+    color: var(--text-2);
+    font-size: 14px;
+  }
+}
+
+.card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.stage {
+  padding: var(--s7) var(--s6) var(--s6);
+  overflow-x: auto;
+}
+
+.screen-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2);
+  margin-bottom: var(--s7);
+}
+.screen-bar {
+  width: 78%;
+  max-width: 540px;
+  height: 36px;
+  background: linear-gradient(to bottom, var(--text) 0%, var(--text-2) 100%);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  box-shadow: 0 16px 36px -10px rgba(28, 25, 23, 0.4);
+  position: relative;
+}
+.screen-bar::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 12%;
+  right: 12%;
+  height: 20px;
+  background: linear-gradient(to bottom, rgba(28, 25, 23, 0.18) 0%, transparent 100%);
+}
+.screen-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  color: var(--text-3);
+  margin-top: 20px;
+}
+
+.seats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: var(--s4) 0;
+  width: fit-content;
+  margin: 0 auto;
+}
+.seat-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.row-lbl {
+  width: 24px;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-align: center;
+}
+
+.seat {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 7px 7px 4px 4px;
+  border: 1.5px solid var(--border-2);
+  background: var(--bg);
+  position: relative;
+}
+.seat.vip {
+  background: var(--orange-soft);
+  border-color: var(--orange);
+}
+.seat.acc {
+  background: oklch(0.94 0.04 235);
+  border-color: oklch(0.55 0.16 235);
+}
+.seat.acc::after {
+  content: "♿";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: oklch(0.4 0.16 235);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s5);
+  justify-content: center;
+  margin-top: var(--s6);
+  padding: var(--s4) var(--s5);
+  background: var(--bg-soft);
+  border-radius: var(--r);
+  font-size: 13px;
+  color: var(--text-2);
+  font-weight: 500;
+}
+.legend .item { display: inline-flex; align-items: center; gap: 8px; }
+.legend .sw {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px 6px 3px 3px;
+  border: 1.5px solid var(--border-2);
+  background: var(--bg);
+}
+.legend .sw.vip { background: var(--orange-soft); border-color: var(--orange); }
+.legend .sw.acc { background: oklch(0.94 0.04 235); border-color: oklch(0.55 0.16 235); }
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s2);
+  margin-top: var(--s5);
+  padding: 10px 12px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  line-height: 1.45;
+  svg { flex-shrink: 0; margin-top: 2px; color: var(--text-3); }
+}
+
+@media (max-width: 640px) {
+  .shell { padding: var(--s5) var(--s4) var(--s8); }
+  .seat { width: 22px; height: 22px; }
+}
