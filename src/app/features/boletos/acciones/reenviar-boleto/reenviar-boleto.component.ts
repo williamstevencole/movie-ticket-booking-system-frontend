@@ -1,4 +1,5 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
+import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-reenviar-boleto',
@@ -12,6 +13,8 @@ export class ReenviarBoletoComponent {
   reenviando = false;
 
   segundos = 0;
+
+  private readonly toast = inject(ToastService);
 
   reenviar() {
     if (this.reenviando) return;
@@ -36,6 +39,6 @@ export class ReenviarBoletoComponent {
     }, 1000);
 
     // toast temporal
-    alert('Boleto reenviado a tu correo');
+    this.toast.show('Boleto reenviado a tu correo');
   }
 }

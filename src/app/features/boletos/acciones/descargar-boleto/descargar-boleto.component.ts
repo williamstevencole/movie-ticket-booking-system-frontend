@@ -1,5 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { jsPDF } from 'jspdf';
+import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-descargar-boleto',
@@ -10,8 +11,10 @@ import { jsPDF } from 'jspdf';
 export class DescargarBoletoComponent {
   @Input() boleto: any;
 
+  private readonly toast = inject(ToastService);
+
   descargar() {
-    alert('Tu boleto se está descargando…');
+    this.toast.show('Tu boleto se está descargando…');
 
     const pdf = new jsPDF();
 
