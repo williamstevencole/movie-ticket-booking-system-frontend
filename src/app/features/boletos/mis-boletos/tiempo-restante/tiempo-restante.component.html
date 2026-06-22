@@ -1,13 +1,13 @@
-@if(tiempo()) {
+@if(!pasado) {
 
 
     @if(variante === 'pill') {
 
-        <span class="pill" [class]="clase()">
+        <span class="pill" [class]="tono">
 
             <span class="dot"></span>
 
-            {{ tiempo() }}
+            {{ textoCorto }}
 
         </span>
 
@@ -24,7 +24,7 @@
 
 
             <p>
-                {{ tiempo() }} es su función.
+                {{ textoCorto }} es su función.
             </p>
 
         </div>
