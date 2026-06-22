@@ -88,7 +88,7 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
                 #q
                 class="search-input"
                 type="text"
-                placeholder="Nombre, email o teléfono…"
+                placeholder="Nombre, email, teléfono o #reserva…"
                 autocomplete="off"
                 [ngModel]="query()"
                 (ngModelChange)="onQuery($event)"
@@ -100,7 +100,10 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
               }
             </label>
             <span class="hint">
-              @if (hasQuery()) {
+              @if (matchedReserva(); as r) {
+                Coincidencia exacta con reserva
+                <strong>#{{ r.numero_reserva }}</strong>
+              } @else if (hasQuery()) {
                 {{ results().length }} coincidencia(s) para "{{ query() }}"
               } @else {
                 Mostrando todos los clientes
@@ -240,9 +243,13 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
                             <div class="r-foot">
                               <span class="r-date">{{ fmtDate(r.created_at) }}</span>
                               @if (r.estado === 'pendiente_pago') {
-                                <button class="btn btn-sm is-disabled" disabled title="Disponible en el módulo de pago en efectivo">
-                                  Cobrar en taquilla · próximamente
-                                </button>
+                                <a
+                                  class="btn btn-sm primary"
+                                  [routerLink]="['/admin/recepcionista/pago-efectivo', r.numero_reserva]"
+                                >
+                                  <svg lucideWallet [size]="13"></svg>
+                                  Cobrar en taquilla
+                                </a>
                               }
                             </div>
                           </li>
@@ -285,14 +292,31 @@ export class RecepcionistaBuscarClienteComponent {
     if (!this.hasQuery()) return all;
     const q = this.query().trim().toLowerCase();
     const qDigits = q.replace(/\D/g, '');
+
+    const reservaQuery = q.replace(/^#/, '');
+    const usuariosPorReserva = new Set(
+      this.reservas()
+        .filter((r) => r.numero_reserva.toLowerCase().includes(reservaQuery))
+        .map((r) => r.id_usuario),
+    );
+
     return all.filter((c) => {
       if (c.nombre.toLowerCase().includes(q)) return true;
       if (c.email.toLowerCase().includes(q)) return true;
       if (qDigits && c.telefono) {
-        return c.telefono.replace(/\D/g, '').includes(qDigits);
+        if (c.telefono.replace(/\D/g, '').includes(qDigits)) return true;
       }
-      return false;
+      return usuariosPorReserva.has(c.id);
     });
+  });
+
+  readonly matchedReserva = computed<Reserva | null>(() => {
+    if (!this.hasQuery()) return null;
+    const q = this.query().trim().toLowerCase().replace(/^#/, '');
+    if (!q) return null;
+    return (
+      this.reservas().find((r) => r.numero_reserva.toLowerCase() === q) ?? null
+    );
   });
 
   readonly totalClientes = computed(() => this.clientes().length);
@@ -333,6 +357,11 @@ export class RecepcionistaBuscarClienteComponent {
 
   onQuery(value: string) {
     this.query.set(value);
+    const matched = this.matchedReserva();
+    if (matched) {
+      this.selectedId.set(matched.id_usuario);
+      return;
+    }
     const id = this.selectedId();
     if (id && !this.results().some((c) => c.id === id)) {
       this.selectedId.set(null);
