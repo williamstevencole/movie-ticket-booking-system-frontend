@@ -20,6 +20,6 @@ export class PoliticasComponent {
   }
 
   continuarCancelacion() {
-    this.router.navigate(['/cancelar', this.boleto.id]);
+    this.router.navigate(['/cancelar', this.boleto.numero_reserva]);
   }
 }

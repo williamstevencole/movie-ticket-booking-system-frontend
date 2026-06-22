@@ -1,0 +1,36 @@
+.policy-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.policy-card-head { padding: var(--s5); border-bottom: 1px solid var(--border); }
+.policy-card-head h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin: var(--s2) 0 0; }
+.policy-card-head p { font-size: 14px; color: var(--text-2); margin: var(--s3) 0 0; }
+.policy-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  background: var(--red-soft);
+  color: var(--red);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.reglas { display: flex; flex-direction: column; }
+.rule {
+  display: grid;
+  grid-template-columns: 80px 1fr 80px;
+  gap: var(--s4);
+  align-items: center;
+  padding: var(--s4) var(--s5);
+  border-bottom: 1px solid var(--divider);
+}
+.rule:last-child { border-bottom: 0; }
+.rule .rango {
+  font-weight: 800; font-size: 13px;
+  background: var(--surface); padding: 4px 10px; border-radius: 4px;
+  text-align: center;
+}
+.rule .desc { font-size: 14px; color: var(--text-2); }
+.rule .reembolso { font-weight: 800; font-size: 18px; text-align: right; color: var(--red-ink); }

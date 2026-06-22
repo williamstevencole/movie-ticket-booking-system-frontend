@@ -1,0 +1,16 @@
+<div class="policy-card">
+  <div class="policy-card-head">
+    <span class="policy-tag">POLÍTICA DE CANCELACIÓN</span>
+    <h2>Reembolso según anticipación</h2>
+    <p>Cuanto antes canceles, mayor el reembolso.</p>
+  </div>
+  <div class="reglas">
+    @for (r of reglas; track r.rango) {
+      <div class="rule">
+        <div class="rango">{{ r.rango }}</div>
+        <div class="desc">{{ r.descripcion }}</div>
+        <div class="reembolso">{{ r.reembolso }}</div>
+      </div>
+    }
+  </div>
+</div>

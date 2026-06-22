@@ -1,133 +1,64 @@
-<app-appbar [navItems]="nav" />
+<app-appbar />
+<section class="cancel-page">
+  <div class="wrap">
+    <h1 class="page-title">Cancelar reserva</h1>
 
-<main class="wrap">
-
-    <section class="cancel-card">
-
-        <header>
-            <h1>Cancelar reserva</h1>
-            <p>
-                Revisa los detalles de tu reserva antes de continuar.
-            </p>
-
-            @if(reserva) {
-            <app-tiempo-restante variante="banner" [fechaHora]="reserva.fecha_hora">
-            </app-tiempo-restante>
-            }
-        </header>
-
-
-        @if(reserva) {
-        <div class="ticket-info">
-
-            <h2>{{ reserva.pelicula.titulo }}</h2>
-
-            <div class="details">
-                <p>
-                    <strong>Cine</strong><br>
-                    {{ reserva.cine.nombre }}
-                </p>
-
-                <p>
-                    <strong>Sala</strong><br>
-                    {{ reserva.sala.nombre }}
-                </p>
-
-                <p>
-                    <strong>Fecha</strong><br>
-                    {{ reserva.fecha_hora | date:'d MMM y' }}
-                </p>
-
-                <p>
-                    <strong>Hora</strong><br>
-                    {{ reserva.fecha_hora | date:'h:mm a' }}
-                </p>
-
-                <p>
-                    <strong>Asientos:</strong>
-                    {{ reserva.asientos_codigos.join(', ') }}
-                </p>
-
+    @if (reserva) {
+      <div class="cancel-layout">
+        <div class="main">
+          <div class="res-card">
+            <img class="p" [src]="reserva.pelicula.poster_url ?? ''" [alt]="reserva.pelicula.titulo" />
+            <div>
+              <h2 class="ttl">{{ reserva.pelicula.titulo }}</h2>
+              <p class="where">{{ reserva.cine.nombre }} · {{ reserva.sala.nombre }}</p>
+              <div class="meta-grid">
+                <div class="cell">
+                  <div class="l">FECHA</div>
+                  <div class="v">{{ reserva.fecha_hora | date:'EEE d MMM' }}</div>
+                </div>
+                <div class="cell">
+                  <div class="l">HORA</div>
+                  <div class="v">{{ reserva.fecha_hora | date:'h:mm a' }}</div>
+                </div>
+                <div class="cell">
+                  <div class="l">ASIENTOS</div>
+                  <div class="v">{{ reserva.asientos_codigos.join(', ') }}</div>
+                </div>
+                <div class="cell">
+                  <div class="l">PAGADO</div>
+                  <div class="v tnum">L {{ reserva.monto_total }} {{ reserva.tarjeta_mask ? '(' + reserva.tarjeta_mask + ')' : '' }}</div>
+                </div>
+              </div>
             </div>
+          </div>
 
+          <app-tiempo-restante [fechaHora]="reserva.fecha_hora" variante="banner" />
 
-            <div class="refund">
+          <app-politicas-card />
 
-                <h3>
-                    Reembolso estimado
-                </h3>
-
-                <span>
-                    L {{ reserva.monto_total | number:'1.2-2' }}
-                </span>
-
-                <small>
-                    Según la política de cancelación aplicada.
-                </small>
-
-            </div>
-
-
-            <app-tarjeta-guardada [tarjetaMask]="reserva.tarjeta_mask" [tarjetaBrand]="reserva.tarjeta_brand">
-            </app-tarjeta-guardada>
-
-
-        </div>
-        }
-
-
-        <div class="actions">
-
-
+          <div class="actions">
+            <a class="btn secondary" [routerLink]="['/mis-boletos']">Volver</a>
+            <button type="button" class="btn danger" (click)="confirmar()">Cancelar reserva</button>
+          </div>
         </div>
 
-
-        <div class="actions">
-
-            <button class="secondary" (click)="volver()">
-                Volver
-            </button>
-
-            <button class="danger" (click)="confirmarCancelacion()">
-                Confirmar cancelación
-            </button>
-
-
-        </div>
-
-    </section>
-
-    @if(cancelado) {
-
-    <div class="overlay">
-
-        <section class="success-modal">
-
-            <div class="icon">
-                ✓
-            </div>
-
-            <h2>
-                ¡Reserva cancelada exitosamente!
-            </h2>
-
-
-            <p>
-                Tu reserva fue cancelada correctamente.
-            </p>
-
-
-            <button (click)="volverBoletos()">
-                Volver a mis boletos
-            </button>
-
-        </section>
-
-    </div>
-
+        <aside class="refund-side">
+          <app-refund-side
+            [tarjetaMask]="reserva.tarjeta_mask"
+            [tarjetaBrand]="reserva.tarjeta_brand"
+            [montoPagado]="reserva.monto_total"
+            [porcentajeEstimado]="porcentajeEstimado()"
+          />
+        </aside>
+      </div>
     }
 
-</main>
-
-
+    @if (mostrarConfirmacion()) {
+      <app-politicas-cancelacion
+        [boleto]="reserva!"
+        (cerrar)="mostrarConfirmacion.set(false)"
+      />
+    }
+  </div>
+</section>
 <app-footer />
