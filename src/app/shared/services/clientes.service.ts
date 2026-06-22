@@ -10,7 +10,6 @@ export type Cliente = {
   telefono: string | null;
   estado: EstadoCliente;
   notificaciones_activas: boolean;
-  id_ciudad: string | null;
   num_reservas: number;
   created_at: string;
 };
