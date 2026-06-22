@@ -1,138 +1,38 @@
-<main class="wrap">
+@if (reembolsos().length > 0) {
+  <section class="reembolsos-section">
+    <div class="head">
+      <h2>Reembolsos en proceso</h2>
+      <button type="button" class="actualizar-btn" (click)="actualizarEstado()">Actualizar estado</button>
+    </div>
 
-    @if(reembolsos().length > 0) {
-
-    <section class="refund-container">
-
-        <header class="header">
-
-            <div>
-                <h1>Mis reembolsos</h1>
-
-                <p>
-                    Consulta el estado de tus devoluciones.
-                </p>
+    <div class="lista">
+      @for (r of reembolsos(); track r.id) {
+        <article class="reembolso">
+          @if (boletoForReembolso(r); as b) {
+            <img class="poster" [src]="b.pelicula.poster_url ?? ''" [alt]="b.pelicula.titulo" />
+            <div class="info">
+              <h3>{{ b.pelicula.titulo }}</h3>
+              <p>Reserva #{{ b.numero_reserva }} · {{ r.created_at | date:'d MMM y' }}</p>
+              <p class="metodo">
+                @if (b.tarjeta_mask) {
+                  Tarjeta {{ b.tarjeta_mask }}
+                } @else {
+                  Efectivo (taquilla)
+                }
+              </p>
             </div>
-
-
-            <button class="refresh" (click)="actualizarEstado()">
-                Actualizar estado
-            </button>
-
-        </header>
-
-
-
-        <section class="refund-list">
-
-
-            @for(reembolso of reembolsos(); track reembolso.id) {
-
-
-            <article class="refund-card">
-
-
-                <img class="poster"
-                    [src]="boletoForReembolso(reembolso)?.pelicula?.poster_url ?? 'assets/posters/placeholder.jpg'"
-                    alt="Poster película">
-
-
-
-                <div class="refund-info">
-
-
-                    <h2>
-                        {{ boletoForReembolso(reembolso)?.pelicula?.titulo ?? '—' }}
-                    </h2>
-
-
-                    <p>
-                        Reserva:
-                        <strong>
-                            {{ boletoForReembolso(reembolso)?.numero_reserva ?? '—' }}
-                        </strong>
-                    </p>
-
-
-                    <p>
-                        Fecha cancelación:
-                        <strong>
-                            {{ reembolso.created_at | date:'d MMM y' }}
-                        </strong>
-                    </p>
-
-
-                    <p>
-                        Método:
-                        <strong>
-                            @if(boletoForReembolso(reembolso)?.tarjeta_mask) {
-                            Tarjeta {{ boletoForReembolso(reembolso)?.tarjeta_mask }}
-                            } @else {
-                            Efectivo
-                            }
-                        </strong>
-                    </p>
-
-
-                </div>
-
-
-
-
-                <div class="refund-status">
-
-
-                    <span class="status" [class.completed]="reembolso.estado === 'procesado'"
-                        [class.rejected]="reembolso.estado === 'rechazado'">
-
-                        @if(reembolso.estado === 'procesado') {
-                        Completado
-                        }
-
-                        @else if(reembolso.estado === 'rechazado') {
-                        Rechazado
-                        }
-
-                        @else {
-                        Procesando · 3-5 días
-                        }
-
-                    </span>
-
-
-
-                    <strong class="amount">
-                        {{ reembolso.monto | currency:'HNL':'symbol-narrow':'1.2-2' }}
-                    </strong>
-
-
-
-                    @if(reembolso.estado === 'pendiente' && superaCincoDias(reembolso.created_at)) {
-
-                    <a class="contact" href="#">
-                        Contactar soporte
-                    </a>
-
-                    }
-
-
-                </div>
-
-
-
-            </article>
-
-
-            }
-
-
-        </section>
-
-
-    </section>
-
-
-    }
-
-
-</main>
+          } @else {
+            <div class="info">
+              <h3>Reembolso #{{ r.id }}</h3>
+              <p>{{ r.created_at | date:'d MMM y' }}</p>
+            </div>
+          }
+          <div class="estado">
+            <span class="pill" [class]="'st-' + r.estado">{{ r.estado }}</span>
+            <strong class="monto tnum">L {{ r.monto }}</strong>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+}

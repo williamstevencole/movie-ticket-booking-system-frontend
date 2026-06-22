@@ -1,94 +1,27 @@
-<section class="history-card">
-
-    <header class="history-header">
-        <h2>Historial reciente</h2>
-        <p>Tus funciones anteriores</p>
-    </header>
-
-
-    <div class="table-wrapper">
-
-        <table>
-
-            <thead>
-                <tr>
-                    <th>Reserva</th>
-                    <th>Película</th>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                    <th>Sala</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-
-
-            <tbody>
-
-                @for (boleto of historial; track boleto.id) {
-
-                <tr>
-
-                    <td>
-                        <strong>{{ boleto.id }}</strong>
-                    </td>
-
-
-                    <td>
-                        {{ boleto.pelicula }}
-                    </td>
-
-
-                    <td>
-                        {{ boleto.fecha }}
-                    </td>
-
-
-                    <td>
-                        {{ boleto.hora }}
-                    </td>
-
-
-                    <td>
-                        {{ boleto.sala }}
-                    </td>
-
-
-                    <td>
-
-                        @if (boleto.estado === 'ASISTIDA') {
-
-                        <span class="status attended">
-                            Asistida
-                        </span>
-
-                        }
-                        @else if (boleto.estado === 'NO_ASISTIDA') {
-
-                        <span class="status missed">
-                            No asistida
-                        </span>
-
-                        }
-                        @else {
-
-                        <span class="status cancelled">
-                            Cancelada
-                        </span>
-
-                        }
-
-                    </td>
-
-
-                </tr>
-
-                }
-
-            </tbody>
-
-
-        </table>
-
-    </div>
-
+<section class="historial-section">
+  <h2>Historial reciente</h2>
+  <div class="table-wrap">
+    <table class="historial">
+      <thead>
+        <tr>
+          <th>Película</th>
+          <th>Fecha</th>
+          <th class="col-asientos">Asientos</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (h of items; track h.id) {
+          <tr>
+            <td>{{ h.pelicula }}</td>
+            <td>{{ h.fecha }}</td>
+            <td class="col-asientos">{{ h.asientos }}</td>
+            <td>
+              <span class="pill" [class]="'st-' + h.estado">{{ etiquetaEstado(h.estado) }}</span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
 </section>

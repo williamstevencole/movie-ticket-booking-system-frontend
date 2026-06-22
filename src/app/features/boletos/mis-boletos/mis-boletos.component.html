@@ -1,346 +1,84 @@
 <app-appbar [navItems]="nav" />
 
-<main class="wrap">
+<section class="account-shell">
+  <div class="wrap">
+    <div class="account-grid">
+      <app-mis-boletos-sidebar
+        [userName]="userName"
+        [userEmail]="userEmail"
+        [countProximos]="proximos().length"
+        [countPasados]="pasados().length"
+        [countCancelados]="cancelados().length"
+        [activeView]="vistaActual()"
+        (viewChange)="cambiarVista($event)"
+      />
 
-    <header class="head">
+      <div class="main">
+        @if (vistaActual() === 'boletos') {
+          <h1 class="page-title">Mis boletos</h1>
 
-        <h1>
-            Mis boletos
-        </h1>
-
-        <p>
-            Acá vas a ver las funciones que ya reservaste.
-        </p>
-
-    </header>
-
-
-
-    <nav class="tabs">
-
-        <button [class.active]="vistaActual() === 'activos'" (click)="cambiarVista('activos')">
-
-            Boletos
-
-        </button>
-
-
-
-        <button [class.active]="vistaActual() === 'historial'" (click)="cambiarVista('historial')">
-
-            Historial
-
-        </button>
-
-
-
-        <button [class.active]="vistaActual() === 'reembolsos'" (click)="cambiarVista('reembolsos')">
-
-            Reembolsos
-
-        </button>
-
-
-    </nav>
-
-
-
-
-    @if(vistaActual() === 'activos') {
-
-
-    <nav class="ticket-tabs">
-
-
-        <button [class.active]="filtroBoletos() === 'proximos'" (click)="cambiarFiltro('proximos')">
-
-            Próximos ({{ proximos().length }})
-
-        </button>
-
-
-
-        <button [class.active]="filtroBoletos() === 'pasados'" (click)="cambiarFiltro('pasados')">
-
-            Pasados ({{ pasados().length }})
-
-        </button>
-
-
-
-        <button [class.active]="filtroBoletos() === 'cancelados'" (click)="cambiarFiltro('cancelados')">
-
-            Cancelados ({{ cancelados().length }})
-
-        </button>
-
-
-    </nav>
-
-    @if(boletosFiltrados().length === 0) {
-
-    <section class="empty">
-
-        <div class="empty-card">
-
-            <div class="empty-icon">
-                🎬
-            </div>
-
-
-            <h2>
-                @if(filtroBoletos() === 'proximos') {
-                No tienes funciones próximas
-                }
-
-                @if(filtroBoletos() === 'pasados') {
-                No tienes historial todavía
-                }
-
-                @if(filtroBoletos() === 'cancelados') {
-                No tienes boletos cancelados
-                }
-            </h2>
-
-
-            <p>
-                @if(filtroBoletos() === 'proximos') {
-                Compra tus boletos y aparecerán aquí.
-                }
-
-                @if(filtroBoletos() === 'pasados') {
-                Cuando asistas a una función aparecerá en tu historial.
-                }
-
-                @if(filtroBoletos() === 'cancelados') {
-                Tus cancelaciones aparecerán reflejadas aquí.
-                }
-            </p>
-
-            <button class="empty-btn" (click)="irCartelera()">
-
-                Ver cartelera
-
+          <div class="ticket-tabs">
+            <button class="ticket-tab" [class.on]="filtroBoletos() === 'proximos'" (click)="cambiarFiltro('proximos')">
+              Próximos <span class="ct">{{ proximos().length }}</span>
             </button>
+            <button class="ticket-tab" [class.on]="filtroBoletos() === 'pasados'" (click)="cambiarFiltro('pasados')">
+              Pasados <span class="ct">{{ pasados().length }}</span>
+            </button>
+            <button class="ticket-tab" [class.on]="filtroBoletos() === 'cancelados'" (click)="cambiarFiltro('cancelados')">
+              Cancelados <span class="ct">{{ cancelados().length }}</span>
+            </button>
+          </div>
 
-        </div>
-
-    </section>
-
-    } @else {
-
-    <section class="tickets">
-
-
-        @for (boleto of boletosFiltrados(); track boleto.id) {
-
-
-        <article class="ticket-card">
-
-
-            <div class="ticket-main">
-
-
-                <div class="ticket-info">
-
-
-                    <div class="status">
-
-                        {{ boleto.estado }}
-
-                    </div>
-
-                    <div class="details">
-
-                        <app-tiempo-restante [fechaHora]="boleto.fecha_hora">
-                        </app-tiempo-restante>
-
-                    </div>
-
-                    <h2>
-                        {{ boleto.pelicula.titulo }}
-                    </h2>
-
-
-
-                    <p class="cinema">
-
-                        📍 {{ boleto.cine.nombre }}
-
-                    </p>
-
-
-
-
-                    <div class="details">
-
-
-                        <span>
-                            📅 {{ boleto.fecha_hora | date:'d MMMM y' }}
-                        </span>
-
-
-                        <span>
-                            🕒 {{ boleto.fecha_hora | date:'h:mm a' }}
-                        </span>
-
-
-                        <span>
-                            🎬 {{ boleto.sala.nombre }}
-                        </span>
-
-
-                    </div>
-
-
-
-
-                    <div class="seats">
-
-
-                        <strong>
-                            Asientos:
-                        </strong>
-
-
-
-                        @for(asiento of boleto.asientos_codigos; track asiento) {
-
-                        <span>
-                            {{ asiento }}
-                        </span>
-
+          @if (boletosFiltrados().length === 0) {
+            <div class="empty-state">
+              <p>No hay boletos en esta categoría.</p>
+              <a class="btn primary" (click)="irCartelera()">Ver cartelera</a>
+            </div>
+          } @else {
+            <div class="tickets">
+              @for (boleto of boletosFiltrados(); track boleto.id) {
+                <article class="ticket">
+                  <div class="film">
+                    @if (boleto.pelicula.poster_url) {
+                      <img class="poster" [src]="boleto.pelicula.poster_url" [alt]="boleto.pelicula.titulo" />
+                    } @else {
+                      <div class="poster placeholder"></div>
+                    }
+                    <div class="meta">
+                      <h3>{{ boleto.pelicula.titulo }}</h3>
+                      <p class="where">{{ boleto.cine.nombre }} · {{ boleto.sala.nombre }}</p>
+                      <p class="when">{{ boleto.fecha_hora | date:'EEE d MMM, h:mm a' }}</p>
+                      <div class="seats">
+                        @for (s of boleto.asientos_codigos; track s) {
+                          <span class="seat-chip">{{ s }}</span>
                         }
-
-
+                      </div>
+                      @if (filtroBoletos() === 'proximos') {
+                        <app-tiempo-restante [fechaHora]="boleto.fecha_hora" variante="pill" />
+                      }
                     </div>
-
-
-                </div>
-
-
-
-
-                <aside class="ticket-qr">
-
-
-                    <app-qr [numeroReserva]="boleto.numero_reserva">
-                    </app-qr>
-
-
-                </aside>
-
-
-            </div>
-
-
-
-
-            <div class="ticket-footer">
-
-
-                <div>
-
-                    Código:
-
-                    <strong>
-                        {{ boleto.numero_reserva }}
-                    </strong>
-
-                </div>
-
-
-
-
-                <div class="ticket-actions">
-
-
-                    <app-descargar-boleto [boleto]="boleto">
-                    </app-descargar-boleto>
-
-
+                    <app-qr [numeroReserva]="boleto.numero_reserva" />
+                  </div>
+                  <div class="actions">
+                    <app-descargar-boleto [boleto]="boleto" />
                     @if (puedeReenviar(boleto)) {
-
-                    <app-reenviar-boleto [boleto]="boleto">
-                    </app-reenviar-boleto>
-
+                      <app-reenviar-boleto [boleto]="boleto" />
                     }
-
-
-
-
-                    <button (click)="abrirPoliticas(boleto)">
-
-                        Cancelar boleto
-
-                    </button>
-
-
-
-
-                    @if(mostrarPoliticas()) {
-
-
-                    <app-politicas-cancelacion [boleto]="selectedBoleto()!" (cerrar)="cerrarPoliticas()">
-                    </app-politicas-cancelacion>
-
-
-                    }
-
-
-                </div>
-
-
+                    <span class="reserva-num">#{{ boleto.numero_reserva }}</span>
+                  </div>
+                </article>
+              }
             </div>
-
-
-
-        </article>
-
+          }
 
         }
 
-
-    </section>
-
-
-    }
-
-
-    }
-
-
-
-
-    @if(vistaActual() === 'reembolsos') {
-
-
-    <section class="refund-section">
-
-
-        <app-reembolsos></app-reembolsos>
-
-
-    </section>
-
-
-    }
-
-
-
-
-    @if(vistaActual() === 'historial') {
-
-
-    <app-historial></app-historial>
-
-
-    }
-
-
-
-</main>
-
-
+        @if (vistaActual() === 'reembolsos') {
+          <app-reembolsos />
+        }
+      </div>
+    </div>
+  </div>
+</section>
 
 <app-footer />

@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { Reembolso, ReembolsosService } from '../../../../shared/services/reembolsos.service';
 import { BoletosService, Boleto } from '../../../../shared/services/boletos.service';
@@ -9,7 +9,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-reembolsos',
   standalone: true,
-  imports: [DatePipe, CurrencyPipe],
+  imports: [DatePipe],
   templateUrl: './reembolsos.component.html',
   styleUrl: './reembolsos.component.scss',
 })
@@ -21,14 +21,6 @@ export class ReembolsosComponent {
 
   readonly boletos = toSignal(this.boletosSvc.list(), { initialValue: [] as Boleto[] });
   readonly pagos = toSignal(this.pagosSvc.list(), { initialValue: [] as Pago[] });
-
-  readonly nav = [
-    { label: 'Cartelera', route: '/' },
-    { label: 'Próximos estrenos' },
-    { label: 'Promociones' },
-    { label: 'Cines' },
-    { label: 'Mis boletos', route: '/mis-boletos', active: true },
-  ];
 
   //agregue un mock solo para probar lo de pendiente y mas de 5 dias
   readonly reembolsos = signal<Reembolso[]>([]);

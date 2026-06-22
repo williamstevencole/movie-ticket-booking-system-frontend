@@ -5,18 +5,17 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 import { AppbarComponent } from '../../../shared/components/appbar/appbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
-import { PoliticasComponent } from '../../cancelacion/politicas/politicas.component';
 import { ReenviarBoletoComponent } from '../acciones/reenviar-boleto/reenviar-boleto.component';
 import { DescargarBoletoComponent } from '../acciones/descargar-boleto/descargar-boleto.component';
 import { QrBoletoComponent } from './qr/qr.component';
-import { HistorialComponent } from './historial/historial.component';
 import { ReembolsosComponent } from './reembolsos/reembolsos.component';
 import { TiempoRestanteComponent } from './tiempo-restante/tiempo-restante.component';
+import { MisBoletosSidebarComponent } from './sidebar/mis-boletos-sidebar.component';
 
 import { Boleto, BoletosService } from '../../../shared/services/boletos.service';
 
 type Filtro = 'proximos' | 'pasados' | 'cancelados';
-type Vista = 'activos' | 'historial' | 'reembolsos';
+type Vista = 'boletos' | 'reembolsos' | 'perfil';
 
 @Component({
   selector: 'app-mis-boletos',
@@ -24,13 +23,12 @@ type Vista = 'activos' | 'historial' | 'reembolsos';
   imports: [
     AppbarComponent,
     FooterComponent,
-    PoliticasComponent,
     ReenviarBoletoComponent,
     DescargarBoletoComponent,
     QrBoletoComponent,
-    HistorialComponent,
     ReembolsosComponent,
     TiempoRestanteComponent,
+    MisBoletosSidebarComponent,
     DatePipe,
   ],
   templateUrl: './mis-boletos.component.html',
@@ -40,12 +38,13 @@ export class MisBoletosComponent {
   private readonly router = inject(Router);
   private readonly boletosSvc = inject(BoletosService);
 
+  readonly userName = 'Andrea López';
+  readonly userEmail = 'andrea@email.com';
+
   readonly boletos = toSignal(this.boletosSvc.list(), { initialValue: [] as Boleto[] });
 
-  readonly vistaActual = signal<Vista>('activos');
+  readonly vistaActual = signal<Vista>('boletos');
   readonly filtroBoletos = signal<Filtro>('proximos');
-  readonly mostrarPoliticas = signal(false);
-  readonly selectedBoleto = signal<Boleto | null>(null);
 
   readonly proximos = computed(() =>
     this.boletos().filter((b) => {
@@ -68,9 +67,8 @@ export class MisBoletosComponent {
 
   readonly nav = [
     { label: 'Cartelera', route: '/' },
-    { label: 'Próximos estrenos' },
-    { label: 'Promociones' },
-    { label: 'Cines' },
+    { label: 'Próximos estrenos', route: '/proximos-estrenos' },
+    { label: 'Promociones', route: '/cupones' },
     { label: 'Mis boletos', route: '/mis-boletos', active: true },
   ];
 
@@ -91,15 +89,6 @@ export class MisBoletosComponent {
       case 'cancelados':
         return this.cancelados();
     }
-  }
-
-  abrirPoliticas(boleto: Boleto) {
-    this.selectedBoleto.set(boleto);
-    this.mostrarPoliticas.set(true);
-  }
-
-  cerrarPoliticas() {
-    this.mostrarPoliticas.set(false);
   }
 
   cambiarVista(vista: Vista) {
