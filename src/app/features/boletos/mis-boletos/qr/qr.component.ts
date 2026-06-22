@@ -1,29 +1,21 @@
 import { Component, Input } from '@angular/core';
 import { QRCodeComponent } from 'angularx-qrcode';
-import { BoletoMock } from '../../../../mocks/data/boletos.mock';
-
 
 @Component({
   selector: 'app-qr',
   standalone: true,
-  imports: [
-    QRCodeComponent
-  ],
+  imports: [QRCodeComponent],
   templateUrl: './qr.component.html',
   styleUrl: './qr.component.scss',
 })
 export class QrBoletoComponent {
+  @Input({ required: true }) numeroReserva!: string;
 
-  @Input() boleto!: BoletoMock;
-
-
-  get codigoQR() {
-    return `CINE-${this.boleto.id}`;
+  get codigoQR(): string {
+    return `CINE-${this.numeroReserva}`;
   }
 
-
-  get codigoRespaldo() {
-    return '04318';
+  get codigoRespaldo(): string {
+    return this.numeroReserva;
   }
-
 }

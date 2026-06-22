@@ -18,7 +18,7 @@
 
     <nav class="tabs">
 
-        <button [class.active]="vistaActual === 'activos'" (click)="cambiarVista('activos')">
+        <button [class.active]="vistaActual() === 'activos'" (click)="cambiarVista('activos')">
 
             Boletos
 
@@ -26,7 +26,7 @@
 
 
 
-        <button [class.active]="vistaActual === 'historial'" (click)="cambiarVista('historial')">
+        <button [class.active]="vistaActual() === 'historial'" (click)="cambiarVista('historial')">
 
             Historial
 
@@ -34,7 +34,7 @@
 
 
 
-        <button [class.active]="vistaActual === 'reembolsos'" (click)="cambiarVista('reembolsos')">
+        <button [class.active]="vistaActual() === 'reembolsos'" (click)="cambiarVista('reembolsos')">
 
             Reembolsos
 
@@ -46,31 +46,31 @@
 
 
 
-    @if(vistaActual === 'activos') {
+    @if(vistaActual() === 'activos') {
 
 
     <nav class="ticket-tabs">
 
 
-        <button [class.active]="filtroBoletos === 'proximos'" (click)="cambiarFiltro('proximos')">
+        <button [class.active]="filtroBoletos() === 'proximos'" (click)="cambiarFiltro('proximos')">
 
-            Próximos ({{ proximos.length }})
-
-        </button>
-
-
-
-        <button [class.active]="filtroBoletos === 'pasados'" (click)="cambiarFiltro('pasados')">
-
-            Pasados ({{ pasados.length }})
+            Próximos ({{ proximos().length }})
 
         </button>
 
 
 
-        <button [class.active]="filtroBoletos === 'cancelados'" (click)="cambiarFiltro('cancelados')">
+        <button [class.active]="filtroBoletos() === 'pasados'" (click)="cambiarFiltro('pasados')">
 
-            Cancelados ({{ cancelados.length }})
+            Pasados ({{ pasados().length }})
+
+        </button>
+
+
+
+        <button [class.active]="filtroBoletos() === 'cancelados'" (click)="cambiarFiltro('cancelados')">
+
+            Cancelados ({{ cancelados().length }})
 
         </button>
 
@@ -89,30 +89,30 @@
 
 
             <h2>
-                @if(filtroBoletos === 'proximos') {
+                @if(filtroBoletos() === 'proximos') {
                 No tienes funciones próximas
                 }
 
-                @if(filtroBoletos === 'pasados') {
+                @if(filtroBoletos() === 'pasados') {
                 No tienes historial todavía
                 }
 
-                @if(filtroBoletos === 'cancelados') {
+                @if(filtroBoletos() === 'cancelados') {
                 No tienes boletos cancelados
                 }
             </h2>
 
 
             <p>
-                @if(filtroBoletos === 'proximos') {
+                @if(filtroBoletos() === 'proximos') {
                 Compra tus boletos y aparecerán aquí.
                 }
 
-                @if(filtroBoletos === 'pasados') {
+                @if(filtroBoletos() === 'pasados') {
                 Cuando asistas a una función aparecerá en tu historial.
                 }
 
-                @if(filtroBoletos === 'cancelados') {
+                @if(filtroBoletos() === 'cancelados') {
                 Tus cancelaciones aparecerán reflejadas aquí.
                 }
             </p>
@@ -152,20 +152,20 @@
 
                     <div class="details">
 
-                        <app-tiempo-restante [fechaFuncion]="boleto.fecha + ' ' + boleto.hora">
+                        <app-tiempo-restante [fechaHora]="boleto.fecha_hora">
                         </app-tiempo-restante>
 
                     </div>
-                    
+
                     <h2>
-                        {{ boleto.pelicula }}
+                        {{ boleto.pelicula.titulo }}
                     </h2>
 
 
 
                     <p class="cinema">
 
-                        📍 {{ boleto.cine }}
+                        📍 {{ boleto.cine.nombre }}
 
                     </p>
 
@@ -176,22 +176,21 @@
 
 
                         <span>
-                            📅 {{ boleto.fecha }}
+                            📅 {{ boleto.fecha_hora | date:'d MMMM y' }}
                         </span>
 
 
                         <span>
-                            🕒 {{ boleto.hora }}
+                            🕒 {{ boleto.fecha_hora | date:'h:mm a' }}
                         </span>
 
 
                         <span>
-                            🎬 {{ boleto.sala }}
+                            🎬 {{ boleto.sala.nombre }}
                         </span>
 
 
                     </div>
-
 
 
 
@@ -205,7 +204,7 @@
 
 
 
-                        @for(asiento of boleto.asientos; track asiento) {
+                        @for(asiento of boleto.asientos_codigos; track asiento) {
 
                         <span>
                             {{ asiento }}
@@ -222,11 +221,10 @@
 
 
 
-
                 <aside class="ticket-qr">
 
 
-                    <app-qr [boleto]="boleto">
+                    <app-qr [numeroReserva]="boleto.numero_reserva">
                     </app-qr>
 
 
@@ -234,7 +232,6 @@
 
 
             </div>
-
 
 
 
@@ -247,11 +244,10 @@
                     Código:
 
                     <strong>
-                        {{ boleto.id }}
+                        {{ boleto.numero_reserva }}
                     </strong>
 
                 </div>
-
 
 
 
@@ -263,11 +259,12 @@
                     </app-descargar-boleto>
 
 
-
+                    @if (puedeReenviar(boleto)) {
 
                     <app-reenviar-boleto [boleto]="boleto">
                     </app-reenviar-boleto>
 
+                    }
 
 
 
@@ -281,11 +278,10 @@
 
 
 
+                    @if(mostrarPoliticas()) {
 
-                    @if(mostrarPoliticas) {
 
-
-                    <app-politicas-cancelacion [boleto]="selectedBoleto!" (cerrar)="mostrarPoliticas = false">
+                    <app-politicas-cancelacion [boleto]="selectedBoleto()!" (cerrar)="cerrarPoliticas()">
                     </app-politicas-cancelacion>
 
 
@@ -316,8 +312,7 @@
 
 
 
-
-    @if(vistaActual === 'reembolsos') {
+    @if(vistaActual() === 'reembolsos') {
 
 
     <section class="refund-section">
@@ -334,8 +329,7 @@
 
 
 
-
-    @if(vistaActual === 'historial') {
+    @if(vistaActual() === 'historial') {
 
 
     <app-historial></app-historial>
