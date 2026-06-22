@@ -1,0 +1,44 @@
+<app-appbar />
+
+<section class="proximos-page">
+  <div class="wrap">
+    <header class="page-head">
+      <span class="tag">PRÓXIMOS ESTRENOS</span>
+      <h1>Lo que viene en cartelera</h1>
+      <p>Películas confirmadas con fecha de estreno futura.</p>
+    </header>
+
+    @if (proximos().length === 0) {
+      <div class="empty">
+        <p>No hay estrenos programados próximamente.</p>
+      </div>
+    } @else {
+      <div class="grid">
+        @for (p of proximos(); track p.id) {
+          <article class="film">
+            <a class="poster-wrap" [routerLink]="['/pelicula', p.id]">
+              @if (p.poster_url) {
+                <img class="poster" [src]="p.poster_url" [alt]="p.titulo" />
+              } @else {
+                <div class="poster placeholder"></div>
+              }
+              <span class="dias">
+                @if (p.diasParaEstreno === 1) { Mañana }
+                @else if (p.diasParaEstreno < 8) { En {{ p.diasParaEstreno }} días }
+                @else { {{ p.fecha_estreno | date:'d MMM' }} }
+              </span>
+            </a>
+            <h3>{{ p.titulo }}</h3>
+            <p class="meta">
+              <span class="clas">{{ p.clasificacion }}</span>
+              · {{ p.duracion_min }} min
+            </p>
+            <p class="estreno">Estreno {{ p.fecha_estreno | date:'d MMM y' }}</p>
+          </article>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<app-footer />
