@@ -9,42 +9,14 @@
     <div class="content">
 
 
-        @if(metodoPago === 'tarjeta') {
-
-
         <h3>
             Método de reembolso
         </h3>
 
 
         <p>
-            Tarjeta terminada en
-            <strong>
-                ****{{ ultimosDigitos }}
-            </strong>
+            <strong>{{ etiqueta }}</strong>
         </p>
-
-
-        }
-
-
-        @if(metodoPago === 'efectivo') {
-
-
-        <h3>
-            Método de reembolso
-        </h3>
-
-
-        <p>
-            Reembolso en
-            <strong>
-                taquilla
-            </strong>
-        </p>
-
-
-        }
 
 
     </div>

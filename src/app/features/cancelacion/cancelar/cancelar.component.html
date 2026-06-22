@@ -10,39 +10,42 @@
                 Revisa los detalles de tu reserva antes de continuar.
             </p>
 
-            <app-tiempo-restante variante="banner" [fechaFuncion]="'2026-06-25T19:30:00'">
+            @if(reserva) {
+            <app-tiempo-restante variante="banner" [fechaHora]="reserva.fecha_hora">
             </app-tiempo-restante>
+            }
         </header>
 
 
+        @if(reserva) {
         <div class="ticket-info">
 
-            <h2>Spider-Man: Across the Spider-Verse</h2>
+            <h2>{{ reserva.pelicula.titulo }}</h2>
 
             <div class="details">
                 <p>
                     <strong>Cine</strong><br>
-                    Cinetario Mall
+                    {{ reserva.cine.nombre }}
                 </p>
 
                 <p>
                     <strong>Sala</strong><br>
-                    Sala 4
+                    {{ reserva.sala.nombre }}
                 </p>
 
                 <p>
                     <strong>Fecha</strong><br>
-                    25 Junio 2026
+                    {{ reserva.fecha_hora | date:'d MMM y' }}
                 </p>
 
                 <p>
                     <strong>Hora</strong><br>
-                    7:30 PM
+                    {{ reserva.fecha_hora | date:'h:mm a' }}
                 </p>
 
                 <p>
                     <strong>Asientos:</strong>
-                    A5, A6
+                    {{ reserva.asientos_codigos.join(', ') }}
                 </p>
 
             </div>
@@ -55,7 +58,7 @@
                 </h3>
 
                 <span>
-                    L 240.00
+                    L {{ reserva.monto_total | number:'1.2-2' }}
                 </span>
 
                 <small>
@@ -65,11 +68,12 @@
             </div>
 
 
-            <app-tarjeta-guardada [metodoPago]="'tarjeta'" [ultimosDigitos]="'4242'">
+            <app-tarjeta-guardada [tarjetaMask]="reserva.tarjeta_mask" [tarjetaBrand]="reserva.tarjeta_brand">
             </app-tarjeta-guardada>
 
 
         </div>
+        }
 
 
         <div class="actions">

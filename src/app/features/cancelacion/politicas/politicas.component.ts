@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Router } from '@angular/router';
-import { BoletoMock } from '../../../mocks/data/boletos.mock';
+import { Boleto } from '../../../shared/services/boletos.service';
 
 @Component({
   selector: 'app-politicas-cancelacion',
@@ -11,7 +11,7 @@ import { BoletoMock } from '../../../mocks/data/boletos.mock';
 export class PoliticasComponent {
   constructor(private router: Router) {}
 
-  @Input() boleto!: BoletoMock;
+  @Input() boleto!: Boleto;
 
   @Output() cerrar = new EventEmitter<void>();
 
