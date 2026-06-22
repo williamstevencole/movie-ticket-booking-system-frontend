@@ -1,18 +1,26 @@
-import { Component } from '@angular/core';
-import { DatePipe } from '@angular/common';
-import { MOCK_REEMBOLSOS } from '../../../../mocks/data/reembolsos.mock';
+import { Component, inject, signal } from '@angular/core';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { Reembolso } from '../../../../shared/services/reembolsos.service';
+import { Reembolso, ReembolsosService } from '../../../../shared/services/reembolsos.service';
+import { BoletosService, Boleto } from '../../../../shared/services/boletos.service';
+import { PagosService, Pago } from '../../../../shared/services/pagos.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-reembolsos',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, CurrencyPipe],
   templateUrl: './reembolsos.component.html',
   styleUrl: './reembolsos.component.scss',
 })
 export class ReembolsosComponent {
-  constructor(private router: Router) {}
+  private readonly router = inject(Router);
+  private readonly boletosSvc = inject(BoletosService);
+  private readonly pagosSvc = inject(PagosService);
+  private readonly reembolsosSvc = inject(ReembolsosService);
+
+  readonly boletos = toSignal(this.boletosSvc.list(), { initialValue: [] as Boleto[] });
+  readonly pagos = toSignal(this.pagosSvc.list(), { initialValue: [] as Pago[] });
 
   readonly nav = [
     { label: 'Cartelera', route: '/' },
@@ -23,28 +31,42 @@ export class ReembolsosComponent {
   ];
 
   //agregue un mock solo para probar lo de pendiente y mas de 5 dias
-  reembolsos: Reembolso[] = [
-    ...MOCK_REEMBOLSOS,
-    {
-      id: 'rb-pendiente-001',
-      id_pago: '999',
-      id_politica: '1',
-      porcentaje_aplicado: 100,
-      monto: 350,
-      estado: 'pendiente',
-      fecha_procesado: null,
-      created_at: '2026-06-10T10:00:00.000Z',
-    },
-  ];
+  readonly reembolsos = signal<Reembolso[]>([]);
+
+  constructor() {
+    this.reembolsosSvc.list().subscribe((list) => {
+      this.reembolsos.set([
+        ...list,
+        {
+          id: 'rb-pendiente-001',
+          id_pago: '999',
+          id_politica: '1',
+          porcentaje_aplicado: 100,
+          monto: 350,
+          estado: 'pendiente',
+          fecha_procesado: null,
+          created_at: '2026-06-10T10:00:00.000Z',
+        },
+      ]);
+    });
+  }
+
+  boletoForReembolso(reembolso: Reembolso): Boleto | undefined {
+    const pago = this.pagos().find((p) => p.id === reembolso.id_pago);
+    if (!pago) return undefined;
+    return this.boletos().find((b) => b.id === pago.id_reserva);
+  }
 
   actualizarEstado() {
     console.log('Consultando estado del reembolso...');
 
     // mock de refresh
-    this.reembolsos = this.reembolsos.map((r) => ({
-      ...r,
-      estado: r.estado === 'pendiente' ? 'procesado' : r.estado,
-    }));
+    this.reembolsos.update((list) =>
+      list.map((r) => ({
+        ...r,
+        estado: r.estado === 'pendiente' ? 'procesado' : r.estado,
+      }))
+    );
   }
 
   superaCincoDias(fecha: string): boolean {

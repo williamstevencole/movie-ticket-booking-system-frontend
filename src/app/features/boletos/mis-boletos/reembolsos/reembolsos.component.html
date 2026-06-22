@@ -1,6 +1,6 @@
 <main class="wrap">
 
-    @if(reembolsos.length > 0) {
+    @if(reembolsos().length > 0) {
 
     <section class="refund-container">
 
@@ -26,13 +26,15 @@
         <section class="refund-list">
 
 
-            @for(reembolso of reembolsos; track reembolso.id) {
+            @for(reembolso of reembolsos(); track reembolso.id) {
 
 
             <article class="refund-card">
 
 
-                <img class="poster" src="assets/posters/spider-man.jpg" alt="Poster película">
+                <img class="poster"
+                    [src]="boletoForReembolso(reembolso)?.pelicula?.poster_url ?? 'assets/posters/placeholder.jpg'"
+                    alt="Poster película">
 
 
 
@@ -40,14 +42,14 @@
 
 
                     <h2>
-                        Spider-Man: Across the Spider-Verse
+                        {{ boletoForReembolso(reembolso)?.pelicula?.titulo ?? '—' }}
                     </h2>
 
 
                     <p>
                         Reserva:
                         <strong>
-                            RES-00001
+                            {{ boletoForReembolso(reembolso)?.numero_reserva ?? '—' }}
                         </strong>
                     </p>
 
@@ -55,7 +57,7 @@
                     <p>
                         Fecha cancelación:
                         <strong>
-                            {{reembolso.created_at | date}}
+                            {{ reembolso.created_at | date:'d MMM y' }}
                         </strong>
                     </p>
 
@@ -63,7 +65,11 @@
                     <p>
                         Método:
                         <strong>
-                            Tarjeta ****4242
+                            @if(boletoForReembolso(reembolso)?.tarjeta_mask) {
+                            Tarjeta {{ boletoForReembolso(reembolso)?.tarjeta_mask }}
+                            } @else {
+                            Efectivo
+                            }
                         </strong>
                     </p>
 
@@ -96,7 +102,7 @@
 
 
                     <strong class="amount">
-                        L {{reembolso.monto}}
+                        {{ reembolso.monto | currency:'HNL':'symbol-narrow':'1.2-2' }}
                     </strong>
 
 
