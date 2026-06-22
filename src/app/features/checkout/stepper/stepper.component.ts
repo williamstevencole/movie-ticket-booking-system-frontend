@@ -31,13 +31,13 @@ export class StepperComponent {
     },
     {
       id: 2,
-      label: 'Confirmación',
-      route: '/checkout/confirmacion'
+      label: 'Pago',
+      route: '/checkout/metodos-pago'
     },
     {
       id: 3,
-      label: 'Pago',
-      route: '/checkout/metodos-pago'
+      label: 'Confirmación',
+      route: '/checkout/confirmacion'
     }
   ];
 
