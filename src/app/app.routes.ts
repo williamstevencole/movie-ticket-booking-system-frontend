@@ -57,7 +57,6 @@ export const routes: Routes = [
   },
   {
     path: 'pelicula/:id',
-    canActivate: [locationGuard],
     loadComponent: () =>
       import('./features/pelicula/detalle/detalle.component').then(
         (m) => m.PeliculaDetalleComponent,
@@ -458,6 +457,14 @@ export const routes: Routes = [
     path: 'admin/reportes/pagos-reembolsos',
     redirectTo: 'admin/pagos',
     pathMatch: 'full',
+  },
+  {
+    path: 'proximos-estrenos',
+    canActivate: [locationGuard],
+    loadComponent: () =>
+      import('./features/proximos-estrenos/proximos-estrenos.component').then(
+        (m) => m.ProximosEstrenosComponent,
+      ),
   },
   { path: '**', redirectTo: '' },
 ];
