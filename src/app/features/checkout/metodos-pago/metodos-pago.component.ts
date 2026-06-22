@@ -47,6 +47,13 @@ export class MetodosPagoComponent {
 
   readonly descuentoAplicado = signal(true);
 
+  // TODO: replace with the real ISO date from session/reservation state once wired end-to-end.
+  // MOCK_PELICULA_DETALLE (PeliculaDetalle) does not carry a fecha_hora/fechaHora field —
+  // that lives on the Funcion entity (Funciones.fecha_hora), which is not yet passed into
+  // this component. Placeholder is 1 hour from now so efectivo remains enabled during
+  // development. When the Funcion is available: use funcion.fecha_hora instead.
+  readonly fechaHoraFuncion = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
   readonly totalFinal = computed(() => {
     return this.precioOriginal() - this.descuento();
   });

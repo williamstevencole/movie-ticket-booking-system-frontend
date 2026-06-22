@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, Input, OnDestroy, signal } from '@angular/core';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { AgreementsComponent } from '../../agreements/agreements.component';
@@ -10,7 +10,9 @@ import { AgreementsComponent } from '../../agreements/agreements.component';
   templateUrl: './efectivo.component.html',
   styleUrl: './efectivo.component.scss',
 })
-export class EfectivoComponent {
+export class EfectivoComponent implements OnDestroy {
+  @Input({ required: true }) fechaHora!: string;
+
   constructor(
     private location: Location,
     private router: Router,
@@ -20,14 +22,27 @@ export class EfectivoComponent {
 
   mostrarPolitica = false;
 
-  readonly minutosRestantes = signal(45);
+  // Tick para refrescar cada minuto si la página queda abierta.
+  private readonly now = signal(Date.now());
+  private readonly tickHandle = setInterval(() => this.now.set(Date.now()), 60_000);
+
+  readonly minutosRestantes = computed(() => {
+    const diff = new Date(this.fechaHora).getTime() - this.now();
+    return Math.floor(diff / 60_000);
+  });
+
+  readonly puedeUsar = computed(() => this.minutosRestantes() >= 30);
 
   get puedePagarTaquilla() {
-    return this.minutosRestantes() > 30;
+    return this.puedeUsar();
+  }
+
+  ngOnDestroy(): void {
+    clearInterval(this.tickHandle);
   }
 
   continuar() {
-    if (!this.puedePagarTaquilla) {
+    if (!this.puedeUsar()) {
       return;
     }
 

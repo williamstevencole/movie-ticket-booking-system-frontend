@@ -19,12 +19,12 @@
     </div>
 
 
-    @if(!puedePagarTaquilla) {
+    @if(!puedeUsar()) {
 
     <div class="warning">
 
         ⚠️ No puedes seleccionar pago en taquilla.
-        La función comenzara pronto.
+        Faltan {{ minutosRestantes() }} min para la función. El pago en efectivo solo está disponible si faltan ≥ 30 min.
 
     </div>
 
@@ -62,7 +62,7 @@
 
 
 
-        <button class="btn btn-primary" [disabled]="!puedePagarTaquilla" (click)="abrirConfirmacion()">
+        <button class="btn btn-primary" [disabled]="!puedeUsar()" (click)="abrirConfirmacion()">
 
             Reservar y pagar en taquilla
 
