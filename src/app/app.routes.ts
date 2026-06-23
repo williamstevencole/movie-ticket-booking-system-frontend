@@ -64,7 +64,7 @@ export const routes: Routes = [
   },
   {
     path: 'sala/:id',
-    canActivate: [locationGuard],
+    canActivate: [authGuard, locationGuard],
     loadComponent: () =>
       import('./features/asientos/mapa/mapa.component').then(
         (m) => m.MapaComponent,
@@ -72,7 +72,7 @@ export const routes: Routes = [
   },
   {
     path: 'checkout/confirmacion',
-    canActivate: [locationGuard],
+    canActivate: [authGuard, locationGuard],
     loadComponent: () =>
       import('./features/checkout/confirmacion/confirmacion.component').then(
         (m) => m.ConfirmacionComponent,
@@ -80,7 +80,7 @@ export const routes: Routes = [
   },
   {
     path: 'checkout/metodos-pago',
-    canActivate: [locationGuard],
+    canActivate: [authGuard, locationGuard],
     loadComponent: () =>
       import('./features/checkout/metodos-pago/metodos-pago.component').then(
         (m) => m.MetodosPagoComponent,
@@ -88,7 +88,7 @@ export const routes: Routes = [
   },
   {
     path: 'checkout/resultado',
-    canActivate: [locationGuard],
+    canActivate: [authGuard, locationGuard],
     loadComponent: () =>
       import('./features/checkout/resultado/resultado.component').then(
         (m) => m.ResultadoComponent,
@@ -282,9 +282,9 @@ export const routes: Routes = [
     path: 'admin/recepcionista/buscar-cliente',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
-      import(
-        './features/admin/recepcionista/buscar-cliente/buscar-cliente.component'
-      ).then((m) => m.RecepcionistaBuscarClienteComponent),
+      import('./features/admin/recepcionista/buscar-cliente/buscar-cliente.component').then(
+        (m) => m.RecepcionistaBuscarClienteComponent,
+      ),
   },
   {
     path: 'admin/cupones',
@@ -388,9 +388,9 @@ export const routes: Routes = [
     path: 'admin/reservas/:id/cancelar',
     canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
     loadComponent: () =>
-      import(
-        './features/admin/reservas/cancelar/reserva-cancelar.component'
-      ).then((m) => m.AdminReservaCancelarComponent),
+      import('./features/admin/reservas/cancelar/reserva-cancelar.component').then(
+        (m) => m.AdminReservaCancelarComponent,
+      ),
   },
   {
     path: 'admin/reservas/:id',
