@@ -86,7 +86,7 @@ export class ReservaDetalleClienteComponent {
   readonly esFutura = computed(() => {
     const f = this.funcion();
     if (!f) return false;
-    return new Date(f.fecha_inicio).getTime() > Date.now();
+    return new Date(f.fecha_hora).getTime() > Date.now();
   });
 
   readonly puedeCancel = computed(
@@ -96,7 +96,7 @@ export class ReservaDetalleClienteComponent {
   readonly horasRestantes = computed(() => {
     const f = this.funcion();
     if (!f) return 0;
-    const ms = new Date(f.fecha_inicio).getTime() - Date.now();
+    const ms = new Date(f.fecha_hora).getTime() - Date.now();
     return Math.round((ms / (1000 * 60 * 60)) * 10) / 10;
   });
 
@@ -243,7 +243,7 @@ export class ReservaDetalleClienteComponent {
   fechaFuncionTexto(): string {
     const f = this.funcion();
     if (!f) return '—';
-    const d = new Date(f.fecha_inicio);
+    const d = new Date(f.fecha_hora);
     const dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
     const meses = [
       'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',

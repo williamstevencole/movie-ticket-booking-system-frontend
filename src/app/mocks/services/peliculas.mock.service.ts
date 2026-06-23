@@ -12,6 +12,13 @@ import { MOCK_PELICULAS } from '../data/peliculas.mock';
 export class MockPeliculasService extends PeliculasService {
   private store: Pelicula[] = MOCK_PELICULAS.map((p) => ({ ...p }));
 
+  override aplicarRatingActualizado(idPelicula: string, ratingPromedio: number | null, ratingCount: number): void {
+    const peli = this.store.find((x) => x.id === idPelicula);
+    if (!peli) return;
+    peli.rating_promedio = ratingPromedio;
+    peli.rating_count = ratingCount;
+  }
+
   override list(): Observable<Pelicula[]> {
     return of(
       [...this.store].sort(
@@ -46,11 +53,14 @@ export class MockPeliculasService extends PeliculasService {
       fecha_estreno: input.fecha_estreno,
       id_generos: [...input.id_generos],
       id_idioma: input.id_idioma,
-      clasificacion: input.clasificacion,
       poster_url: input.poster_url,
-      estado: input.estado ?? 'activa',
+      activo: input.activo ?? true,
+      tagline: input.tagline,
+      ficha_tecnica: input.ficha_tecnica,
       funciones_programadas: 0,
       boletos_vendidos: 0,
+      rating_count: 0,
+      rating_promedio: null,
       created_at: new Date().toISOString(),
     };
     this.store.push(pelicula);
@@ -83,7 +93,7 @@ export class MockPeliculasService extends PeliculasService {
     return of({ ...next });
   }
 
-  override toggleEstado(id: string): Observable<Pelicula> {
+  override toggleActivo(id: string): Observable<Pelicula> {
     const idx = this.store.findIndex((x) => x.id === id);
     if (idx === -1) {
       return throwError(() => ({ code: 'NOT_FOUND', message: 'Película no encontrada' }));
@@ -91,7 +101,7 @@ export class MockPeliculasService extends PeliculasService {
     const current = this.store[idx]!;
     const next: Pelicula = {
       ...current,
-      estado: current.estado === 'activa' ? 'inactiva' : 'activa',
+      activo: !current.activo,
     };
     this.store[idx] = next;
     return of({ ...next });

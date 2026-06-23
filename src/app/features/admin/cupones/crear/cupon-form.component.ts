@@ -133,6 +133,37 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
                       <span class="field-err">Entero mayor a 0 o vacío.</span>
                     }
                   </div>
+
+                  <div class="field col-span-2">
+                    <label for="titulo">Título <span class="opt">(opcional)</span></label>
+                    <input
+                      id="titulo"
+                      class="input"
+                      type="text"
+                      maxlength="100"
+                      placeholder="Ej. Bienvenido a Movies+"
+                      formControlName="titulo"
+                      [class.invalid]="invalid('titulo')"
+                    />
+                    @if (invalid('titulo')) {
+                      <span class="field-err">Máximo 100 caracteres.</span>
+                    }
+                  </div>
+
+                  <div class="field col-span-2">
+                    <label for="descripcion">Descripción <span class="opt">(opcional)</span></label>
+                    <textarea
+                      id="descripcion"
+                      class="input"
+                      rows="3"
+                      placeholder="Ej. Disfrutá un 10% de descuento en tu primer compra"
+                      formControlName="descripcion"
+                      [class.invalid]="invalid('descripcion')"
+                    ></textarea>
+                    @if (invalid('descripcion')) {
+                      <span class="field-err">Ingresa una descripción válida.</span>
+                    }
+                  </div>
                 </div>
               </section>
 
@@ -201,6 +232,8 @@ export class AdminCuponFormComponent {
     valor: [10, [Validators.required, Validators.min(1), Validators.max(100)]],
     fecha_expiracion: ['', Validators.required],
     usos_maximos: [null as number | null, [Validators.min(1)]],
+    titulo: ['', [Validators.maxLength(100)]],
+    descripcion: [''],
   });
 
   constructor() {

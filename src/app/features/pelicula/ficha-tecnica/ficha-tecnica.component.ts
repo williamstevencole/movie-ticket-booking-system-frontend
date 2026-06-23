@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { FichaTecnica } from '../../../mocks/data/cartelera-display.mock';
+import { FichaTecnica } from '../../../shared/services/peliculas.service';
 
 type Row = { role: string; value: string };
 

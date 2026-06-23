@@ -7,8 +7,7 @@ export type Funcion = {
   id_pelicula: string;
   id_cine: string;
   id_sala: string;
-  fecha_inicio: string;
-  precio_base: number;
+  fecha_hora: string;
   estado: EstadoFuncion;
   boletos_vendidos: number;
   created_at: string;
@@ -18,8 +17,7 @@ export type CrearFuncionInput = {
   id_pelicula: string;
   id_cine: string;
   id_sala: string;
-  fecha_inicio: string;
-  precio_base: number;
+  fecha_hora: string;
 };
 
 export type EditarFuncionInput = Partial<CrearFuncionInput>;
@@ -38,7 +36,7 @@ export abstract class FuncionesService {
   abstract checkConflictos(
     id_cine: string,
     id_sala: string,
-    fecha_inicio: string,
+    fecha_hora: string,
     duracion_min: number,
     ignoreId?: string,
   ): Observable<ConflictoFuncion[]>;

@@ -43,8 +43,8 @@ export class MapaComponent {
   // --- seat data ---
   readonly asientosRaw = signal<Asiento[]>(this.crearAsientos());
 
-  /** Codigos de asientos actualmente seleccionados */
-  readonly asientosSeleccionados = signal<string[]>([]);
+  /** Asientos completos actualmente seleccionados (includes version, bloqueado_hasta) */
+  readonly asientosSeleccionados = signal<Asiento[]>([]);
 
   /** Error de conflicto de asiento */
   readonly errorAsiento = signal<string | null>(null);
@@ -66,15 +66,13 @@ export class MapaComponent {
   });
 
   readonly asientosSeleccionadosDetallados = computed(() => {
-    const codigos = this.asientosSeleccionados();
-    return codigos.map((codigo) => {
-      const asiento = this.buscarAsiento(codigo);
-      return {
-        codigo,
-        tipo: asiento?.tipo ?? 'estandar',
-        precio: this.precioPorTipo(asiento?.tipo ?? 'estandar'),
-      };
-    });
+    const asientos = this.asientosSeleccionados();
+    return asientos.map((a) => ({
+      codigo: a.id,
+      tipo: a.tipo,
+      precio: this.precioPorTipo(a.tipo),
+      version: a.version,
+    }));
   });
 
   readonly total = computed(() => {
@@ -88,7 +86,7 @@ export class MapaComponent {
   }
 
   estaSeleccionado(codigo: string): boolean {
-    return this.asientosSeleccionados().includes(codigo);
+    return this.asientosSeleccionados().some((a) => a.id === codigo);
   }
 
   toggle(asiento: { codigo: string; estado: string }): void {
@@ -97,11 +95,14 @@ export class MapaComponent {
       this.errorAsiento.set(asiento.codigo);
       return;
     }
+    const fullAsiento = this.buscarAsientoCompleto(asiento.codigo);
+    if (!fullAsiento) return;
+
     const sel = this.asientosSeleccionados();
-    if (sel.includes(asiento.codigo)) {
-      this.asientosSeleccionados.set(sel.filter((c) => c !== asiento.codigo));
+    if (sel.some((a) => a.id === asiento.codigo)) {
+      this.asientosSeleccionados.set(sel.filter((a) => a.id !== asiento.codigo));
     } else {
-      this.asientosSeleccionados.set([...sel, asiento.codigo]);
+      this.asientosSeleccionados.set([...sel, fullAsiento]);
     }
   }
 
@@ -119,12 +120,8 @@ export class MapaComponent {
     return 100;
   }
 
-  private buscarAsiento(codigo: string): { tipo: 'estandar' | 'vip' | 'accesible' } | null {
-    for (const fila of this.filas()) {
-      const a = fila.asientos.find((x) => x.codigo === codigo);
-      if (a) return { tipo: a.tipo };
-    }
-    return null;
+  private buscarAsientoCompleto(codigo: string): Asiento | null {
+    return this.asientosRaw().find((a) => a.id === codigo) ?? null;
   }
 
   private crearAsientos(): Asiento[] {
@@ -156,13 +153,21 @@ export class MapaComponent {
           estado = 'bloqueado';
         }
 
-        resultado.push({
+        const asiento: Asiento = {
           id: `${fila}-${numero}`,
           fila,
           numero,
           tipo,
           estado,
-        });
+          version: 1,
+        };
+
+        // Set bloqueado_hasta for locked seats
+        if (estado === 'bloqueado') {
+          asiento.bloqueado_hasta = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+        }
+
+        resultado.push(asiento);
       }
     }
 

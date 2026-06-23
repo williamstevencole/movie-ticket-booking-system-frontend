@@ -14,4 +14,8 @@ export interface Asiento {
 
   estado: EstadoAsiento;
 
+  bloqueado_hasta?: string;  // ISO; present if estado === 'bloqueado'
+
+  version: number;            // concurrency control
+
 }

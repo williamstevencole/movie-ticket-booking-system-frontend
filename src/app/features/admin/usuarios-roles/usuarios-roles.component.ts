@@ -22,7 +22,6 @@ import {
   UsuarioStaff,
   UsuariosService,
 } from '../../../shared/services/usuarios.service';
-import { CinesService } from '../../../shared/services/cines.service';
 import { AdminSidebarComponent } from '../../../shared/components/admin-sidebar.component';
 
 type Toast = { kind: 'ok' | 'err'; text: string } | null;
@@ -30,7 +29,6 @@ type ModalMode =
   | { kind: 'closed' }
   | { kind: 'create' }
   | { kind: 'edit'; usuario: UsuarioStaff };
-type CineLite = { id: string; nombre: string };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -71,7 +69,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 <h1>Usuarios &amp; roles</h1>
                 <p class="lead">
                   Gestiona el staff y sus accesos. {{ count('admin') }}
-                  administradores · {{ count('recepcionista') }} recepcionistas.
+                  administradores · {{ count('cliente') }} clientes.
                 </p>
               </div>
               @if (tab() === 'usuarios') {
@@ -148,7 +146,6 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                       <tr>
                         <th>Usuario</th>
                         <th>Rol</th>
-                        <th>Cines asignados</th>
                         <th>Último acceso</th>
                         <th>Estado</th>
                         <th class="col-acc" aria-label="Acciones"></th>
@@ -171,7 +168,6 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                               {{ rolLabel(u.rol) }}
                             </span>
                           </td>
-                          <td class="muted">{{ cinesLabel(u) }}</td>
                           <td class="muted tnum">{{ fmtAcceso(u.ultimoAcceso) }}</td>
                           <td>
                             <span
@@ -242,14 +238,14 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 <header>
                   <span class="role-mark"><svg lucideUserRound [size]="18"></svg></span>
                   <div>
-                    <h3>Recepcionista</h3>
-                    <span class="role-count">{{ count('recepcionista') }} usuarios</span>
+                    <h3>Cliente</h3>
+                    <span class="role-count">{{ count('cliente') }} usuarios</span>
                   </div>
                 </header>
                 <ul class="perms">
-                  <li><svg lucideCheck [size]="14"></svg> Acceso solo al cine asignado</li>
-                  <li><svg lucideCheck [size]="14"></svg> Buscar clientes y vender en taquilla</li>
-                  <li><svg lucideCheck [size]="14"></svg> Cobrar reservas en efectivo</li>
+                  <li><svg lucideCheck [size]="14"></svg> Comprar y reservar boletos</li>
+                  <li><svg lucideCheck [size]="14"></svg> Ver historial y gestionar boletos</li>
+                  <li><svg lucideCheck [size]="14"></svg> Calificar películas</li>
                   <li class="off">Sin acceso a configuración del sistema</li>
                 </ul>
               </article>
@@ -300,10 +296,10 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
               <div class="seg seg-block">
                 <button
                   class="seg-btn"
-                  [class.on]="formRol() === 'recepcionista'"
-                  (click)="formRol.set('recepcionista')"
+                  [class.on]="formRol() === 'cliente'"
+                  (click)="formRol.set('cliente')"
                 >
-                  Recepcionista
+                  Cliente
                 </button>
                 <button
                   class="seg-btn"
@@ -315,23 +311,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
               </div>
             </div>
 
-            @if (formRol() === 'recepcionista') {
-              <div class="field mt">
-                <label>Cines asignados</label>
-                <div class="cine-list">
-                  @for (c of cines(); track c.id) {
-                    <label class="cine-opt" [class.on]="isCineOn(c.id)">
-                      <input
-                        type="checkbox"
-                        [checked]="isCineOn(c.id)"
-                        (change)="toggleCine(c.id)"
-                      />
-                      <span>{{ c.nombre }}</span>
-                    </label>
-                  }
-                </div>
-              </div>
-            } @else {
+            @if (formRol() === 'admin') {
               <div class="info-row mt">
                 <svg lucideShieldCheck [size]="15"></svg>
                 <span>Los administradores tienen acceso a <strong>todos los cines</strong>.</span>
@@ -393,17 +373,15 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 })
 export class AdminUsuariosRolesComponent {
   private svc = inject(UsuariosService);
-  private cinesSvc = inject(CinesService);
 
   readonly rolFilters: { key: 'todos' | RolStaff; label: string }[] = [
     { key: 'todos', label: 'Todos' },
     { key: 'admin', label: 'Admins' },
-    { key: 'recepcionista', label: 'Recepción' },
+    { key: 'cliente', label: 'Clientes' },
   ];
 
   readonly tab = signal<'usuarios' | 'roles'>('usuarios');
   readonly usuarios = signal<UsuarioStaff[]>([]);
-  readonly cines = signal<CineLite[]>([]);
   readonly searchTerm = signal('');
   readonly rolFilter = signal<'todos' | RolStaff>('todos');
 
@@ -411,13 +389,10 @@ export class AdminUsuariosRolesComponent {
   readonly modalError = signal<string | null>(null);
   readonly formNombre = signal('');
   readonly formEmail = signal('');
-  readonly formRol = signal<RolStaff>('recepcionista');
-  readonly formCines = signal<string[]>([]);
+  readonly formRol = signal<RolStaff>('cliente');
 
   readonly resetResult = signal<{ nombre: string; pwd: string } | null>(null);
   readonly toast = signal<Toast>(null);
-
-  private cineNombreById = new Map<string, string>();
 
   readonly filtered = computed(() => {
     const q = this.searchTerm().trim().toLowerCase();
@@ -434,19 +409,11 @@ export class AdminUsuariosRolesComponent {
   readonly canSubmit = computed(() => {
     if (!this.formNombre().trim()) return false;
     if (!EMAIL_RE.test(this.formEmail().trim())) return false;
-    if (this.formRol() === 'recepcionista' && this.formCines().length === 0) {
-      return false;
-    }
     return true;
   });
 
   constructor() {
     this.refresh();
-    this.cinesSvc.list({ limit: 100 }).subscribe((page) => {
-      const lite = page.data.map((c) => ({ id: c.id, nombre: c.nombre }));
-      this.cines.set(lite);
-      this.cineNombreById = new Map(lite.map((c) => [c.id, c.nombre]));
-    });
   }
 
   count(rol: RolStaff): number {
@@ -463,13 +430,7 @@ export class AdminUsuariosRolesComponent {
   }
 
   rolLabel(rol: RolStaff): string {
-    return rol === 'admin' ? 'Administrador' : 'Recepcionista';
-  }
-
-  cinesLabel(u: UsuarioStaff): string {
-    if (u.rol === 'admin') return 'Todos los cines';
-    if (u.cines.length === 0) return '—';
-    return u.cines.map((id) => this.cineNombreById.get(id) ?? id).join(', ');
+    return rol === 'admin' ? 'Administrador' : 'Cliente';
   }
 
   fmtAcceso(iso: string | null): string {
@@ -486,8 +447,7 @@ export class AdminUsuariosRolesComponent {
   openCreate() {
     this.formNombre.set('');
     this.formEmail.set('');
-    this.formRol.set('recepcionista');
-    this.formCines.set([]);
+    this.formRol.set('cliente');
     this.modalError.set(null);
     this.modal.set({ kind: 'create' });
   }
@@ -496,7 +456,6 @@ export class AdminUsuariosRolesComponent {
     this.formNombre.set(u.nombre);
     this.formEmail.set(u.email);
     this.formRol.set(u.rol);
-    this.formCines.set([...u.cines]);
     this.modalError.set(null);
     this.modal.set({ kind: 'edit', usuario: u });
   }
@@ -506,23 +465,12 @@ export class AdminUsuariosRolesComponent {
     this.modalError.set(null);
   }
 
-  isCineOn(id: string): boolean {
-    return this.formCines().includes(id);
-  }
-
-  toggleCine(id: string) {
-    this.formCines.update((arr) =>
-      arr.includes(id) ? arr.filter((x) => x !== id) : [...arr, id],
-    );
-  }
-
   submitModal() {
     if (!this.canSubmit()) return;
     const payload = {
       nombre: this.formNombre().trim(),
       email: this.formEmail().trim(),
       rol: this.formRol(),
-      cines: this.formCines(),
     };
     const mode = this.modal();
 

@@ -46,11 +46,16 @@
                     }
                     <div class="meta">
                       <h3>{{ boleto.pelicula.titulo }}</h3>
+                      <app-rating-display
+                        [promedio]="boleto.pelicula.rating_promedio"
+                        [count]="boleto.pelicula.rating_count ?? 0"
+                        size="sm"
+                      />
                       <p class="where">{{ boleto.cine.nombre }} · {{ boleto.sala.nombre }}</p>
                       <p class="when">{{ boleto.fecha_hora | date:'EEE d MMM, h:mm a' }}</p>
                       <div class="seats">
-                        @for (s of boleto.asientos_codigos; track s) {
-                          <span class="seat-chip">{{ s }}</span>
+                        @for (a of boleto.asientos; track a.id) {
+                          <span class="seat-chip">{{ a.codigo }} <span class="seat-meta">({{ a.tipo_asiento }} — L{{ a.precio }})</span></span>
                         }
                       </div>
                       @if (filtroBoletos() === 'proximos') {

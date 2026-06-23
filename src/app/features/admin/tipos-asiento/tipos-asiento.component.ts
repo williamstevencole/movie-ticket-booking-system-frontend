@@ -9,8 +9,6 @@ import {
   LucideTrash2,
   LucideX,
   LucideSofa,
-  LucidePower,
-  LucidePowerOff,
   LucideTriangleAlert,
 } from '@lucide/angular';
 
@@ -43,8 +41,6 @@ const DEFAULT_COLOR = '#a8a29e';
     LucideTrash2,
     LucideX,
     LucideSofa,
-    LucidePower,
-    LucidePowerOff,
     LucideTriangleAlert,
   ],
   template: `
@@ -62,7 +58,7 @@ const DEFAULT_COLOR = '#a8a29e';
               <div>
                 <h1>Tipos de asiento</h1>
                 <p class="lead">
-                  {{ activos() }} activos · {{ tipos().length }} en el catálogo
+                  {{ tipos().length }} en el catálogo
                 </p>
               </div>
               <button class="btn btn-primary" (click)="openCreate()">
@@ -113,16 +109,15 @@ const DEFAULT_COLOR = '#a8a29e';
                       <th class="col-tipo">Tipo</th>
                       <th class="col-num">Salas</th>
                       <th class="col-num">Asientos</th>
-                      <th>Estado</th>
                       <th class="col-acc" aria-label="Acciones"></th>
                     </tr>
                   </thead>
                   <tbody>
                     @for (t of filtered(); track t.id) {
-                      <tr [class.is-inactive]="!t.activo">
+                      <tr>
                         <td class="col-tipo">
                           <div class="tipo-cell">
-                            <span class="swatch" [style.background]="t.color"></span>
+                            <span class="swatch" [style.background]="t.color ?? '#cccccc'"></span>
                             <span class="nombre">{{ t.nombre }}</span>
                           </div>
                         </td>
@@ -131,15 +126,6 @@ const DEFAULT_COLOR = '#a8a29e';
                         </td>
                         <td class="col-num">
                           <span class="tnum muted">{{ t.asientos_total }}</span>
-                        </td>
-                        <td>
-                          <span
-                            class="estado-badge"
-                            [class.activo]="t.activo"
-                            [class.inactivo]="!t.activo"
-                          >
-                            {{ t.activo ? 'Activo' : 'Inactivo' }}
-                          </span>
                         </td>
                         <td class="col-acc">
                           <div class="row-acc">
@@ -150,18 +136,6 @@ const DEFAULT_COLOR = '#a8a29e';
                               aria-label="Editar tipo"
                             >
                               <svg lucidePencil [size]="15"></svg>
-                            </button>
-                            <button
-                              class="icon-btn"
-                              [class.danger]="t.activo"
-                              (click)="toggle(t)"
-                              [title]="t.activo ? 'Desactivar' : 'Activar'"
-                            >
-                              @if (t.activo) {
-                                <svg lucidePower [size]="15"></svg>
-                              } @else {
-                                <svg lucidePowerOff [size]="15"></svg>
-                              }
                             </button>
                             <button
                               class="icon-btn danger"
@@ -311,8 +285,6 @@ export class AdminTiposAsientoComponent {
   readonly modalError = signal<string | null>(null);
   readonly toast = signal<Toast>(null);
 
-  readonly activos = computed(() => this.tipos().filter((t) => t.activo).length);
-
   readonly filtered = computed(() => {
     const t = this.searchTerm().trim().toLowerCase();
     if (!t) return this.tipos();
@@ -349,7 +321,7 @@ export class AdminTiposAsientoComponent {
 
   openEdit(t: TipoAsiento) {
     this.formNombre.set(t.nombre);
-    this.formColor.set(t.color);
+    this.formColor.set(t.color ?? DEFAULT_COLOR);
     this.modalError.set(null);
     this.modal.set({ kind: 'edit', tipo: t });
   }
@@ -386,16 +358,6 @@ export class AdminTiposAsientoComponent {
         error: (e) => this.modalError.set(e?.message ?? 'No se pudo guardar'),
       });
     }
-  }
-
-  toggle(t: TipoAsiento) {
-    this.svc.setActivo(t.id, !t.activo).subscribe({
-      next: () => {
-        this.refresh();
-        this.showToast('ok', `${t.nombre} ${t.activo ? 'desactivado' : 'activado'}`);
-      },
-      error: (e) => this.showToast('err', e?.message ?? 'No se pudo actualizar'),
-    });
   }
 
   askDelete(t: TipoAsiento) {

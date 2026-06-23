@@ -78,7 +78,7 @@ type DeleteState =
               <input
                 class="search-input"
                 type="text"
-                placeholder="Buscar por nombre o código…"
+                placeholder="Buscar por nombre…"
                 [ngModel]="searchTerm()"
                 (ngModelChange)="searchTerm.set($event)"
               />
@@ -120,7 +120,6 @@ type DeleteState =
                       <tr>
                         <td class="col-nombre">
                           <span class="nombre">{{ i.nombre }}</span>
-                          <span class="pill tnum codigo-pill">{{ i.codigo }}</span>
                         </td>
                         <td class="col-cines tnum">
                           @let n = peliculasPorIdioma()[i.id];
@@ -186,24 +185,10 @@ type DeleteState =
                 placeholder="Ej. Portugués (sub)"
                 [ngModel]="formNombre()"
                 (ngModelChange)="formNombre.set($event)"
-                autocomplete="off"
-              />
-              <span class="help">Único en el sistema. Se usa para clasificar películas (subtitulado / doblaje).</span>
-            </div>
-            <div class="field">
-              <label for="idioma-codigo">Código</label>
-              <input
-                id="idioma-codigo"
-                class="input"
-                type="text"
-                maxlength="10"
-                placeholder="Ej. pt-sub"
-                [ngModel]="formCodigo()"
-                (ngModelChange)="formCodigo.set($event)"
                 (keyup.enter)="submitModal()"
                 autocomplete="off"
               />
-              <span class="help">Identificador corto (ISO 639-1 + sufijo opcional).</span>
+              <span class="help">Único en el sistema. Se usa para clasificar películas (subtitulado / doblaje).</span>
             </div>
             @if (modalError()) {
               <div class="alert">
@@ -291,9 +276,7 @@ export class AdminIdiomasComponent {
     const t = this.searchTerm().trim().toLowerCase();
     if (!t) return this.idiomas();
     return this.idiomas().filter(
-      (i) =>
-        i.nombre.toLowerCase().includes(t) ||
-        i.codigo.toLowerCase().includes(t),
+      (i) => i.nombre.toLowerCase().includes(t),
     );
   });
 
@@ -319,14 +302,9 @@ export class AdminIdiomasComponent {
 
   readonly canSubmit = computed(() => {
     const nombre = this.formNombre().trim();
-    const codigo = this.formCodigo().trim();
-    if (!nombre || !codigo) return false;
+    if (!nombre) return false;
     const mode = this.modal();
-    if (
-      mode.kind === 'edit' &&
-      nombre === mode.idioma.nombre &&
-      codigo === mode.idioma.codigo
-    ) {
+    if (mode.kind === 'edit' && nombre === mode.idioma.nombre) {
       return false;
     }
     return true;
@@ -346,7 +324,7 @@ export class AdminIdiomasComponent {
 
   openEdit(i: Idioma) {
     this.formNombre.set(i.nombre);
-    this.formCodigo.set(i.codigo);
+    this.formCodigo.set('');
     this.modalError.set(null);
     this.modal.set({ kind: 'edit', idioma: i });
   }
@@ -359,11 +337,10 @@ export class AdminIdiomasComponent {
   submitModal() {
     if (!this.canSubmit()) return;
     const nombre = this.formNombre().trim();
-    const codigo = this.formCodigo().trim();
     const mode = this.modal();
 
     if (mode.kind === 'create') {
-      this.idiomasSvc.create({ nombre, codigo }).subscribe({
+      this.idiomasSvc.create({ nombre }).subscribe({
         next: () => {
           this.refresh();
           this.closeModal();
@@ -372,7 +349,7 @@ export class AdminIdiomasComponent {
         error: (e) => this.modalError.set(e?.message ?? 'No se pudo crear'),
       });
     } else if (mode.kind === 'edit') {
-      this.idiomasSvc.update(mode.idioma.id, { nombre, codigo }).subscribe({
+      this.idiomasSvc.update(mode.idioma.id, { nombre }).subscribe({
         next: () => {
           this.refresh();
           this.closeModal();

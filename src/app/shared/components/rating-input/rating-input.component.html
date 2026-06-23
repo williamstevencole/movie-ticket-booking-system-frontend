@@ -1,0 +1,18 @@
+<div class="stars" role="radiogroup" aria-label="Calificá esta película">
+  @for (n of estrellas; track n) {
+    <button
+      type="button"
+      role="radio"
+      [attr.aria-checked]="valor === n"
+      [class.filled]="fill(n)"
+      [disabled]="disabled"
+      (mouseenter)="hover = n"
+      (mouseleave)="hover = null"
+      (click)="onClick(n)"
+      (keydown)="onKeydown($event, n)"
+    >★</button>
+  }
+</div>
+@if (valor != null && !disabled) {
+  <button type="button" class="link" (click)="onBorrar()">Borrar mi voto</button>
+}

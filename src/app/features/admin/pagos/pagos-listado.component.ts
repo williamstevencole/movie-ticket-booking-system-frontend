@@ -288,7 +288,7 @@ export class AdminPagosListadoComponent {
     return this.pagosById().get(idPago)?.id_reserva ?? null;
   }
 
-  brandLabel(b: Pago['tarjeta_brand']): string {
+  brandLabel(b: Pago['marca_snapshot']): string {
     switch (b) {
       case 'visa': return 'Visa';
       case 'master': return 'MC';

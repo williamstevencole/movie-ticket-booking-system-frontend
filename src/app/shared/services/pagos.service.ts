@@ -12,8 +12,10 @@ export type Pago = {
   metodo: MetodoPago;
   estado: EstadoPago;
   referencia_externa: string | null;
-  tarjeta_mask: string | null;
-  tarjeta_brand?: 'visa' | 'master' | 'amex' | 'discover';
+  ultimos4_snapshot?: string | null;
+  marca_snapshot?: 'visa' | 'master' | 'amex' | 'discover';
+  id_metodo_pago?: string;
+  id_cupon?: string;
   created_at: string;
 };
 

@@ -28,10 +28,8 @@ export class MockTiposAsientoService extends TiposAsientoService {
       id: `tip-${Date.now().toString(36)}`,
       nombre,
       color: input.color,
-      activo: true,
       salas_usando: 0,
       asientos_total: 0,
-      created_at: new Date().toISOString(),
     };
     this.store = [...this.store, tipo];
     return of({ ...tipo });
@@ -62,15 +60,6 @@ export class MockTiposAsientoService extends TiposAsientoService {
     return of({ ...next });
   }
 
-  override setActivo(id: string, activo: boolean): Observable<TipoAsiento> {
-    const idx = this.store.findIndex((t) => t.id === id);
-    if (idx === -1) {
-      return throwError(() => ({ code: 'NOT_FOUND', message: 'Tipo no encontrado' }));
-    }
-    const next: TipoAsiento = { ...this.store[idx]!, activo };
-    this.store[idx] = next;
-    return of({ ...next });
-  }
 
   override remove(id: string): Observable<void> {
     const idx = this.store.findIndex((t) => t.id === id);

@@ -379,7 +379,7 @@ export class AdminReporteReservasComponent {
     return sala ? `${cine.nombre} · Sala ${sala.nombre}` : cine.nombre;
   }
   fechaFuncion(idFuncion: string): string {
-    return this.funcionesById().get(idFuncion)?.fecha_inicio ?? '';
+    return this.funcionesById().get(idFuncion)?.fecha_hora ?? '';
   }
   estadoLabel(e: Reserva['estado']): string {
     switch (e) {

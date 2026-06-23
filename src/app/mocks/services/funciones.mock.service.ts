@@ -20,8 +20,8 @@ export class MockFuncionesService extends FuncionesService {
     return of(
       [...this.store].sort(
         (a, b) =>
-          new Date(a.fecha_inicio).getTime() -
-          new Date(b.fecha_inicio).getTime(),
+          new Date(a.fecha_hora).getTime() -
+          new Date(b.fecha_hora).getTime(),
       ),
     );
   }
@@ -42,7 +42,7 @@ export class MockFuncionesService extends FuncionesService {
     const conflictos = this.computeConflictos(
       input.id_cine,
       input.id_sala,
-      input.fecha_inicio,
+      input.fecha_hora,
       duracion,
     );
     if (conflictos.length > 0) {
@@ -57,8 +57,7 @@ export class MockFuncionesService extends FuncionesService {
       id_pelicula: input.id_pelicula,
       id_cine: input.id_cine,
       id_sala: input.id_sala,
-      fecha_inicio: input.fecha_inicio,
-      precio_base: input.precio_base,
+      fecha_hora: input.fecha_hora,
       estado: 'programada',
       boletos_vendidos: 0,
       created_at: new Date().toISOString(),
@@ -87,7 +86,7 @@ export class MockFuncionesService extends FuncionesService {
     const conflictos = this.computeConflictos(
       next.id_cine,
       next.id_sala,
-      next.fecha_inicio,
+      next.fecha_hora,
       duracion,
       id,
     );
@@ -121,23 +120,23 @@ export class MockFuncionesService extends FuncionesService {
   override checkConflictos(
     id_cine: string,
     id_sala: string,
-    fecha_inicio: string,
+    fecha_hora: string,
     duracion_min: number,
     ignoreId?: string,
   ): Observable<ConflictoFuncion[]> {
     return of(
-      this.computeConflictos(id_cine, id_sala, fecha_inicio, duracion_min, ignoreId),
+      this.computeConflictos(id_cine, id_sala, fecha_hora, duracion_min, ignoreId),
     );
   }
 
   private computeConflictos(
     id_cine: string,
     id_sala: string,
-    fecha_inicio: string,
+    fecha_hora: string,
     duracion_min: number,
     ignoreId?: string,
   ): ConflictoFuncion[] {
-    const start = new Date(fecha_inicio).getTime();
+    const start = new Date(fecha_hora).getTime();
     if (Number.isNaN(start)) return [];
     const end = start + (duracion_min + BUFFER_MIN) * 60_000;
 
@@ -146,7 +145,7 @@ export class MockFuncionesService extends FuncionesService {
       .filter((f) => f.id !== ignoreId)
       .filter((f) => f.estado === 'programada' || f.estado === 'en_curso')
       .map((f) => {
-        const fStart = new Date(f.fecha_inicio).getTime();
+        const fStart = new Date(f.fecha_hora).getTime();
         const fDur = this.duracionPelicula(f.id_pelicula) ?? 120;
         const fEnd = fStart + (fDur + BUFFER_MIN) * 60_000;
         const overlaps = start < fEnd && fStart < end;

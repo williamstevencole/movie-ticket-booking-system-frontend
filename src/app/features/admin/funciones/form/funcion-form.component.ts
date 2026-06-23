@@ -130,29 +130,14 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
                     id="fecha"
                     class="input"
                     type="datetime-local"
-                    formControlName="fecha_inicio"
-                    [class.invalid]="invalid('fecha_inicio')"
+                    formControlName="fecha_hora"
+                    [class.invalid]="invalid('fecha_hora')"
                   />
-                  @if (invalid('fecha_inicio')) {
+                  @if (invalid('fecha_hora')) {
                     <span class="field-err">Selecciona fecha y hora.</span>
                   }
                 </div>
 
-                <div class="field">
-                  <label for="precio">Precio base (Q)</label>
-                  <input
-                    id="precio"
-                    class="input"
-                    type="number"
-                    min="0"
-                    step="5"
-                    formControlName="precio_base"
-                    [class.invalid]="invalid('precio_base')"
-                  />
-                  @if (invalid('precio_base')) {
-                    <span class="field-err">Ingresa un precio válido.</span>
-                  }
-                </div>
               </div>
             </section>
 
@@ -265,15 +250,14 @@ export class AdminFuncionFormComponent {
   readonly isEdit = computed(() => this.editId() !== null);
 
   readonly peliculasActivas = computed(() =>
-    this.peliculas().filter((p) => p.estado === 'activa'),
+    this.peliculas().filter((p) => p.activo),
   );
 
   readonly form: FormGroup = this.fb.group({
     id_pelicula: ['', Validators.required],
     id_cine: ['', Validators.required],
     id_sala: ['', Validators.required],
-    fecha_inicio: ['', Validators.required],
-    precio_base: [65, [Validators.required, Validators.min(0)]],
+    fecha_hora: ['', Validators.required],
   });
 
   readonly peliculaSeleccionada = signal<Pelicula | null>(null);
@@ -330,8 +314,7 @@ export class AdminFuncionFormComponent {
       id_pelicula: v.id_pelicula!,
       id_cine: v.id_cine!,
       id_sala: v.id_sala!,
-      fecha_inicio: new Date(v.fecha_inicio!).toISOString(),
-      precio_base: Number(v.precio_base),
+      fecha_hora: new Date(v.fecha_hora!).toISOString(),
     };
 
     const editId = this.editId();
@@ -363,15 +346,14 @@ export class AdminFuncionFormComponent {
   }
 
   private fillFromFuncion(f: Funcion) {
-    const d = new Date(f.fecha_inicio);
+    const d = new Date(f.fecha_hora);
     const tzOffset = d.getTimezoneOffset() * 60000;
     const local = new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
     this.form.patchValue({
       id_pelicula: f.id_pelicula,
       id_cine: f.id_cine,
       id_sala: f.id_sala,
-      fecha_inicio: local,
-      precio_base: f.precio_base,
+      fecha_hora: local,
     });
   }
 
@@ -385,8 +367,8 @@ export class AdminFuncionFormComponent {
     const sala = cine?.salas.find((s) => s.id === v.id_sala) ?? null;
     this.salaSeleccionada.set(sala);
 
-    if (v.fecha_inicio) {
-      const start = new Date(v.fecha_inicio);
+    if (v.fecha_hora) {
+      const start = new Date(v.fecha_hora);
       if (!Number.isNaN(start.getTime())) {
         this.fechaInicioValid.set(true);
         this.fechaInicioISO.set(start.toISOString());
@@ -420,12 +402,12 @@ export class AdminFuncionFormComponent {
   private runConflictCheck() {
     const v = this.form.value;
     const pelicula = this.peliculaSeleccionada();
-    if (!v.id_cine || !v.id_sala || !v.fecha_inicio || !pelicula) {
+    if (!v.id_cine || !v.id_sala || !v.fecha_hora || !pelicula) {
       this.conflictos.set([]);
       this.checkedConflicts.set(false);
       return;
     }
-    const iso = new Date(v.fecha_inicio).toISOString();
+    const iso = new Date(v.fecha_hora).toISOString();
     this.funcionesSvc
       .checkConflictos(
         v.id_cine,

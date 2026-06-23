@@ -147,16 +147,16 @@ type Filtro = 'todas' | 'hoy' | 'proximas' | 'pasadas';
                         <td>
                           <div class="when">
                             <span class="when-time tnum">
-                              {{ f.fecha_inicio | date: 'HH:mm' }}
+                              {{ f.fecha_hora | date: 'HH:mm' }}
                             </span>
-                            <span class="when-day">{{ dayLabel(f.fecha_inicio) }}</span>
+                            <span class="when-day">{{ dayLabel(f.fecha_hora) }}</span>
                           </div>
                         </td>
                         <td>
                           <div class="pelicula-cell">
                             <span class="pelicula-titulo">{{ peliculaTitulo(f.id_pelicula) }}</span>
                             <span class="pelicula-meta">
-                              {{ peliculaDuracion(f.id_pelicula) }} min · L {{ f.precio_base }}
+                              {{ peliculaDuracion(f.id_pelicula) }} min
                             </span>
                           </div>
                         </td>
@@ -265,7 +265,7 @@ export class AdminFuncionesComponent {
   });
 
   readonly funcionesHoy = computed(() => {
-    return this.funciones().filter((f) => this.isToday(f.fecha_inicio)).length;
+    return this.funciones().filter((f) => this.isToday(f.fecha_hora)).length;
   });
   readonly totalProgramadas = computed(
     () => this.funciones().filter((f) => f.estado === 'programada').length,
@@ -286,10 +286,10 @@ export class AdminFuncionesComponent {
       ? new Set(this.cines().filter((c) => c.id_ciudad === cidad).map((c) => c.id))
       : null;
     return this.funciones().filter((x) => {
-      const ts = new Date(x.fecha_inicio).getTime();
-      if (f === 'hoy' && !this.isToday(x.fecha_inicio)) return false;
-      if (f === 'proximas' && !(ts > now && !this.isToday(x.fecha_inicio))) return false;
-      if (f === 'pasadas' && !(ts < now && !this.isToday(x.fecha_inicio))) return false;
+      const ts = new Date(x.fecha_hora).getTime();
+      if (f === 'hoy' && !this.isToday(x.fecha_hora)) return false;
+      if (f === 'proximas' && !(ts > now && !this.isToday(x.fecha_hora))) return false;
+      if (f === 'pasadas' && !(ts < now && !this.isToday(x.fecha_hora))) return false;
       if (cinesOfCiudad && !cinesOfCiudad.has(x.id_cine)) return false;
       if (cine && x.id_cine !== cine) return false;
       return true;

@@ -45,8 +45,8 @@ export const MOCK_PAGOS: Pago[] = MOCK_RESERVAS
       metodo,
       estado,
       referencia_externa: metodo === 'tarjeta' ? dummyRef(r.id) : null,
-      tarjeta_mask: metodo === 'tarjeta' ? `****${card.last}` : null,
-      tarjeta_brand: metodo === 'tarjeta' ? card.brand : undefined,
+      ultimos4_snapshot: metodo === 'tarjeta' ? `****${card.last}` : null,
+      marca_snapshot: metodo === 'tarjeta' ? card.brand : undefined,
       created_at: r.created_at,
     };
   });

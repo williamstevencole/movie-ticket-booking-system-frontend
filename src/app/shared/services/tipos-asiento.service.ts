@@ -3,11 +3,9 @@ import { Observable } from 'rxjs';
 export type TipoAsiento = {
   id: string;
   nombre: string;
-  color: string;
-  activo: boolean;
+  color?: string;
   salas_usando: number;
   asientos_total: number;
-  created_at: string;
 };
 
 export type CrearTipoAsientoInput = {
@@ -24,6 +22,5 @@ export abstract class TiposAsientoService {
     id: string,
     input: EditarTipoAsientoInput,
   ): Observable<TipoAsiento>;
-  abstract setActivo(id: string, activo: boolean): Observable<TipoAsiento>;
   abstract remove(id: string): Observable<void>;
 }

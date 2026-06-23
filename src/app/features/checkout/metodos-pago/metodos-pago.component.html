@@ -42,7 +42,28 @@
             </div>
 
             @if (metodoPago() === 'tarjeta') {
-              <app-tarjeta />
+              @if (tarjetasGuardadas().length > 0) {
+                <div class="saved-cards">
+                  <label class="saved-label" for="tarjeta-select">Tarjeta guardada</label>
+                  <select
+                    id="tarjeta-select"
+                    class="saved-select"
+                    [value]="tarjetaSeleccionadaId() ?? '__nueva__'"
+                    (change)="onTarjetaGuardadaChange($event)"
+                  >
+                    @for (t of tarjetasGuardadas(); track t.id) {
+                      <option [value]="t.id">
+                        {{ t.marca ?? 'Tarjeta' }} •••• {{ t.ultimos4 }}{{ t.predeterminado ? ' (predeterminada)' : '' }}
+                      </option>
+                    }
+                    <option value="__nueva__">+ Agregar nueva tarjeta</option>
+                  </select>
+                </div>
+              }
+
+              @if (mostrarFormNueva() || tarjetasGuardadas().length === 0) {
+                <app-tarjeta />
+              }
             } @else {
               <app-efectivo [fechaHora]="fechaHoraFuncion" />
             }

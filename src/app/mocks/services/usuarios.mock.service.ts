@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import {
+  ActualizarMiPerfilInput,
   CrearUsuarioInput,
   EditarUsuarioInput,
   UsuarioStaff,
@@ -12,13 +13,10 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 @Injectable()
 export class MockUsuariosService extends UsuariosService {
-  private store: UsuarioStaff[] = MOCK_USUARIOS.map((u) => ({
-    ...u,
-    cines: [...u.cines],
-  }));
+  private store: UsuarioStaff[] = MOCK_USUARIOS.map((u) => ({ ...u }));
 
   override list(): Observable<UsuarioStaff[]> {
-    return of(this.store.map((u) => ({ ...u, cines: [...u.cines] })));
+    return of(this.store.map((u) => ({ ...u })));
   }
 
   override create(input: CrearUsuarioInput): Observable<UsuarioStaff> {
@@ -30,13 +28,13 @@ export class MockUsuariosService extends UsuariosService {
       nombre: input.nombre.trim(),
       email: input.email.trim().toLowerCase(),
       rol: input.rol,
-      cines: input.rol === 'admin' ? [] : [...input.cines],
+      notificaciones_activas: false,
       ultimoAcceso: null,
       activo: true,
       created_at: new Date().toISOString(),
     };
     this.store = [...this.store, usuario];
-    return of({ ...usuario, cines: [...usuario.cines] });
+    return of({ ...usuario });
   }
 
   override update(
@@ -52,7 +50,6 @@ export class MockUsuariosService extends UsuariosService {
       nombre: input.nombre ?? current.nombre,
       email: input.email ?? current.email,
       rol: input.rol ?? current.rol,
-      cines: input.cines ?? current.cines,
     };
     const err = this.validate(merged, id);
     if (err) return throwError(() => err);
@@ -75,10 +72,9 @@ export class MockUsuariosService extends UsuariosService {
       nombre: merged.nombre.trim(),
       email: merged.email.trim().toLowerCase(),
       rol: merged.rol,
-      cines: merged.rol === 'admin' ? [] : [...merged.cines],
     };
     this.store[idx] = next;
-    return of({ ...next, cines: [...next.cines] });
+    return of({ ...next });
   }
 
   override setActivo(id: string, activo: boolean): Observable<UsuarioStaff> {
@@ -100,7 +96,7 @@ export class MockUsuariosService extends UsuariosService {
     }
     const next: UsuarioStaff = { ...current, activo };
     this.store[idx] = next;
-    return of({ ...next, cines: [...next.cines] });
+    return of({ ...next });
   }
 
   override resetPassword(id: string): Observable<{ tempPassword: string }> {
@@ -109,6 +105,23 @@ export class MockUsuariosService extends UsuariosService {
       return throwError(() => ({ code: 'NOT_FOUND', message: 'Usuario no encontrado' }));
     }
     return of({ tempPassword: this.randomPassword() });
+  }
+
+  override actualizarMiPerfil(input: ActualizarMiPerfilInput): Observable<UsuarioStaff> {
+    // Mock: assume first user is the current user (would use AuthService in real impl)
+    if (this.store.length === 0) {
+      return throwError(() => ({ code: 'NOT_FOUND', message: 'Usuario no encontrado' }));
+    }
+    const idx = 0; // Mock: always update first user
+    const current = this.store[idx]!;
+    const updated: UsuarioStaff = {
+      ...current,
+      nombre: input.nombre ?? current.nombre,
+      notificaciones_activas:
+        input.notificaciones_activas ?? current.notificaciones_activas,
+    };
+    this.store[idx] = updated;
+    return of({ ...updated });
   }
 
   // ── helpers ──
@@ -130,12 +143,6 @@ export class MockUsuariosService extends UsuariosService {
       )
     ) {
       return { code: 'DUPLICATE', message: 'Ya existe un usuario con ese email' };
-    }
-    if (input.rol === 'recepcionista' && input.cines.length === 0) {
-      return {
-        code: 'NO_CINE',
-        message: 'Un recepcionista debe estar asignado al menos a un cine',
-      };
     }
     return null;
   }

@@ -23,6 +23,7 @@ export type AuthUser = {
   email: string;
   id_rol: string;
   estado: string;
+  notificaciones_activas?: boolean;
 };
 
 export type AuthResponse = {

@@ -70,26 +70,22 @@ type Toast = { kind: 'ok' | 'err'; text: string } | null;
                   <span class="label">Película</span>
                   <span class="value">{{ pelicula()?.titulo ?? '—' }}</span>
                   <span class="value-sub">
-                    {{ pelicula()?.duracion_min ?? 0 }} min · {{ pelicula()?.clasificacion }}
+                    {{ pelicula()?.duracion_min ?? 0 }} min
                   </span>
                 </div>
                 <div class="info-row">
                   <span class="label">Cuándo</span>
                   <span class="value tnum">
-                    {{ funcion()!.fecha_inicio | date: 'EEEE d MMM' }}
+                    {{ funcion()!.fecha_hora | date: 'EEEE d MMM' }}
                   </span>
                   <span class="value-sub tnum">
-                    {{ funcion()!.fecha_inicio | date: 'HH:mm' }} · faltan {{ horasFaltantes() }}h
+                    {{ funcion()!.fecha_hora | date: 'HH:mm' }} · faltan {{ horasFaltantes() }}h
                   </span>
                 </div>
                 <div class="info-row">
                   <span class="label">Cine</span>
                   <span class="value">{{ cine()?.nombre ?? '—' }}</span>
                   <span class="value-sub">Sala {{ salaNombre() }}</span>
-                </div>
-                <div class="info-row">
-                  <span class="label">Precio base</span>
-                  <span class="value tnum">L {{ funcion()!.precio_base }}</span>
                 </div>
               </div>
             </section>
@@ -181,7 +177,7 @@ export class AdminCancelarFuncionComponent {
   readonly horasFaltantes = computed(() => {
     const f = this.funcion();
     if (!f) return 0;
-    const diffMs = new Date(f.fecha_inicio).getTime() - Date.now();
+    const diffMs = new Date(f.fecha_hora).getTime() - Date.now();
     return Math.max(0, Math.round(diffMs / 3_600_000));
   });
 
@@ -199,17 +195,9 @@ export class AdminCancelarFuncionComponent {
     return 'Faltan menos de 6h: no aplica reembolso';
   });
 
-  readonly montoReembolso = computed(() => {
-    const f = this.funcion();
-    if (!f) return 0;
-    return Math.round(f.boletos_vendidos * f.precio_base * (this.refundPct() / 100));
-  });
-
-  readonly montoRetenido = computed(() => {
-    const f = this.funcion();
-    if (!f) return 0;
-    return f.boletos_vendidos * f.precio_base - this.montoReembolso();
-  });
+  // precio_base removed from Funcion type (Task 8 will derive it from PreciosCine).
+  readonly montoReembolso = computed(() => 0);
+  readonly montoRetenido = computed(() => 0);
 
   readonly salaNombre = computed(() => {
     const f = this.funcion();

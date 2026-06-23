@@ -4,6 +4,7 @@ import { PeliculaDetalle } from '../../../mocks/data/cartelera-display.mock';
 import { PosterBadgeComponent } from '../../../shared/components/poster-badge/poster-badge.component';
 import { PeliculaRatingComponent } from '../rating/rating.component';
 import { PeliculaTaglineComponent } from './tagline.component';
+import { RatingDisplayComponent } from '../../../shared/components/rating-display/rating-display.component';
 
 @Component({
   selector: 'app-pelicula-hero',
@@ -13,6 +14,7 @@ import { PeliculaTaglineComponent } from './tagline.component';
     PosterBadgeComponent,
     PeliculaRatingComponent,
     PeliculaTaglineComponent,
+    RatingDisplayComponent,
   ],
   template: `
     <section class="film-hero">
@@ -36,6 +38,11 @@ import { PeliculaTaglineComponent } from './tagline.component';
           </div>
           <h1>{{ pelicula.titulo }}</h1>
           <app-pelicula-tagline [texto]="pelicula.tagline" />
+          <app-rating-display
+            [promedio]="pelicula.rating_promedio"
+            [count]="pelicula.rating_count ?? 0"
+            size="lg"
+          />
           <p class="film-syn">{{ pelicula.sinopsis }}</p>
           <div class="film-attrs">
             @for (a of pelicula.attrs; track a.label) {
