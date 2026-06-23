@@ -1,18 +1,18 @@
 <app-appbar />
 <section class="resultado-page">
   <div class="wrap-tight">
-    @if (resultado === 'exito') {
+    @if (data().resultado !== 'error') {
       <div class="resultado-card exito">
-        <div class="ico"><svg lucideCheck [size]="36" [strokeWidth]="3"></svg></div>
+        <div class="ico"><svg lucideCheck [size]="36"></svg></div>
         <h1>¡Reserva confirmada!</h1>
-        <p>Tu boleto se envió a <strong>{{ email }}</strong>.</p>
+        <p>Tu boleto se envió a <strong>{{ data().email }}</strong>.</p>
         <div class="resumen-mini">
-          <div><span class="lbl">Reserva</span><span class="v">{{ numeroReserva }}</span></div>
-          <div><span class="lbl">Película</span><span class="v">{{ pelicula }}</span></div>
-          <div><span class="lbl">Cine</span><span class="v">{{ cine }}</span></div>
-          <div><span class="lbl">Fecha</span><span class="v">{{ fechaHora | date:'EEE d MMM, h:mm a' }}</span></div>
-          <div><span class="lbl">Asientos</span><span class="v">{{ asientos.join(', ') }}</span></div>
-          <div><span class="lbl">Total</span><span class="v tnum">L {{ total }}</span></div>
+          <div><span class="lbl">Reserva</span><span class="v">{{ data().numeroReserva }}</span></div>
+          <div><span class="lbl">Película</span><span class="v">{{ data().pelicula }}</span></div>
+          <div><span class="lbl">Cine</span><span class="v">{{ data().cine }}</span></div>
+          <div><span class="lbl">Fecha</span><span class="v">{{ data().fechaHora | date:'EEE d MMM, h:mm a' }}</span></div>
+          <div><span class="lbl">Asientos</span><span class="v">{{ data().asientos.join(', ') }}</span></div>
+          <div><span class="lbl">Total</span><span class="v tnum">L {{ data().total }}</span></div>
         </div>
         <div class="actions">
           <a class="btn primary" [routerLink]="['/mis-boletos']">Ver mis boletos</a>
@@ -21,9 +21,9 @@
       </div>
     } @else {
       <div class="resultado-card error">
-        <div class="ico"><svg lucideX [size]="36" [strokeWidth]="3"></svg></div>
+        <div class="ico"><svg lucideX [size]="36"></svg></div>
         <h1>Pago rechazado</h1>
-        <p>{{ mensajeError ?? 'Tu tarjeta fue rechazada. Intenta otra vez o usa otro método.' }}</p>
+        <p>{{ data().mensajeError ?? 'Tu tarjeta fue rechazada. Intenta otra vez o usa otro método.' }}</p>
         <div class="actions">
           <a class="btn primary" [routerLink]="['/checkout/metodos-pago']">Reintentar</a>
         </div>
