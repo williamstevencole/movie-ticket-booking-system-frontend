@@ -13,7 +13,7 @@ export type Cine = {
   direccion: string | null;
   id_ciudad: string;
   salas: Sala[];
-  fecha_creacion: string;
+  created_at: string;
 };
 
 export type CinesPage = {

@@ -136,7 +136,10 @@ interface CuponView extends Cupon {
                     </div>
                     <div class="cupon-meta">
                       <div class="cupon-tag">{{ c.porcentaje ? 'Descuento' : 'Monto fijo' }}</div>
-                      <h3>{{ tituloCupon(c) }}</h3>
+                      <h3>{{ c.titulo ?? tituloCupon(c) }}</h3>
+                      @if (c.descripcion) {
+                        <p class="cupon-desc">{{ c.descripcion }}</p>
+                      }
                       <div class="exp">
                         <svg lucideClock [size]="13"></svg>
                         @if (c.diasRestantes === 0) {
@@ -203,7 +206,10 @@ interface CuponView extends Cupon {
                     </div>
                     <div class="cupon-meta">
                       <div class="cupon-tag">{{ c.vencido ? 'Vencido' : 'Agotado' }}</div>
-                      <h3>{{ tituloCupon(c) }}</h3>
+                      <h3>{{ c.titulo ?? tituloCupon(c) }}</h3>
+                      @if (c.descripcion) {
+                        <p class="cupon-desc">{{ c.descripcion }}</p>
+                      }
                       <div class="exp">
                         <svg lucideClock [size]="13"></svg>
                         <span>{{ c.vencido ? 'Venció el ' + formatFecha(c.fecha_expiracion) : 'Sin usos disponibles' }}</span>

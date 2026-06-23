@@ -65,7 +65,7 @@ export class MockCinesService extends CinesService {
       id_ciudad: input.id_ciudad,
       direccion: input.direccion?.trim() || null,
       salas: [],
-      fecha_creacion: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     };
     this.store.push(cine);
     return of({ ...cine });

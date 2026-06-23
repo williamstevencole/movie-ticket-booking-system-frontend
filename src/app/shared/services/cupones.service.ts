@@ -13,6 +13,8 @@ export type Cupon = {
   activo: boolean;
   created_at: string;
   monto_descontado?: number;
+  titulo?: string;
+  descripcion?: string;
 };
 
 export type ValidarCuponResponse = {

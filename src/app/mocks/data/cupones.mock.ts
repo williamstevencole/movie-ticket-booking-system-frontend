@@ -19,6 +19,8 @@ export const MOCK_CUPONES: Cupon[] = [
     activo: true,
     created_at: '2026-03-01T00:00:00Z',
     monto_descontado: 3224,
+    titulo: 'Bienvenido a Movies+',
+    descripcion: 'Disfrutá un 10% de descuento en tu primer compra',
   },
   {
     id: '2',
@@ -31,6 +33,8 @@ export const MOCK_CUPONES: Cupon[] = [
     activo: true,
     created_at: '2026-04-10T00:00:00Z',
     monto_descontado: 10980,
+    titulo: 'Especial Verano',
+    descripcion: 'Oferta por tiempo limitado — 20% off en todas las películas',
   },
   {
     id: '3',
@@ -43,6 +47,8 @@ export const MOCK_CUPONES: Cupon[] = [
     activo: true,
     created_at: '2026-05-15T00:00:00Z',
     monto_descontado: 235,
+    titulo: 'Estreno Exclusivo',
+    descripcion: 'L 5 de descuento en estrenos de la semana',
   },
   {
     id: '4',
@@ -55,6 +61,8 @@ export const MOCK_CUPONES: Cupon[] = [
     activo: true,
     created_at: '2026-02-20T00:00:00Z',
     monto_descontado: 1815,
+    titulo: 'Tarjeta Familia',
+    descripcion: '15% de descuento para titulares de Tarjeta Familia',
   },
   {
     id: '5',
@@ -67,6 +75,8 @@ export const MOCK_CUPONES: Cupon[] = [
     activo: true,
     created_at: '2026-01-15T00:00:00Z',
     monto_descontado: 9360,
+    titulo: 'Descuento Estudiantes',
+    descripcion: 'Presentá tu carnet y obtené 25% de descuento válido todo el año',
   },
   {
     id: '6',
@@ -79,5 +89,7 @@ export const MOCK_CUPONES: Cupon[] = [
     activo: true,
     created_at: '2025-11-01T00:00:00Z',
     monto_descontado: 28900,
+    titulo: 'Navidad 2025',
+    descripcion: '30% de descuento — promoción especial navideña ya vencida',
   },
 ];

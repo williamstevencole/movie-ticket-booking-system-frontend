@@ -18,20 +18,15 @@ export class MockIdiomasService extends IdiomasService {
 
   override create(input: CrearIdiomaInput): Observable<Idioma> {
     const nombre = input.nombre.trim();
-    const codigo = input.codigo.trim().toLowerCase();
-    if (!nombre || !codigo) {
-      return throwError(() => ({ code: 'EMPTY', message: 'Nombre y código son obligatorios' }));
+    if (!nombre) {
+      return throwError(() => ({ code: 'EMPTY', message: 'El nombre es obligatorio' }));
     }
     if (this.existsByNombre(nombre)) {
       return throwError(() => ({ code: 'DUPLICATE', message: 'Ya existe un idioma con ese nombre' }));
     }
-    if (this.existsByCodigo(codigo)) {
-      return throwError(() => ({ code: 'DUPLICATE_CODE', message: 'Ya existe un idioma con ese código' }));
-    }
     const idioma: Idioma = {
       id: this.nextId(),
       nombre,
-      codigo,
     };
     this.store.push(idioma);
     return of(idioma);
@@ -43,17 +38,13 @@ export class MockIdiomasService extends IdiomasService {
       return throwError(() => ({ code: 'NOT_FOUND', message: 'Idioma no encontrado' }));
     }
     const nombre = input.nombre.trim();
-    const codigo = input.codigo.trim().toLowerCase();
-    if (!nombre || !codigo) {
-      return throwError(() => ({ code: 'EMPTY', message: 'Nombre y código son obligatorios' }));
+    if (!nombre) {
+      return throwError(() => ({ code: 'EMPTY', message: 'El nombre es obligatorio' }));
     }
     if (this.existsByNombre(nombre, id)) {
       return throwError(() => ({ code: 'DUPLICATE', message: 'Ya existe un idioma con ese nombre' }));
     }
-    if (this.existsByCodigo(codigo, id)) {
-      return throwError(() => ({ code: 'DUPLICATE_CODE', message: 'Ya existe un idioma con ese código' }));
-    }
-    const next: Idioma = { ...this.store[idx]!, nombre, codigo };
+    const next: Idioma = { ...this.store[idx]!, nombre };
     this.store[idx] = next;
     return of(next);
   }
@@ -71,13 +62,6 @@ export class MockIdiomasService extends IdiomasService {
     const needle = nombre.toLowerCase();
     return this.store.some(
       (i) => i.nombre.toLowerCase() === needle && i.id !== ignoreId,
-    );
-  }
-
-  private existsByCodigo(codigo: string, ignoreId?: string): boolean {
-    const needle = codigo.toLowerCase();
-    return this.store.some(
-      (i) => i.codigo.toLowerCase() === needle && i.id !== ignoreId,
     );
   }
 
