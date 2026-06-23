@@ -1,7 +1,16 @@
 import { Observable } from 'rxjs';
 
-export type Clasificacion = 'A' | 'PG' | 'PG-13' | 'R' | 'NC-17';
-export type EstadoPelicula = 'activa' | 'inactiva';
+export type FichaTecnica = {
+  direccion?: string;
+  guion?: string;
+  fotografia?: string;
+  reparto?: string[];
+  musica?: string;
+  pais?: string;
+  productora?: string;
+  distribuidor?: string;
+  atributos?: Array<{ label: string; value: string }>;
+};
 
 export type Pelicula = {
   id: string;
@@ -11,12 +20,16 @@ export type Pelicula = {
   fecha_estreno: string;
   id_generos: string[];
   id_idioma: string;
-  clasificacion: Clasificacion;
   poster_url: string | null;
-  estado: EstadoPelicula;
+  activo: boolean;
   funciones_programadas: number;
   boletos_vendidos: number;
   created_at: string;
+  tagline?: string;
+  ficha_tecnica?: FichaTecnica;
+  rating_promedio?: number | null;
+  rating_count: number;
+  mi_calificacion?: number | null;
 };
 
 export type CrearPeliculaInput = {
@@ -26,9 +39,10 @@ export type CrearPeliculaInput = {
   fecha_estreno: string;
   id_generos: string[];
   id_idioma: string;
-  clasificacion: Clasificacion;
   poster_url: string | null;
-  estado?: EstadoPelicula;
+  activo?: boolean;
+  tagline?: string;
+  ficha_tecnica?: FichaTecnica;
 };
 
 export type EditarPeliculaInput = Partial<CrearPeliculaInput>;
@@ -38,6 +52,13 @@ export abstract class PeliculasService {
   abstract getById(id: string): Observable<Pelicula>;
   abstract create(input: CrearPeliculaInput): Observable<Pelicula>;
   abstract update(id: string, input: EditarPeliculaInput): Observable<Pelicula>;
-  abstract toggleEstado(id: string): Observable<Pelicula>;
+  abstract toggleActivo(id: string): Observable<Pelicula>;
   abstract delete(id: string): Observable<void>;
+
+  /**
+   * Aplica los nuevos valores de rating tras un voto/borrado en CalificacionesService.
+   * El backend ya los recalcula vía trigger; este método solo refresca el estado local
+   * (cache, store en memoria) para que cartelera/mis-boletos vean el cambio sin refetch.
+   */
+  abstract aplicarRatingActualizado(idPelicula: string, ratingPromedio: number | null, ratingCount: number): void;
 }

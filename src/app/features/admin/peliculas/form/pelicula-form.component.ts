@@ -20,7 +20,6 @@ import {
 } from '@lucide/angular';
 
 import {
-  Clasificacion,
   Pelicula,
   PeliculasService,
 } from '../../../../shared/services/peliculas.service';
@@ -36,14 +35,6 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
 import { PosterUploadComponent } from '../../../../shared/components/poster-upload.component';
 
 type Toast = { kind: 'ok' | 'err'; text: string } | null;
-
-const CLASIFICACIONES: { value: Clasificacion; label: string; sub: string }[] = [
-  { value: 'A', label: 'A', sub: 'Para todo público' },
-  { value: 'PG', label: 'PG', sub: 'Acompañamiento sugerido' },
-  { value: 'PG-13', label: 'PG-13', sub: '+13 años' },
-  { value: 'R', label: 'R', sub: '+17 con tutor' },
-  { value: 'NC-17', label: 'NC-17', sub: 'Solo adultos' },
-];
 
 @Component({
   selector: 'app-admin-pelicula-form',
@@ -100,6 +91,22 @@ const CLASIFICACIONES: { value: Clasificacion; label: string; sub: string }[] = 
                   />
                   @if (invalid('titulo')) {
                     <span class="field-err">El título es obligatorio.</span>
+                  }
+                </div>
+
+                <div class="field col-span-2">
+                  <label for="tagline">Tagline</label>
+                  <input
+                    id="tagline"
+                    class="input"
+                    type="text"
+                    placeholder="Frase corta (opcional, máx. 200 caracteres)"
+                    formControlName="tagline"
+                    [class.invalid]="invalid('tagline')"
+                    autocomplete="off"
+                  />
+                  @if (invalid('tagline')) {
+                    <span class="field-err">Máximo 200 caracteres.</span>
                   }
                 </div>
 
@@ -167,20 +174,6 @@ const CLASIFICACIONES: { value: Clasificacion; label: string; sub: string }[] = 
                   }
                 </div>
 
-                <div class="field">
-                  <label for="clasificacion">Clasificación</label>
-                  <select
-                    id="clasificacion"
-                    class="select"
-                    formControlName="clasificacion"
-                    [class.invalid]="invalid('clasificacion')"
-                  >
-                    @for (c of clasificaciones; track c.value) {
-                      <option [value]="c.value">{{ c.label }} — {{ c.sub }}</option>
-                    }
-                  </select>
-                </div>
-
                 <div class="field col-span-2">
                   <label>Géneros</label>
                   <div class="chips">
@@ -201,6 +194,20 @@ const CLASIFICACIONES: { value: Clasificacion; label: string; sub: string }[] = 
                     <span class="help">Toca para añadir o quitar. Mín. 1, máx. 5.</span>
                   }
                 </div>
+
+                <div class="field col-span-2">
+                  <label class="toggle-label">
+                    <input
+                      type="checkbox"
+                      class="toggle-check"
+                      formControlName="activo"
+                    />
+                    <span class="toggle-text">
+                      Película activa
+                      <small>Visible al comprador y programable para funciones.</small>
+                    </span>
+                  </label>
+                </div>
               </div>
             </section>
 
@@ -212,31 +219,50 @@ const CLASIFICACIONES: { value: Clasificacion; label: string; sub: string }[] = 
               />
             </section>
 
-            @if (isEdit()) {
-              <section class="card">
-                <div class="card-title">Estado</div>
-                <div class="status-row">
-                  <div class="status-info">
-                    <strong>{{ estado() === 'activa' ? 'Activa en cartelera' : 'Inactiva' }}</strong>
-                    <div>
-                      {{ estado() === 'activa'
-                        ? 'Visible al comprador y programable para funciones.'
-                        : 'Oculta al comprador. Las funciones existentes no se afectan.'
-                      }}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    class="toggle"
-                    [class.on]="estado() === 'activa'"
-                    (click)="toggleEstado()"
-                    [attr.aria-label]="'Cambiar a ' + (estado() === 'activa' ? 'inactiva' : 'activa')"
-                  >
-                    <span class="toggle-thumb"></span>
-                  </button>
+            <section class="card" formGroupName="ficha_tecnica">
+              <div class="card-title">Ficha técnica</div>
+              <div class="grid">
+                <div class="field">
+                  <label for="ft-direccion">Dirección</label>
+                  <input id="ft-direccion" class="input" type="text" formControlName="direccion" autocomplete="off" />
                 </div>
-              </section>
-            }
+                <div class="field">
+                  <label for="ft-guion">Guion</label>
+                  <input id="ft-guion" class="input" type="text" formControlName="guion" autocomplete="off" />
+                </div>
+                <div class="field">
+                  <label for="ft-fotografia">Fotografía</label>
+                  <input id="ft-fotografia" class="input" type="text" formControlName="fotografia" autocomplete="off" />
+                </div>
+                <div class="field">
+                  <label for="ft-musica">Música</label>
+                  <input id="ft-musica" class="input" type="text" formControlName="musica" autocomplete="off" />
+                </div>
+                <div class="field">
+                  <label for="ft-pais">País</label>
+                  <input id="ft-pais" class="input" type="text" formControlName="pais" autocomplete="off" />
+                </div>
+                <div class="field">
+                  <label for="ft-productora">Productora</label>
+                  <input id="ft-productora" class="input" type="text" formControlName="productora" autocomplete="off" />
+                </div>
+                <div class="field">
+                  <label for="ft-distribuidor">Distribuidor</label>
+                  <input id="ft-distribuidor" class="input" type="text" formControlName="distribuidor" autocomplete="off" />
+                </div>
+                <div class="field col-span-2">
+                  <label for="ft-reparto">Reparto principal</label>
+                  <textarea
+                    id="ft-reparto"
+                    class="textarea"
+                    rows="2"
+                    placeholder="Nombres separados por coma: Ej. Ana Torres, Luis Vega"
+                    formControlName="reparto"
+                  ></textarea>
+                  <span class="help">Separa los nombres por coma.</span>
+                </div>
+              </div>
+            </section>
 
             @if (formError(); as msg) {
               <div class="alert">
@@ -285,11 +311,9 @@ export class AdminPeliculaFormComponent {
   private generosSvc = inject(GenerosService);
   private idiomasSvc = inject(IdiomasService);
 
-  readonly clasificaciones = CLASIFICACIONES;
   readonly generos = signal<Genero[]>([]);
   readonly idiomas = signal<Idioma[]>([]);
   readonly posterUrl = signal<string | null>(null);
-  readonly estado = signal<'activa' | 'inactiva'>('activa');
   readonly saving = signal(false);
   readonly formError = signal<string | null>(null);
   readonly toast = signal<Toast>(null);
@@ -300,11 +324,11 @@ export class AdminPeliculaFormComponent {
 
   readonly form: FormGroup = this.fb.group({
     titulo: ['', [Validators.required, Validators.minLength(2)]],
+    tagline: ['', Validators.maxLength(200)],
     sinopsis: ['', [Validators.required, Validators.minLength(10)]],
     duracion_min: [120, [Validators.required, Validators.min(1), Validators.max(500)]],
     fecha_estreno: ['', Validators.required],
     id_idioma: ['', Validators.required],
-    clasificacion: ['PG-13' as Clasificacion, Validators.required],
     id_generos: [
       [] as string[],
       (ctrl: AbstractControl): ValidationErrors | null =>
@@ -312,6 +336,17 @@ export class AdminPeliculaFormComponent {
           ? null
           : { required: true },
     ],
+    activo: [true],
+    ficha_tecnica: this.fb.group({
+      direccion: [''],
+      guion: [''],
+      fotografia: [''],
+      reparto: [''],
+      musica: [''],
+      pais: [''],
+      productora: [''],
+      distribuidor: [''],
+    }),
   });
 
   readonly isDirtyLike = computed(() => {
@@ -355,27 +390,38 @@ export class AdminPeliculaFormComponent {
     this.posterUrl.set(url);
   }
 
-  toggleEstado() {
-    this.estado.update((e) => (e === 'activa' ? 'inactiva' : 'activa'));
-  }
-
   submit() {
     this.formError.set(null);
     this.form.markAllAsTouched();
     if (this.form.invalid) return;
 
     this.saving.set(true);
-    const v = this.form.value;
+    const raw = this.form.getRawValue();
+    const repartoRaw: string = raw.ficha_tecnica?.reparto ?? '';
+    const reparto = repartoRaw
+      ? repartoRaw.split(',').map((s: string) => s.trim()).filter(Boolean)
+      : undefined;
+
+    const fichaTecnica = {
+      ...raw.ficha_tecnica,
+      reparto,
+    };
+
     const payload = {
-      titulo: v.titulo!,
-      sinopsis: v.sinopsis!,
-      duracion_min: Number(v.duracion_min),
-      fecha_estreno: new Date(v.fecha_estreno!).toISOString(),
-      id_generos: v.id_generos!,
-      id_idioma: v.id_idioma!,
-      clasificacion: v.clasificacion as Clasificacion,
+      titulo: raw.titulo!,
+      sinopsis: raw.sinopsis!,
+      duracion_min: Number(raw.duracion_min),
+      fecha_estreno: new Date(raw.fecha_estreno!).toISOString(),
+      id_generos: raw.id_generos!,
+      id_idioma: raw.id_idioma!,
       poster_url: this.posterUrl(),
-      estado: this.estado(),
+      activo: raw.activo ?? true,
+      tagline: raw.tagline || undefined,
+      ficha_tecnica: Object.values(fichaTecnica).some(
+        (v) => v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0),
+      )
+        ? fichaTecnica
+        : undefined,
     };
 
     const editId = this.editId();
@@ -409,17 +455,28 @@ export class AdminPeliculaFormComponent {
 
   private fillFromPelicula(p: Pelicula) {
     const fecha = p.fecha_estreno ? p.fecha_estreno.substring(0, 10) : '';
+    const ft = p.ficha_tecnica;
     this.form.patchValue({
       titulo: p.titulo,
+      tagline: p.tagline ?? '',
       sinopsis: p.sinopsis,
       duracion_min: p.duracion_min,
       fecha_estreno: fecha,
       id_idioma: p.id_idioma,
-      clasificacion: p.clasificacion,
       id_generos: [...p.id_generos],
+      activo: p.activo,
+      ficha_tecnica: {
+        direccion: ft?.direccion ?? '',
+        guion: ft?.guion ?? '',
+        fotografia: ft?.fotografia ?? '',
+        reparto: ft?.reparto ? ft.reparto.join(', ') : '',
+        musica: ft?.musica ?? '',
+        pais: ft?.pais ?? '',
+        productora: ft?.productora ?? '',
+        distribuidor: ft?.distribuidor ?? '',
+      },
     });
     this.posterUrl.set(p.poster_url);
-    this.estado.set(p.estado);
     this.originalSnapshot.set(this.serializeForCompare());
   }
 
@@ -429,7 +486,6 @@ export class AdminPeliculaFormComponent {
       ...v,
       id_generos: [...(v.id_generos ?? [])].sort(),
       poster_url: this.posterUrl(),
-      estado: this.estado(),
     });
   }
 }

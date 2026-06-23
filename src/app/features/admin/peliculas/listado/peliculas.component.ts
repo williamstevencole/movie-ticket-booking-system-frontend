@@ -12,7 +12,6 @@ import {
 import {
   Pelicula,
   PeliculasService,
-  EstadoPelicula,
 } from '../../../../shared/services/peliculas.service';
 import {
   Genero,
@@ -182,7 +181,7 @@ type EstadoFiltro = 'todas' | 'activa' | 'inactiva' | 'proximos';
                           <div class="titulo-cell">
                             <span class="titulo">{{ p.titulo }}</span>
                             <span class="meta">
-                              {{ idiomaNombre(p.id_idioma) }} · {{ p.clasificacion }}
+                              {{ idiomaNombre(p.id_idioma) }}
                             </span>
                           </div>
                         </td>
@@ -200,15 +199,15 @@ type EstadoFiltro = 'todas' | 'activa' | 'inactiva' | 'proximos';
                           <div class="estado-toggle">
                             <button
                               class="toggle"
-                              [class.on]="p.estado === 'activa'"
+                              [class.on]="p.activo"
                               [disabled]="togglingId() === p.id"
                               (click)="onToggle(p)"
                               [attr.aria-label]="'Cambiar estado de ' + p.titulo"
                             >
                               <span class="toggle-thumb"></span>
                             </button>
-                            <span class="estado-label" [class.on]="p.estado === 'activa'">
-                              {{ p.estado === 'activa' ? 'Activa' : 'Inactiva' }}
+                            <span class="estado-label" [class.on]="p.activo">
+                              {{ p.activo ? 'Activa' : 'Inactiva' }}
                             </span>
                           </div>
                         </td>
@@ -287,7 +286,7 @@ export class AdminPeliculasComponent {
   ]);
 
   readonly activas = computed(
-    () => this.peliculas().filter((p) => p.estado === 'activa').length,
+    () => this.peliculas().filter((p) => p.activo).length,
   );
 
   readonly cinesEnCiudad = computed(() => {
@@ -323,7 +322,9 @@ export class AdminPeliculasComponent {
         const [y, m, d] = p.fecha_estreno.split('-').map(Number);
         const estreno = new Date(y!, (m ?? 1) - 1, d ?? 1);
         if (!(estreno > today)) return false;
-      } else if (estado !== 'todas' && p.estado !== estado) {
+      } else if (estado === 'activa' && !p.activo) {
+        return false;
+      } else if (estado === 'inactiva' && p.activo) {
         return false;
       }
       if (t && !p.titulo.toLowerCase().includes(t)) return false;
@@ -399,15 +400,14 @@ export class AdminPeliculasComponent {
 
   onToggle(p: Pelicula) {
     if (this.togglingId()) return;
-    const prevEstado: EstadoPelicula = p.estado;
     this.togglingId.set(p.id);
-    this.peliculasSvc.toggleEstado(p.id).subscribe({
+    this.peliculasSvc.toggleActivo(p.id).subscribe({
       next: (updated) => {
         this.peliculas.update((arr) =>
           arr.map((x) => (x.id === updated.id ? updated : x)),
         );
         this.togglingId.set(null);
-        const action = updated.estado === 'activa' ? 'activada' : 'desactivada';
+        const action = updated.activo ? 'activada' : 'desactivada';
         this.showToast('ok', `"${updated.titulo}" ${action}`);
       },
       error: (e) => {
@@ -416,8 +416,6 @@ export class AdminPeliculasComponent {
           'err',
           e?.message ?? `No se pudo actualizar "${p.titulo}"`,
         );
-        // restore visually (no-op, signal still has prevEstado)
-        prevEstado;
       },
     });
   }

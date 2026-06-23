@@ -23,7 +23,7 @@ export class ProximosEstrenosComponent {
     const now = Date.now();
     const dia = 1000 * 60 * 60 * 24;
     return this.todas()
-      .filter((p) => p.estado === 'activa' && new Date(p.fecha_estreno).getTime() > now)
+      .filter((p) => p.activo && new Date(p.fecha_estreno).getTime() > now)
       .map((p) => ({
         ...p,
         diasParaEstreno: Math.ceil((new Date(p.fecha_estreno).getTime() - now) / dia),
