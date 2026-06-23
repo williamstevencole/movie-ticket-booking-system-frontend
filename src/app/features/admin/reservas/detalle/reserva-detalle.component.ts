@@ -19,6 +19,7 @@ import {
   LucideCircleAlert,
   LucideReceipt,
   LucideFilm,
+  LucideTimer,
 } from '@lucide/angular';
 
 import {
@@ -76,6 +77,7 @@ type Motivo = 'cliente' | 'pago_rechazado' | 'duplicada' | 'sala_cerrada' | 'otr
     LucideCircleAlert,
     LucideReceipt,
     LucideFilm,
+    LucideTimer,
   ],
   templateUrl: './reserva-detalle.component.html',
   styleUrls: ['../operaciones.shared.scss', './reserva-detalle.component.scss'],
@@ -115,16 +117,16 @@ export class AdminReservaDetalleComponent {
     events.push({
       kind: 'blocked',
       title: 'Asientos bloqueados',
-      detail: r.asientos_codigos?.length
-        ? `${r.asientos_codigos.join(', ')} reservados por 15 minutos`
+      detail: r.asientos?.length
+        ? `${r.asientos.map((a) => a.codigo).join(', ')} reservados por 15 minutos`
         : 'Asientos retenidos por 15 minutos',
       at: r.created_at,
     });
     const pago = this.pago();
     if (r.estado === 'pagada' || r.estado === 'cancelada' || r.estado === 'reembolsada') {
       const metodoLabel = pago
-        ? pago.metodo === 'tarjeta' && pago.tarjeta_mask
-          ? `${this.brandLabel(pago.tarjeta_brand)} ${pago.tarjeta_mask}`
+        ? pago.metodo === 'tarjeta' && pago.ultimos4_snapshot
+          ? `${this.brandLabel(pago.marca_snapshot)} ${pago.ultimos4_snapshot}`
           : 'Efectivo en taquilla'
         : 'Pago confirmado';
       events.push({
@@ -233,7 +235,7 @@ export class AdminReservaDetalleComponent {
     });
   }
 
-  brandLabel(b: Pago['tarjeta_brand']): string {
+  brandLabel(b: Pago['marca_snapshot']): string {
     switch (b) {
       case 'visa': return 'Visa';
       case 'master': return 'Mastercard';
@@ -320,6 +322,24 @@ export class AdminReservaDetalleComponent {
         ? `Reserva cancelada · L ${monto} reembolsados`
         : `Reserva cancelada`,
     );
+  }
+
+  onNotasChange(r: Reserva, event: Event) {
+    const value = (event.target as HTMLTextAreaElement).value;
+    this.reserva.set({ ...r, notas_internas: value });
+  }
+
+  expiraTexto(expiraEn: string): string {
+    const diff = new Date(expiraEn).getTime() - Date.now();
+    if (diff <= 0) return 'expirado';
+    const mins = Math.floor(diff / 60_000);
+    const secs = Math.floor((diff % 60_000) / 1000);
+    return mins > 0 ? `${mins} min ${secs} s` : `${secs} s`;
+  }
+
+  expiraUrgente(expiraEn: string): boolean {
+    const diff = new Date(expiraEn).getTime() - Date.now();
+    return diff > 0 && diff < 3 * 60_000; // less than 3 min
   }
 
   private toastTimer: ReturnType<typeof setTimeout> | null = null;

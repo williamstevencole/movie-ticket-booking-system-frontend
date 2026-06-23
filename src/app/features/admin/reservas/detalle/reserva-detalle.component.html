@@ -79,10 +79,21 @@
               }
             </ol>
 
-            @if (r.notas_internas) {
-              <div class="note">
-                <span class="note-label">NOTA INTERNA</span>
-                <p>{{ r.notas_internas }}</p>
+            <div class="note note-editable">
+              <span class="note-label">NOTA INTERNA</span>
+              <textarea
+                class="note-textarea"
+                rows="3"
+                placeholder="Añadir nota interna…"
+                [value]="r.notas_internas ?? ''"
+                (input)="onNotasChange(r, $event)"
+              ></textarea>
+            </div>
+
+            @if (r.expira_en) {
+              <div class="expira-badge" [class.expira-urgente]="expiraUrgente(r.expira_en)">
+                <svg lucideTimer [size]="13"></svg>
+                Vence en {{ expiraTexto(r.expira_en) }}
               </div>
             }
           </section>
@@ -115,7 +126,7 @@
                   {{ cine()?.nombre }} · Sala {{ salaNombre() }}
                 </div>
                 <div class="fn-when">
-                  {{ funcion()?.fecha_inicio | date: 'EEE d MMM · HH:mm' }}
+                  {{ funcion()?.fecha_hora | date: 'EEE d MMM · HH:mm' }}
                 </div>
               </div>
             </section>
@@ -130,8 +141,8 @@
               </header>
               <div class="panel-body">
                 <div class="seat-grid">
-                  @for (s of r.asientos_codigos ?? []; track s) {
-                    <span class="seat-chip">{{ s }}</span>
+                  @for (a of r.asientos; track a.id) {
+                    <span class="seat-chip">{{ a.codigo }}<span class="seat-tipo"> · {{ a.tipo_asiento }}</span></span>
                   }
                 </div>
               </div>
@@ -153,7 +164,7 @@
                     <span class="pay-label">Método</span>
                     <span class="pay-val">
                       @if (p.metodo === 'tarjeta') {
-                        {{ brandLabel(p.tarjeta_brand) }} <span class="tnum">{{ p.tarjeta_mask }}</span>
+                        {{ brandLabel(p.marca_snapshot) }} <span class="tnum">{{ p.ultimos4_snapshot }}</span>
                       } @else {
                         Efectivo en taquilla
                       }
