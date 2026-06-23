@@ -16,6 +16,8 @@ import { TiposAsientoService } from '../../shared/services/tipos-asiento.service
 import { ClientesService } from '../../shared/services/clientes.service';
 import { PreciosService } from '../../shared/services/precios.service';
 import { UsuariosService } from '../../shared/services/usuarios.service';
+import { MetodosPagoService } from '../../shared/services/metodos-pago.service';
+import { CalificacionesService } from '../../shared/services/calificaciones.service';
 
 import { MockCiudadesService } from '../../mocks/services/ciudades.mock.service';
 import { MockCinesService } from '../../mocks/services/cines.mock.service';
@@ -33,6 +35,8 @@ import { MockTiposAsientoService } from '../../mocks/services/tipos-asiento.mock
 import { MockClientesService } from '../../mocks/services/clientes.mock.service';
 import { MockPreciosService } from '../../mocks/services/precios.mock.service';
 import { MockUsuariosService } from '../../mocks/services/usuarios.mock.service';
+import { MockMetodosPagoService } from '../../mocks/services/metodos-pago.mock.service';
+import { MockCalificacionesService } from '../../mocks/services/calificaciones.mock.service';
 
 export const dataProviders: Provider[] = [
   { provide: CiudadesService, useClass: MockCiudadesService },
@@ -51,4 +55,6 @@ export const dataProviders: Provider[] = [
   { provide: ClientesService, useClass: MockClientesService },
   { provide: PreciosService, useClass: MockPreciosService },
   { provide: UsuariosService, useClass: MockUsuariosService },
+  { provide: MetodosPagoService, useClass: MockMetodosPagoService },
+  { provide: CalificacionesService, useClass: MockCalificacionesService },
 ];
