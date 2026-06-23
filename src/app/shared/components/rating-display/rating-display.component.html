@@ -1,0 +1,7 @@
+@if (visible) {
+  <span class="rating" [class.sm]="size === 'sm'" [class.lg]="size === 'lg'">
+    <span class="star">★</span>
+    <span class="value">{{ formatted }}</span>
+    <span class="count">({{ count }})</span>
+  </span>
+}

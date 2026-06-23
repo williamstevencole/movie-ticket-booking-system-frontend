@@ -5,6 +5,7 @@ import { AuthService } from '../../../shared/services/auth.service';
 import { AppbarComponent } from '../../../shared/components/appbar/appbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
 import { PosterBadgeComponent } from '../../../shared/components/poster-badge/poster-badge.component';
+import { RatingDisplayComponent } from '../../../shared/components/rating-display/rating-display.component';
 import { HeroCarouselComponent } from '../hero-carousel/hero-carousel.component';
 import { DayStripComponent } from '../day-strip/day-strip.component';
 import { PromosComponent } from '../promos/promos.component';
@@ -23,6 +24,7 @@ const WD = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
     AppbarComponent,
     FooterComponent,
     PosterBadgeComponent,
+    RatingDisplayComponent,
     HeroCarouselComponent,
     DayStripComponent,
     PromosComponent,

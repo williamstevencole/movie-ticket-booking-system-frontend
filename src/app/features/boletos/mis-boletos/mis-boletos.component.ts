@@ -13,6 +13,7 @@ import { TiempoRestanteComponent } from './tiempo-restante/tiempo-restante.compo
 import { MisBoletosSidebarComponent } from './sidebar/mis-boletos-sidebar.component';
 
 import { Boleto, BoletosService } from '../../../shared/services/boletos.service';
+import { RatingDisplayComponent } from '../../../shared/components/rating-display/rating-display.component';
 
 type Filtro = 'proximos' | 'pasados' | 'cancelados';
 type Vista = 'boletos' | 'reembolsos' | 'perfil';
@@ -29,6 +30,7 @@ type Vista = 'boletos' | 'reembolsos' | 'perfil';
     ReembolsosComponent,
     TiempoRestanteComponent,
     MisBoletosSidebarComponent,
+    RatingDisplayComponent,
     DatePipe,
   ],
   templateUrl: './mis-boletos.component.html',

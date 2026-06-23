@@ -25,6 +25,7 @@
           </div>
           <div class="body">
             <h3 class="title">{{ p.titulo }}</h3>
+            <app-rating-display [promedio]="p.rating_promedio" [count]="p.rating_count ?? 0" size="sm" />
             <div class="meta">
               <span>{{ p.genero }}</span>
               <span class="sep">·</span>

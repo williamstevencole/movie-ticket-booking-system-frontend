@@ -27,6 +27,8 @@ export type CarteleraPelicula = {
   badge?: BadgeTipo;
   badgeFecha?: string;
   funciones: { hora: string; asientosLibres: number }[];
+  rating_promedio?: number | null;
+  rating_count?: number;
 };
 
 export type ProximoEstreno = {
@@ -67,6 +69,8 @@ export type PeliculaDetalle = {
   estreno: string;
   ficha: FichaTecnica;
   attrs: { label: string; value: string }[];
+  rating_promedio?: number | null;
+  rating_count?: number;
 };
 
 export const MOCK_HERO_SLIDES: HeroSlide[] = [
@@ -141,6 +145,8 @@ export const MOCK_CARTELERA: CarteleraPelicula[] = [
     idioma: 'VOSE',
     poster: 'poster-1',
     badge: 'estreno',
+    rating_promedio: 4.6,
+    rating_count: 234,
     funciones: [
       { hora: '15:00', asientosLibres: 68 },
       { hora: '18:30', asientosLibres: 42 },
@@ -155,6 +161,8 @@ export const MOCK_CARTELERA: CarteleraPelicula[] = [
     duracion: '126m',
     idioma: 'ESP',
     poster: 'poster-2',
+    rating_promedio: 4.2,
+    rating_count: 189,
     funciones: [
       { hora: '14:30', asientosLibres: 55 },
       { hora: '18:00', asientosLibres: 30 },
@@ -168,6 +176,8 @@ export const MOCK_CARTELERA: CarteleraPelicula[] = [
     duracion: '108m',
     idioma: 'VOSE',
     poster: 'poster-3',
+    rating_promedio: 4.4,
+    rating_count: 156,
     funciones: [
       { hora: '15:00', asientosLibres: 72 },
       { hora: '19:30', asientosLibres: 48 },
@@ -180,6 +190,8 @@ export const MOCK_CARTELERA: CarteleraPelicula[] = [
     duracion: '134m',
     idioma: 'ESP',
     poster: 'poster-4',
+    rating_promedio: 4.8,
+    rating_count: 312,
     funciones: [
       { hora: '13:45', asientosLibres: 90 },
       { hora: '17:00', asientosLibres: 65 },
@@ -194,6 +206,8 @@ export const MOCK_CARTELERA: CarteleraPelicula[] = [
     idioma: 'VOSE',
     poster: 'poster-5',
     badge: 'ultima',
+    rating_promedio: 3.9,
+    rating_count: 87,
     funciones: [
       { hora: '16:15', asientosLibres: 38 },
       { hora: '19:00', asientosLibres: 0 },
@@ -208,6 +222,8 @@ export const MOCK_CARTELERA: CarteleraPelicula[] = [
     idioma: 'ESP',
     poster: 'poster-6',
     badge: 'vip',
+    rating_promedio: 4.1,
+    rating_count: 63,
     funciones: [
       { hora: '14:00', asientosLibres: 45 },
       { hora: '17:45', asientosLibres: 28 },
@@ -267,6 +283,8 @@ export const MOCK_PELICULA_DETALLE: PeliculaDetalle = {
   clasificacion: '+13',
   rating: 4.6,
   ratingCount: 234,
+  rating_promedio: 4.6,
+  rating_count: 234,
   poster: 'poster-1',
   badge: 'estreno',
   badgeLabel: 'ESTRENO HOY',

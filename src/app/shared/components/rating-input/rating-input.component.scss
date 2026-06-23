@@ -1,0 +1,40 @@
+.stars {
+  display: inline-flex;
+  gap: 0.25rem;
+
+  button {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    color: #444;
+    font-size: 1.75rem;
+    padding: 0;
+    transition: transform 0.1s;
+
+    &.filled {
+      color: #f5b50a;
+    }
+
+    &:hover {
+      transform: scale(1.1);
+    }
+
+    &:disabled {
+      cursor: default;
+      opacity: 0.6;
+    }
+  }
+}
+
+.link {
+  background: none;
+  border: 0;
+  padding: 0.25rem 0;
+  color: var(--muted, #888);
+  cursor: pointer;
+  font-size: 0.85em;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
