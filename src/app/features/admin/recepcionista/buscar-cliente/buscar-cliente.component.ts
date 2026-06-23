@@ -231,10 +231,10 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
                             </div>
                             <div class="r-meta">
                               <span>{{ r.num_asientos }} {{ r.num_asientos === 1 ? 'asiento' : 'asientos' }}</span>
-                              @if (r.asientos_codigos?.length) {
+                              @if (r.asientos.length) {
                                 <span class="r-seats">
-                                  @for (s of r.asientos_codigos; track s) {
-                                    <span class="seat-chip">{{ s }}</span>
+                                  @for (a of r.asientos; track a.id) {
+                                    <span class="seat-chip">{{ a.codigo }}</span>
                                   }
                                 </span>
                               }

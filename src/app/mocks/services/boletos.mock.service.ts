@@ -46,7 +46,7 @@ export class MockBoletosService extends BoletosService {
         estado: r.estado,
         created_at: r.created_at,
         id_funcion: r.id_funcion,
-        fecha_hora: funcion.fecha_inicio,
+        fecha_hora: funcion.fecha_hora,
         pelicula: {
           id: pelicula.id,
           titulo: pelicula.titulo,
@@ -54,10 +54,10 @@ export class MockBoletosService extends BoletosService {
         },
         sala: { id: sala.id, nombre: sala.nombre },
         cine: { id: cine.id, nombre: cine.nombre },
-        asientos_codigos: r.asientos_codigos ?? [],
+        asientos: r.asientos ?? [],
         monto_total: pago?.monto_final ?? r.monto_total,
-        tarjeta_mask: pago?.tarjeta_mask ?? null,
-        tarjeta_brand: pago?.tarjeta_brand ?? null,
+        ultimos4_snapshot: pago?.ultimos4_snapshot ?? null,
+        marca_snapshot: pago?.marca_snapshot ?? null,
       });
     }
     return boletos;

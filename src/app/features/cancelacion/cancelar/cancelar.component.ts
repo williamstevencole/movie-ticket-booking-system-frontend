@@ -47,6 +47,10 @@ export class CancelarComponent {
     });
   }
 
+  asientosCodigos(boleto: Boleto): string {
+    return boleto.asientos.map((a) => a.codigo).join(', ');
+  }
+
   confirmar(): void {
     this.mostrarConfirmacion.set(true);
   }

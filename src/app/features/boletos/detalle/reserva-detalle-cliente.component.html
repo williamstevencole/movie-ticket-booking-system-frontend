@@ -75,8 +75,8 @@
         <div class="seats-block">
           <h3>Asientos</h3>
           <div class="seats-grid">
-            @for (asiento of reserva()!.asientos_codigos ?? []; track asiento) {
-              <span class="seat-chip">{{ asiento }}</span>
+            @for (asiento of reserva()!.asientos; track asiento.id) {
+              <span class="seat-chip">{{ asiento.codigo }}</span>
             }
           </div>
           <p class="seats-count">
@@ -91,8 +91,8 @@
         <h3><svg lucideCreditCard [size]="14"></svg> Pago</h3>
         <dl class="info-grid">
           <div><dt>Método</dt><dd>{{ metodoLabel() }}</dd></div>
-          @if (pago()!.tarjeta_mask) {
-            <div><dt>Tarjeta</dt><dd>{{ pago()!.tarjeta_mask }}</dd></div>
+          @if (pago()!.ultimos4_snapshot) {
+            <div><dt>Tarjeta</dt><dd>{{ pago()!.ultimos4_snapshot }}</dd></div>
           }
           <div>
             <dt>Total pagado</dt>

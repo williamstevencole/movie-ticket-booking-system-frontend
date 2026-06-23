@@ -91,7 +91,7 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
                 <div class="data-block">
                   <h3><svg lucideTicket [size]="12"></svg> Asientos</h3>
                   <p class="b">{{ reserva()!.num_asientos }} asiento(s)</p>
-                  <p class="sub">{{ (reserva()!.asientos_codigos ?? []).join(', ') || '—' }}</p>
+                  <p class="sub">{{ asientosCodigos() || '—' }}</p>
                 </div>
                 <div class="data-block">
                   <h3><svg lucideClock [size]="12"></svg> Tiempo restante</h3>
@@ -201,7 +201,7 @@ export class AdminReservaCancelarComponent {
   readonly horasRestantes = computed(() => {
     const f = this.funcion();
     if (!f) return 0;
-    const ms = new Date(f.fecha_inicio).getTime() - Date.now();
+    const ms = new Date(f.fecha_hora).getTime() - Date.now();
     return Math.round((ms / (1000 * 60 * 60)) * 10) / 10;
   });
 
@@ -321,6 +321,10 @@ export class AdminReservaCancelarComponent {
     });
   }
 
+  asientosCodigos(): string {
+    return (this.reserva()?.asientos ?? []).map((a) => a.codigo).join(', ');
+  }
+
   salaNombre(): string {
     const cine = this.cine();
     const funcion = this.funcion();
@@ -331,7 +335,7 @@ export class AdminReservaCancelarComponent {
   fechaFuncionTexto(): string {
     const funcion = this.funcion();
     if (!funcion) return '';
-    const d = new Date(funcion.fecha_inicio);
+    const d = new Date(funcion.fecha_hora);
     const dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
     const meses = [
       'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',

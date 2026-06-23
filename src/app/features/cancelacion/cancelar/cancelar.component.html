@@ -22,11 +22,11 @@
                 </div>
                 <div class="cell">
                   <div class="l">ASIENTOS</div>
-                  <div class="v">{{ reserva.asientos_codigos.join(', ') }}</div>
+                  <div class="v">{{ asientosCodigos(reserva) }}</div>
                 </div>
                 <div class="cell">
                   <div class="l">PAGADO</div>
-                  <div class="v tnum">L {{ reserva.monto_total }} {{ reserva.tarjeta_mask ? '(' + reserva.tarjeta_mask + ')' : '' }}</div>
+                  <div class="v tnum">L {{ reserva.monto_total }} {{ reserva.ultimos4_snapshot ? '(' + reserva.ultimos4_snapshot + ')' : '' }}</div>
                 </div>
               </div>
             </div>
@@ -44,8 +44,8 @@
 
         <aside class="refund-side">
           <app-refund-side
-            [tarjetaMask]="reserva.tarjeta_mask"
-            [tarjetaBrand]="reserva.tarjeta_brand"
+            [tarjetaMask]="reserva.ultimos4_snapshot ?? null"
+            [tarjetaBrand]="reserva.marca_snapshot ?? null"
             [montoPagado]="reserva.monto_total"
             [porcentajeEstimado]="porcentajeEstimado()"
           />

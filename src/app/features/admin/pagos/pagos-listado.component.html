@@ -95,7 +95,7 @@
                       @if (p.metodo === 'tarjeta') {
                         <div class="col-num">{{ p.referencia_externa }}</div>
                         <div class="col-sub">
-                          {{ brandLabel(p.tarjeta_brand) }} {{ p.tarjeta_mask }}
+                          {{ brandLabel(p.marca_snapshot) }} {{ p.ultimos4_snapshot }}
                         </div>
                       } @else {
                         <div class="col-num">EFEC-{{ p.id }}</div>

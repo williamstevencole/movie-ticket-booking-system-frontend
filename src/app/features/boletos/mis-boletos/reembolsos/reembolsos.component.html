@@ -14,8 +14,8 @@
               <h3>{{ b.pelicula.titulo }}</h3>
               <p>Reserva #{{ b.numero_reserva }} · {{ r.created_at | date:'d MMM y' }}</p>
               <p class="metodo">
-                @if (b.tarjeta_mask) {
-                  Tarjeta {{ b.tarjeta_mask }}
+                @if (b.ultimos4_snapshot) {
+                  Tarjeta {{ b.ultimos4_snapshot }}
                 } @else {
                   Efectivo (taquilla)
                 }
