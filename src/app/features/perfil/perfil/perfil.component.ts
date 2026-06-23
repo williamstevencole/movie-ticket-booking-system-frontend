@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../shared/services/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { UsuariosService } from '../../../shared/services/usuarios.service';
 
 @Component({
   selector: 'app-perfil-page',
@@ -25,6 +26,13 @@ import { ToastService } from '../../../shared/services/toast.service';
           <label for="telefono">Teléfono</label>
           <input id="telefono" class="input" formControlName="telefono" placeholder="+504 0000-0000" />
         </div>
+        <div class="field">
+          <label for="notif">
+            <input id="notif" type="checkbox" [checked]="notificacionesActivas"
+                   (change)="toggleNotificaciones($any($event.target).checked)" />
+            Recibir notificaciones por email
+          </label>
+        </div>
         <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Guardar cambios</button>
       </form>
     </div>
@@ -35,6 +43,7 @@ export class PerfilPageComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private toast = inject(ToastService);
+  private usuariosSvc = inject(UsuariosService);
 
   readonly form = this.fb.nonNullable.group({
     nombre: [this.auth.user()?.nombre ?? '', Validators.required],
@@ -42,8 +51,22 @@ export class PerfilPageComponent {
     telefono: [''],
   });
 
+  notificacionesActivas = this.auth.user()?.notificaciones_activas ?? false;
+
   save(): void {
     if (this.form.invalid) return;
     this.toast.show('Perfil actualizado (mock)');
+  }
+
+  toggleNotificaciones(activa: boolean): void {
+    const prev = this.notificacionesActivas;
+    this.notificacionesActivas = activa;
+    this.usuariosSvc.actualizarMiPerfil({ notificaciones_activas: activa }).subscribe({
+      next: () => this.toast.show('Preferencia guardada'),
+      error: () => {
+        this.notificacionesActivas = prev;
+        this.toast.show('No se pudo guardar');
+      },
+    });
   }
 }
