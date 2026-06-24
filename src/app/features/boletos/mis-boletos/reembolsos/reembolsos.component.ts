@@ -1,10 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { Reembolso, ReembolsosService } from '../../../../shared/services/reembolsos.service';
-import { BoletosService, Boleto } from '../../../../shared/services/boletos.service';
+import { MiReembolso as Reembolso, MisReembolsosService } from '../../../../shared/services/mis-reembolsos.service';
+import { Boleto } from '../../../../shared/services/boletos.service';
+import { MisReservasService } from '../../../../shared/services/mis-reservas.service';
 import { PagosService, Pago } from '../../../../shared/services/pagos.service';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-reembolsos',
@@ -15,12 +17,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 })
 export class ReembolsosComponent {
   private readonly router = inject(Router);
-  private readonly boletosSvc = inject(BoletosService);
+  private readonly misReservasSvc = inject(MisReservasService);
   private readonly pagosSvc = inject(PagosService);
-  private readonly reembolsosSvc = inject(ReembolsosService);
+  private readonly reembolsosSvc = inject(MisReembolsosService);
 
-  readonly boletos = toSignal(this.boletosSvc.list(), { initialValue: [] as Boleto[] });
-  readonly pagos = toSignal(this.pagosSvc.list(), { initialValue: [] as Pago[] });
+  readonly boletos = toSignal(this.misReservasSvc.list(), { initialValue: [] as Boleto[] });
+  readonly pagos = toSignal(this.pagosSvc.list().pipe(map((res) => res.data)), { initialValue: [] as Pago[] });
 
   //agregue un mock solo para probar lo de pendiente y mas de 5 dias
   readonly reembolsos = signal<Reembolso[]>([]);

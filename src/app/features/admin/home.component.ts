@@ -194,7 +194,7 @@ export class AdminHomeComponent implements OnInit {
 
   ngOnInit() {
     this.reservasSvc.list().subscribe((rs) => this.reservas.set(rs));
-    this.pagosSvc.list().subscribe((ps) => this.pagos.set(ps));
+    this.pagosSvc.list().subscribe((res) => this.pagos.set(res.data));
     this.funcionesSvc.list().subscribe((fs) => this.funciones.set(fs));
     this.peliculasSvc.list().subscribe((ps) => this.peliculas.set(ps));
     setTimeout(() => this.loading.set(false), 300);

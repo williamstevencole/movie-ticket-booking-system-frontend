@@ -143,6 +143,8 @@ export class PosterUploadComponent {
   }
 
   @Output() posterChange = new EventEmitter<string | null>();
+  /** Emits the raw File selected by the user (null when poster is removed) */
+  @Output() fileChange = new EventEmitter<File | null>();
 
   readonly previewUrl = signal<string | null>(null);
   readonly isDragging = signal(false);
@@ -194,6 +196,7 @@ export class PosterUploadComponent {
     this.previewUrl.set(null);
     this.errorMsg.set(null);
     this.posterChange.emit(null);
+    this.fileChange.emit(null);
   }
 
   private handleFile(file: File) {
@@ -207,6 +210,9 @@ export class PosterUploadComponent {
       this.errorMsg.set(`Archivo muy grande. Máximo ${MAX_SIZE_MB} MB.`);
       return;
     }
+
+    // Emit the raw file immediately for parent to hold
+    this.fileChange.emit(file);
 
     const reader = new FileReader();
     reader.onload = () => {

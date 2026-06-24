@@ -12,7 +12,8 @@ import { ReembolsosComponent } from './reembolsos/reembolsos.component';
 import { TiempoRestanteComponent } from './tiempo-restante/tiempo-restante.component';
 import { MisBoletosSidebarComponent } from './sidebar/mis-boletos-sidebar.component';
 
-import { Boleto, BoletosService } from '../../../shared/services/boletos.service';
+import { Boleto } from '../../../shared/services/boletos.service';
+import { MisReservasService } from '../../../shared/services/mis-reservas.service';
 import { RatingDisplayComponent } from '../../../shared/components/rating-display/rating-display.component';
 
 type Filtro = 'proximos' | 'pasados' | 'cancelados';
@@ -38,12 +39,12 @@ type Vista = 'boletos' | 'reembolsos' | 'perfil';
 })
 export class MisBoletosComponent {
   private readonly router = inject(Router);
-  private readonly boletosSvc = inject(BoletosService);
+  private readonly misReservasSvc = inject(MisReservasService);
 
   readonly userName = 'Andrea López';
   readonly userEmail = 'andrea@email.com';
 
-  readonly boletos = toSignal(this.boletosSvc.list(), { initialValue: [] as Boleto[] });
+  readonly boletos = toSignal(this.misReservasSvc.list(), { initialValue: [] as Boleto[] });
 
   readonly vistaActual = signal<Vista>('boletos');
   readonly filtroBoletos = signal<Filtro>('proximos');

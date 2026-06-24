@@ -1,20 +1,24 @@
+/**
+ * MockCalificacionesService — kept for reference / test use.
+ * No longer registered as a provider (CalificacionesService is now a concrete HTTP class).
+ */
 import { Injectable, inject } from '@angular/core';
 import { Observable, of, throwError, delay, switchMap } from 'rxjs';
 import { CalificacionesService, ResultadoCalificacion } from '../../shared/services/calificaciones.service';
 import { PeliculasService } from '../../shared/services/peliculas.service';
 
 @Injectable()
-export class MockCalificacionesService extends CalificacionesService {
+export class MockCalificacionesService {
   private votos = new Map<string, number>();
   private readonly idUsuario = '2';
   private readonly peliculas = inject(PeliculasService);
 
-  override obtenerMia(idPelicula: string): Observable<{ puntuacion: number } | null> {
+  obtenerMia(idPelicula: string): Observable<{ puntuacion: number } | null> {
     const v = this.votos.get(this.key(idPelicula));
     return of(v == null ? null : { puntuacion: v }).pipe(delay(60));
   }
 
-  override calificar(idPelicula: string, puntuacion: number): Observable<ResultadoCalificacion> {
+  calificar(idPelicula: string, puntuacion: number): Observable<ResultadoCalificacion> {
     if (puntuacion < 1 || puntuacion > 5) {
       return throwError(() => new Error('Rango inválido'));
     }
@@ -48,7 +52,7 @@ export class MockCalificacionesService extends CalificacionesService {
     );
   }
 
-  override borrar(idPelicula: string): Observable<ResultadoCalificacion> {
+  borrar(idPelicula: string): Observable<ResultadoCalificacion> {
     return this.peliculas.getById(idPelicula).pipe(
       switchMap((peli) => {
         const key = this.key(idPelicula);

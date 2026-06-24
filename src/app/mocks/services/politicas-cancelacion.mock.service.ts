@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import {
   CrearPoliticaInput,
   EditarPoliticaInput,
@@ -19,8 +19,10 @@ export class MockPoliticasCancelacionService extends PoliticasCancelacionService
     return of([...this.politicas]);
   }
 
-  override getById(id: string): Observable<PoliticaCancelacion | undefined> {
-    return of(this.politicas.find((p) => p.id === id));
+  override getById(id: string): Observable<PoliticaCancelacion> {
+    const p = this.politicas.find((x) => x.id === id);
+    if (!p) return throwError(() => ({ status: 404, error: { message: 'Política no encontrada' } }));
+    return of(p);
   }
 
   override listByCine(idCine: string): Observable<PoliticaCancelacion[]> {
@@ -70,5 +72,9 @@ export class MockPoliticasCancelacionService extends PoliticasCancelacionService
     };
     this.politicas[index] = updated;
     return of(updated);
+  }
+
+  override setActiva(id: string, activa: boolean): Observable<PoliticaCancelacion> {
+    return this.update(id, { activa });
   }
 }

@@ -351,7 +351,7 @@ export class RecepcionistaBuscarClienteComponent {
   );
 
   constructor() {
-    this.clientesSvc.list().subscribe((data) => this.clientes.set(data));
+    this.clientesSvc.list().subscribe((page) => this.clientes.set(page.data));
     this.reservasSvc.list().subscribe((data) => this.reservas.set(data));
   }
 

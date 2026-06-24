@@ -3,7 +3,7 @@
  * NO considera ubicación — usalo para casos donde no necesitás chequear ciudad/cine.
  */
 export function homeForRole(role: string | null | undefined): string {
-  if (role === 'admin' || role === 'taquillero') return '/admin';
+  if (role === 'admin') return '/admin';
   return '/cartelera';
 }
 
@@ -15,7 +15,7 @@ export function homeAfterLogin(
   role: string | null | undefined,
   hasLocation: boolean,
 ): string {
-  if (role === 'admin' || role === 'taquillero') return '/admin';
+  if (role === 'admin') return '/admin';
   if (!hasLocation) return '/elegir-cine';
   return '/cartelera';
 }

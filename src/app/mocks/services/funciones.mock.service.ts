@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import {
+  CheckConflictosParams,
   ConflictoFuncion,
   CrearFuncionInput,
   EditarFuncionInput,
@@ -117,15 +118,15 @@ export class MockFuncionesService extends FuncionesService {
     return of({ ...next });
   }
 
-  override checkConflictos(
-    id_cine: string,
-    id_sala: string,
-    fecha_hora: string,
-    duracion_min: number,
-    ignoreId?: string,
-  ): Observable<ConflictoFuncion[]> {
+  override checkConflictos(params: CheckConflictosParams): Observable<ConflictoFuncion[]> {
     return of(
-      this.computeConflictos(id_cine, id_sala, fecha_hora, duracion_min, ignoreId),
+      this.computeConflictos(
+        params.id_cine,
+        params.id_sala,
+        params.fecha_hora,
+        params.duracion_min,
+        params.ignorar_id,
+      ),
     );
   }
 

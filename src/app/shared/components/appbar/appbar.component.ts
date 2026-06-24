@@ -152,7 +152,7 @@ export class AppbarComponent {
   readonly isAuth = this.auth.isAuthenticated;
   readonly isAdmin = computed(() => {
     const r = this.auth.role();
-    return r === 'admin' || r === 'taquillero';
+    return r === 'admin';
   });
 
   initials(): string {

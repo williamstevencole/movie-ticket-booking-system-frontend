@@ -175,7 +175,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/home.component').then(
         (m) => m.AdminHomeComponent,
@@ -183,7 +183,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/ciudades',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/ciudades/ciudades.component').then(
         (m) => m.AdminCiudadesComponent,
@@ -191,7 +191,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/cines',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/cines/listado/cines.component').then(
         (m) => m.AdminCinesComponent,
@@ -199,7 +199,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/cines/crear',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/cines/crear/cine-form.component').then(
         (m) => m.AdminCineFormComponent,
@@ -207,7 +207,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/cines/:id/editar',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/cines/editar/cine-editar.component').then(
         (m) => m.AdminCineEditarComponent,
@@ -216,7 +216,7 @@ export const routes: Routes = [
   {
     path: 'admin/salas',
     pathMatch: 'full',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/salas/listado/salas.component').then(
         (m) => m.AdminSalasComponent,
@@ -224,7 +224,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/salas/crear',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/salas/crear/sala-form.component').then(
         (m) => m.AdminSalaFormComponent,
@@ -232,7 +232,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/salas/:cineId/:salaId/editar',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/salas/editar/sala-editar.component').then(
         (m) => m.AdminSalaEditarComponent,
@@ -240,7 +240,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/salas/:cineId/:salaId/distribucion',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/salas/distribucion/distribucion.component').then(
         (m) => m.AdminSalaDistribucionComponent,
@@ -248,7 +248,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/tipos-asiento',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/tipos-asiento/tipos-asiento.component').then(
         (m) => m.AdminTiposAsientoComponent,
@@ -256,7 +256,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/precios',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/precios/precios.component').then(
         (m) => m.AdminPreciosComponent,
@@ -264,7 +264,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/reembolsos',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/reembolsos/reembolsos.component').then(
         (m) => m.AdminReembolsosComponent,
@@ -272,7 +272,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/usuarios-roles',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/usuarios-roles/usuarios-roles.component').then(
         (m) => m.AdminUsuariosRolesComponent,
@@ -280,7 +280,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/recepcionista/buscar-cliente',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/recepcionista/buscar-cliente/buscar-cliente.component').then(
         (m) => m.RecepcionistaBuscarClienteComponent,
@@ -289,7 +289,7 @@ export const routes: Routes = [
   {
     path: 'admin/cupones',
     pathMatch: 'full',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/cupones/listado/cupones.component').then(
         (m) => m.AdminCuponesComponent,
@@ -297,7 +297,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/cupones/crear',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/cupones/crear/cupon-form.component').then(
         (m) => m.AdminCuponFormComponent,
@@ -305,7 +305,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/generos',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/generos/generos.component').then(
         (m) => m.AdminGenerosComponent,
@@ -313,7 +313,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/idiomas',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/idiomas/idiomas.component').then(
         (m) => m.AdminIdiomasComponent,
@@ -321,7 +321,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/peliculas',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/peliculas/listado/peliculas.component').then(
         (m) => m.AdminPeliculasComponent,
@@ -329,7 +329,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/peliculas/crear',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/peliculas/form/pelicula-form.component').then(
         (m) => m.AdminPeliculaFormComponent,
@@ -337,7 +337,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/peliculas/:id/editar',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/peliculas/form/pelicula-form.component').then(
         (m) => m.AdminPeliculaFormComponent,
@@ -345,7 +345,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/funciones',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/funciones/listado/funciones.component').then(
         (m) => m.AdminFuncionesComponent,
@@ -353,7 +353,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/funciones/crear',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/funciones/form/funcion-form.component').then(
         (m) => m.AdminFuncionFormComponent,
@@ -361,7 +361,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/funciones/:id/editar',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/funciones/form/funcion-form.component').then(
         (m) => m.AdminFuncionFormComponent,
@@ -369,7 +369,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/funciones/:id/cancelar',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/funciones/cancelar/cancelar-funcion.component').then(
         (m) => m.AdminCancelarFuncionComponent,
@@ -378,7 +378,7 @@ export const routes: Routes = [
   {
     path: 'admin/reservas',
     pathMatch: 'full',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/reservas/listado/reservas-listado.component').then(
         (m) => m.AdminReservasListadoComponent,
@@ -386,7 +386,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/reservas/:id/cancelar',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/reservas/cancelar/reserva-cancelar.component').then(
         (m) => m.AdminReservaCancelarComponent,
@@ -394,7 +394,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/reservas/:id',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/reservas/detalle/reserva-detalle.component').then(
         (m) => m.AdminReservaDetalleComponent,
@@ -402,7 +402,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/pagos',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/pagos/pagos-listado.component').then(
         (m) => m.AdminPagosListadoComponent,
@@ -410,7 +410,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/clientes',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/clientes/listado/clientes.component').then(
         (m) => m.AdminClientesComponent,
@@ -418,7 +418,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/politicas',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/politicas/configuracion/politicas-config.component').then(
         (m) => m.AdminPoliticasConfigComponent,
@@ -426,7 +426,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/bitacora',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadChildren: () =>
       import('./features/admin/bitacora/bitacora.routes').then(
         (m) => m.BITACORA_ROUTES,
@@ -439,7 +439,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/reportes/reservas',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/reportes/reservas/reservas.component').then(
         (m) => m.AdminReporteReservasComponent,
@@ -447,7 +447,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin/reportes/estadisticas-cancelacion',
-    canActivate: [authGuard, roleGuard(['admin', 'taquillero'])],
+    canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>
       import('./features/admin/reportes/estadisticas-cancelacion/estadisticas-cancelacion.component').then(
         (m) => m.AdminReporteEstadisticasCancelacionComponent,

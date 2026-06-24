@@ -188,9 +188,11 @@ export class ReservaDetalleClienteComponent {
           next: (funcion) => {
             this.funcion.set(funcion);
 
-            // pago
+            // pago — getByReserva returns array, take the first exitoso/reembolsado
             this.pagosSvc.getByReserva(reserva.id).subscribe({
-              next: (p) => this.pago.set(p ?? null),
+              next: (ps) => this.pago.set(
+                ps.find((p) => p.estado === 'exitoso' || p.estado === 'reembolsado') ?? ps[0] ?? null
+              ),
               error: () => this.pago.set(null),
             });
 

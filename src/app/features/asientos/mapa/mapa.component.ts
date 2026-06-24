@@ -1,15 +1,35 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { interval } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
 import { PanelLateralComponent } from '../panel-lateral/panel-lateral.component';
-import { Asiento } from './asiento.model';
 import { ErrorComponent } from '../error/error.component';
 import { TipoAsiento } from './seat-types/seat-type.model';
-import { EstadoAsiento } from './seat-states/seat-state.model';
 import { FuncionBarComponent } from '../funcion-bar/funcion-bar.component';
 import { TimerComponent } from '../timer/timer.component';
 import { CtaComponent } from '../cta/cta.component';
 import { AppbarComponent } from '../../../shared/components/appbar/appbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
+import {
+  AsientosService,
+  AsientoFuncion,
+} from '../../../shared/services/asientos.service';
+import { ToastService } from '../../../shared/services/toast.service';
+
+// Minimal shape passed into the template seat grid
+type AsientoDisplay = {
+  codigo: string;
+  estado: 'disponible' | 'ocupado' | 'bloqueado';
+  tipo: TipoAsiento;
+};
 
 @Component({
   selector: 'app-mapa',
@@ -26,83 +46,134 @@ import { FooterComponent } from '../../../shared/components/footer/footer.compon
   templateUrl: './mapa.component.html',
   styleUrl: './mapa.component.scss',
 })
-export class MapaComponent {
+export class MapaComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly asientosSvc = inject(AsientosService);
+  private readonly toastSvc = inject(ToastService);
+  private readonly destroyRef = inject(DestroyRef);
+
   readonly funcionId = signal<string | null>(null);
 
-  // --- funcion-bar signals ---
-  readonly pelicula = signal<string>('Spider-Man: Across the Spider-Verse');
-  readonly cine = signal<string>('Cinetario Mall');
-  readonly sala = signal<string>('Sala 4');
+  // --- funcion-bar signals (populated from API or defaults) ---
+  readonly pelicula = signal<string>('');
+  readonly cine = signal<string>('');
+  readonly sala = signal<string>('');
   readonly fechaHora = signal<string>(new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString());
-  readonly duracionMin = signal<number | null>(140);
-  readonly idioma = signal<string | null>('SUB');
+  readonly duracionMin = signal<number | null>(null);
+  readonly idioma = signal<string | null>(null);
   readonly posterUrl = signal<string | null>(null);
   readonly cargoServicio = signal<number>(15);
 
-  // --- seat data ---
-  readonly asientosRaw = signal<Asiento[]>(this.crearAsientos());
+  // Timer expiry driven by server response
+  readonly expiraEn = signal<string | null>(null);
+  readonly timerSegundos = computed(() => {
+    const expira = this.expiraEn();
+    if (!expira) return 600; // default 10 min
+    const diff = Math.floor((new Date(expira).getTime() - Date.now()) / 1000);
+    return Math.max(0, diff);
+  });
 
-  /** Asientos completos actualmente seleccionados (includes version, bloqueado_hasta) */
-  readonly asientosSeleccionados = signal<Asiento[]>([]);
+  // --- seat data from API ---
+  readonly asientosRaw = signal<AsientoFuncion[]>([]);
+
+  /** Asientos seleccionados por el usuario (full objects) */
+  readonly asientosSeleccionados = signal<AsientoFuncion[]>([]);
 
   /** Error de conflicto de asiento */
   readonly errorAsiento = signal<string | null>(null);
 
-  /** Adapter: transforms flat Asiento[] into row-grouped shape for template */
+  /** Show conflict modal */
+  readonly mostrarModalConflicto = signal(false);
+
+  /** Adapter: transforms flat AsientoFuncion[] into row-grouped shape for template */
   readonly filas = computed(() => {
-    const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
     const todos = this.asientosRaw();
+    const letras = [...new Set(todos.map((a) => a.fila))].sort();
     return letras.map((letra) => ({
       letra,
       asientos: todos
         .filter((a) => a.fila === letra)
-        .map((a) => ({
-          codigo: a.id,
-          estado: (a.estado === 'seleccionado' ? 'disponible' : a.estado) as 'disponible' | 'ocupado' | 'bloqueado',
+        .sort((a, b) => a.numero - b.numero)
+        .map<AsientoDisplay>((a) => ({
+          codigo: `${a.fila}-${a.numero}`,
+          estado: a.estado === 'seleccionado' ? 'disponible' : (a.estado as AsientoDisplay['estado']),
           tipo: a.tipo,
         })),
     }));
   });
 
-  readonly asientosSeleccionadosDetallados = computed(() => {
-    const asientos = this.asientosSeleccionados();
-    return asientos.map((a) => ({
-      codigo: a.id,
+  readonly asientosSeleccionadosDetallados = computed(() =>
+    this.asientosSeleccionados().map((a) => ({
+      codigo: `${a.fila}-${a.numero}`,
       tipo: a.tipo,
       precio: this.precioPorTipo(a.tipo),
       version: a.version,
-    }));
-  });
+    })),
+  );
 
   readonly total = computed(() => {
-    const subtotal = this.asientosSeleccionadosDetallados()
-      .reduce((sum, a) => sum + a.precio, 0);
+    const subtotal = this.asientosSeleccionadosDetallados().reduce(
+      (sum, a) => sum + a.precio,
+      0,
+    );
     return subtotal + this.cargoServicio();
   });
 
-  constructor(private route: ActivatedRoute) {
-    this.funcionId.set(this.route.snapshot.paramMap.get('id'));
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    this.funcionId.set(id);
+    if (id) {
+      this.cargarMapa(id, true);
+      interval(5000)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => this.cargarMapa(id, false));
+    }
   }
 
   estaSeleccionado(codigo: string): boolean {
-    return this.asientosSeleccionados().some((a) => a.id === codigo);
+    return this.asientosSeleccionados().some(
+      (a) => `${a.fila}-${a.numero}` === codigo,
+    );
   }
 
-  toggle(asiento: { codigo: string; estado: string }): void {
+  toggle(asiento: AsientoDisplay): void {
     if (asiento.estado === 'bloqueado') return;
     if (asiento.estado === 'ocupado') {
       this.errorAsiento.set(asiento.codigo);
       return;
     }
-    const fullAsiento = this.buscarAsientoCompleto(asiento.codigo);
-    if (!fullAsiento) return;
+    const full = this.buscarAsientoCompleto(asiento.codigo);
+    if (!full) return;
 
     const sel = this.asientosSeleccionados();
-    if (sel.some((a) => a.id === asiento.codigo)) {
-      this.asientosSeleccionados.set(sel.filter((a) => a.id !== asiento.codigo));
+    const yaSeleccionado = sel.some((a) => `${a.fila}-${a.numero}` === asiento.codigo);
+
+    if (yaSeleccionado) {
+      const next = sel.filter((a) => `${a.fila}-${a.numero}` !== asiento.codigo);
+      this.asientosSeleccionados.set(next);
     } else {
-      this.asientosSeleccionados.set([...sel, fullAsiento]);
+      this.asientosSeleccionados.set([...sel, full]);
+      // Bloquear en el servidor al seleccionar
+      const idFuncion = this.funcionId();
+      if (idFuncion) {
+        const todosSeleccionados = [...sel, full];
+        this.asientosSvc
+          .bloquear(idFuncion, todosSeleccionados.map((a) => a.id))
+          .subscribe({
+            next: (res) => {
+              if (res?.expira_en) this.expiraEn.set(res.expira_en);
+            },
+            error: (err) => {
+              if (err.status === 409) {
+                this.mostrarModalConflicto.set(true);
+                // Revert selection and refresh map
+                this.asientosSeleccionados.set(sel);
+                this.cargarMapa(idFuncion, false);
+              }
+            },
+          });
+      }
     }
   }
 
@@ -110,67 +181,45 @@ export class MapaComponent {
     this.asientosSeleccionados.set([]);
   }
 
+  cerrarModalConflicto(): void {
+    this.mostrarModalConflicto.set(false);
+  }
+
   continuarAPago(): void {
     this.router.navigate(['/checkout/metodos-pago']);
   }
 
-  private precioPorTipo(tipo: 'estandar' | 'vip' | 'accesible'): number {
+  private cargarMapa(idFuncion: string, initial: boolean): void {
+    this.asientosSvc.mapa(idFuncion).subscribe({
+      next: (res) => {
+        this.asientosRaw.set(res.asientos);
+        if (res.expira_en) this.expiraEn.set(res.expira_en);
+      },
+      error: (err) => {
+        if (!initial) return;
+        const msg =
+          err?.status === 404
+            ? `Función ${idFuncion} no encontrada.`
+            : err?.status === 401
+              ? 'Tu sesión expiró. Inicia sesión otra vez.'
+              : `No se pudo cargar el mapa (${err?.status ?? 'red'}).`;
+        this.toastSvc?.show?.(msg);
+        this.errorAsiento.set(msg);
+      },
+    });
+  }
+
+  private precioPorTipo(tipo: TipoAsiento): number {
     if (tipo === 'vip') return 180;
     if (tipo === 'accesible') return 90;
     return 100;
   }
 
-  private buscarAsientoCompleto(codigo: string): Asiento | null {
-    return this.asientosRaw().find((a) => a.id === codigo) ?? null;
-  }
-
-  private crearAsientos(): Asiento[] {
-    const resultado: Asiento[] = [];
-
-    for (const fila of ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']) {
-      for (let numero = 1; numero <= 10; numero++) {
-        const rand = Math.random();
-
-        let tipo: TipoAsiento = 'estandar';
-
-        if (fila === 'A' || fila === 'B') {
-          tipo = 'vip';
-        }
-
-        if (fila === 'H') {
-          tipo = 'accesible';
-        }
-
-        let estado: EstadoAsiento;
-
-        if (rand < 0.5) {
-          estado = 'disponible';
-        } else {
-          estado = 'ocupado';
-        }
-
-        if (fila === 'D' && numero <= 3) {
-          estado = 'bloqueado';
-        }
-
-        const asiento: Asiento = {
-          id: `${fila}-${numero}`,
-          fila,
-          numero,
-          tipo,
-          estado,
-          version: 1,
-        };
-
-        // Set bloqueado_hasta for locked seats
-        if (estado === 'bloqueado') {
-          asiento.bloqueado_hasta = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-        }
-
-        resultado.push(asiento);
-      }
-    }
-
-    return resultado;
+  private buscarAsientoCompleto(codigo: string): AsientoFuncion | null {
+    return (
+      this.asientosRaw().find(
+        (a) => `${a.fila}-${a.numero}` === codigo,
+      ) ?? null
+    );
   }
 }
