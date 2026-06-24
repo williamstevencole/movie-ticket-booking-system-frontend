@@ -6,7 +6,7 @@ import { LocationService } from '../../shared/services/location.service';
 /**
  * Exige que el usuario haya elegido ciudad+cine antes de entrar.
  *
- * - Admin/taquillero no necesitan ubicación → pasan directo.
+ * - Admin no necesita ubicación → pasa directo.
  * - Cualquier otro (anónimo o cliente) sin selección → `/elegir-cine`.
  */
 export const locationGuard: CanActivateFn = () => {
@@ -15,7 +15,7 @@ export const locationGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   const role = auth.role();
-  if (role === 'admin' || role === 'taquillero') return true;
+  if (role === 'admin') return true;
 
   if (loc.hasSelection()) return true;
 
