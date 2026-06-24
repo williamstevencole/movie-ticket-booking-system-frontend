@@ -3,8 +3,7 @@ import { Provider } from '@angular/core';
 import { CiudadesService } from '../../shared/services/ciudades.service';
 import { CinesService } from '../../shared/services/cines.service';
 import { CuponesService } from '../../shared/services/cupones.service';
-import { GenerosService } from '../../shared/services/generos.service';
-import { IdiomasService } from '../../shared/services/idiomas.service';
+// GenerosService and IdiomasService are now concrete @Injectable — no mock override needed
 import { FuncionesService } from '../../shared/services/funciones.service';
 import { ReservasService } from '../../shared/services/reservas.service';
 // PagosService and ReembolsosService are now concrete @Injectable — no mock override needed
@@ -17,8 +16,7 @@ import { UsuariosService } from '../../shared/services/usuarios.service';
 import { MockCiudadesService } from '../../mocks/services/ciudades.mock.service';
 import { MockCinesService } from '../../mocks/services/cines.mock.service';
 import { MockCuponesService } from '../../mocks/services/cupones.mock.service';
-import { MockGenerosService } from '../../mocks/services/generos.mock.service';
-import { MockIdiomasService } from '../../mocks/services/idiomas.mock.service';
+// MockGenerosService and MockIdiomasService no longer registered (services are now concrete HTTP classes)
 import { MockFuncionesService } from '../../mocks/services/funciones.mock.service';
 import { MockReservasService } from '../../mocks/services/reservas.mock.service';
 // MockPagosService and MockReembolsosService no longer registered (services are now concrete HTTP classes)
@@ -32,8 +30,7 @@ export const dataProviders: Provider[] = [
   { provide: CiudadesService, useClass: MockCiudadesService },
   { provide: CinesService, useClass: MockCinesService },
   { provide: CuponesService, useClass: MockCuponesService },
-  { provide: GenerosService, useClass: MockGenerosService },
-  { provide: IdiomasService, useClass: MockIdiomasService },
+  // GenerosService and IdiomasService: concrete HTTP services, no mock override
   { provide: FuncionesService, useClass: MockFuncionesService },
   { provide: ReservasService, useClass: MockReservasService },
   // PagosService and ReembolsosService: concrete HTTP services, no mock override
