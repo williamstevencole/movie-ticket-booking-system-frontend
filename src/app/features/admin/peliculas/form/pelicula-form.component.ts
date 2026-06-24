@@ -13,6 +13,7 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   LucideTriangleAlert,
@@ -216,6 +217,7 @@ type Toast = { kind: 'ok' | 'err'; text: string } | null;
               <app-poster-upload
                 [posterUrl]="posterUrl()"
                 (posterChange)="onPosterChange($event)"
+                (fileChange)="onPosterFileChange($event)"
               />
             </section>
 
@@ -310,10 +312,13 @@ export class AdminPeliculaFormComponent {
   private peliculasSvc = inject(PeliculasService);
   private generosSvc = inject(GenerosService);
   private idiomasSvc = inject(IdiomasService);
+  private http = inject(HttpClient);
 
   readonly generos = signal<Genero[]>([]);
   readonly idiomas = signal<Idioma[]>([]);
   readonly posterUrl = signal<string | null>(null);
+  /** Raw File selected by the user; null if no new file chosen or poster removed */
+  readonly posterFile = signal<File | null>(null);
   readonly saving = signal(false);
   readonly formError = signal<string | null>(null);
   readonly toast = signal<Toast>(null);
@@ -390,6 +395,10 @@ export class AdminPeliculaFormComponent {
     this.posterUrl.set(url);
   }
 
+  onPosterFileChange(file: File | null) {
+    this.posterFile.set(file);
+  }
+
   submit() {
     this.formError.set(null);
     this.form.markAllAsTouched();
@@ -431,14 +440,47 @@ export class AdminPeliculaFormComponent {
 
     obs.subscribe({
       next: (p) => {
-        this.saving.set(false);
-        this.router.navigate(['/admin/peliculas'], {
-          state: { toast: editId ? `"${p.titulo}" actualizada` : `"${p.titulo}" creada` },
-        });
+        const posterFile = this.posterFile();
+        if (posterFile) {
+          this.uploadPoster(p.id, posterFile, editId);
+        } else {
+          this.saving.set(false);
+          this.router.navigate(['/admin/peliculas'], {
+            state: { toast: editId ? `"${p.titulo}" actualizada` : `"${p.titulo}" creada` },
+          });
+        }
       },
       error: (e) => {
         this.saving.set(false);
         this.formError.set(e?.message ?? 'No se pudo guardar la película');
+      },
+    });
+  }
+
+  private uploadPoster(peliculaId: string, file: File, editId: string | null) {
+    const fd = new FormData();
+    fd.append('file', file);
+    this.http.post<{ poster_url: string }>(`/api/peliculas/${peliculaId}/poster`, fd).subscribe({
+      next: (res) => {
+        this.posterUrl.set(res.poster_url);
+        this.posterFile.set(null);
+        this.saving.set(false);
+        const titulo = this.form.get('titulo')?.value ?? '';
+        this.router.navigate(['/admin/peliculas'], {
+          state: { toast: editId ? `"${titulo}" actualizada` : `"${titulo}" creada` },
+        });
+      },
+      error: () => {
+        // Poster upload failed but película was saved — navigate with warning
+        this.saving.set(false);
+        const titulo = this.form.get('titulo')?.value ?? '';
+        this.router.navigate(['/admin/peliculas'], {
+          state: {
+            toast: editId
+              ? `"${titulo}" actualizada (poster no se pudo subir)`
+              : `"${titulo}" creada (poster no se pudo subir)`,
+          },
+        });
       },
     });
   }
