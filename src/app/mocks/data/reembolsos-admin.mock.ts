@@ -1,4 +1,4 @@
-import { ReembolsoAdmin } from '../../shared/services/reembolsos.service';
+import { ReembolsoAdmin } from '../../shared/services/admin-reembolsos.service';
 
 // Datos sembrados para el panel operacional de reembolsos (en lempiras).
 export const MOCK_REEMBOLSOS_ADMIN: ReembolsoAdmin[] = [

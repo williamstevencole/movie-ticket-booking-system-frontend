@@ -1,4 +1,4 @@
-import { Reembolso } from '../../shared/services/reembolsos.service';
+import { MiReembolso as Reembolso } from '../../shared/services/mis-reembolsos.service';
 import { MOCK_PAGOS } from './pagos.mock';
 import { MOCK_POLITICAS_CANCELACION } from './politicas-cancelacion.mock';
 
