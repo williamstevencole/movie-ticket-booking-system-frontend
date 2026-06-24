@@ -304,7 +304,7 @@ export class AdminFuncionesComponent {
 
   constructor() {
     this.refresh();
-    this.peliculasSvc.list().subscribe((d) => this.peliculas.set(d));
+    this.peliculasSvc.list().subscribe((d) => this.peliculas.set(d.data));
     this.cinesSvc.list().subscribe((p) => this.cines.set(p.data));
     this.ciudadesSvc.list().subscribe((c) => this.ciudades.set(c));
 

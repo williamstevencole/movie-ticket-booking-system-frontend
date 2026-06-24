@@ -215,8 +215,8 @@ export class ReportFiltrosComponent implements OnInit, OnDestroy {
       });
     }
     if (selects.includes('pelicula')) {
-      this.peliculas.list().subscribe((rows: Pelicula[]) => {
-        this.peliculasOpts = rows.map((p) => ({ id: p.id, label: p.titulo }));
+      this.peliculas.list({ limit: 1000 }).subscribe((page) => {
+        this.peliculasOpts = page.data.map((p) => ({ id: p.id, label: p.titulo }));
       });
     }
     if (selects.includes('politica-cancelacion')) {

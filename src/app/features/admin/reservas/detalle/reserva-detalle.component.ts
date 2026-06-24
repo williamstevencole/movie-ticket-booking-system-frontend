@@ -227,8 +227,8 @@ export class AdminReservaDetalleComponent {
         const f = funcs.find((x) => x.id === r.id_funcion);
         if (!f) return;
         this.funcion.set(f);
-        this.peliculasSvc.list().subscribe((peliculas) =>
-          this.pelicula.set(peliculas.find((p) => p.id === f.id_pelicula) ?? null),
+        this.peliculasSvc.list().subscribe((res) =>
+          this.pelicula.set(res.data.find((p) => p.id === f.id_pelicula) ?? null),
         );
         this.cinesSvc.list().subscribe((cines) =>
           this.cine.set(cines.data.find((c) => c.id === f.id_cine) ?? null),

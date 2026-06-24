@@ -312,7 +312,7 @@ export class AdminIdiomasComponent {
 
   constructor() {
     this.refresh();
-    this.peliculasSvc.list().subscribe((p) => this.peliculas.set(p));
+    this.peliculasSvc.list().subscribe((p) => this.peliculas.set(p.data));
   }
 
   openCreate() {

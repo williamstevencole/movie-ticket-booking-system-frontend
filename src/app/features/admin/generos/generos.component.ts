@@ -280,8 +280,8 @@ export class AdminGenerosComponent {
   readonly peliculasPorGenero = computed(() => {
     const map: Record<string, number> = {};
     for (const p of this.peliculas()) {
-      for (const gid of p.id_generos) {
-        map[gid] = (map[gid] ?? 0) + 1;
+      if (p.id_genero) {
+        map[p.id_genero] = (map[p.id_genero] ?? 0) + 1;
       }
     }
     return map;
@@ -308,7 +308,7 @@ export class AdminGenerosComponent {
 
   constructor() {
     this.refresh();
-    this.peliculasSvc.list().subscribe((p) => this.peliculas.set(p));
+    this.peliculasSvc.list({ limit: 1000 }).subscribe((page) => this.peliculas.set(page.data));
   }
 
   openCreate() {
