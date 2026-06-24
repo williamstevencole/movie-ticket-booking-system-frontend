@@ -11,7 +11,6 @@ import { ReservasService } from '../../shared/services/reservas.service';
 // PagosService and ReembolsosService are now concrete @Injectable — no mock override needed
 import { PoliticasCancelacionService } from '../../shared/services/politicas-cancelacion.service';
 import { TiposAsientoService } from '../../shared/services/tipos-asiento.service';
-import { ClientesService } from '../../shared/services/clientes.service';
 import { PreciosService } from '../../shared/services/precios.service';
 import { UsuariosService } from '../../shared/services/usuarios.service';
 // MetodosPagoService and CalificacionesService are now concrete @Injectable — no mock override needed
@@ -27,7 +26,6 @@ import { MockReservasService } from '../../mocks/services/reservas.mock.service'
 // MockPagosService and MockReembolsosService no longer registered (services are now concrete HTTP classes)
 import { MockPoliticasCancelacionService } from '../../mocks/services/politicas-cancelacion.mock.service';
 import { MockTiposAsientoService } from '../../mocks/services/tipos-asiento.mock.service';
-import { MockClientesService } from '../../mocks/services/clientes.mock.service';
 import { MockPreciosService } from '../../mocks/services/precios.mock.service';
 import { MockUsuariosService } from '../../mocks/services/usuarios.mock.service';
 // MockMetodosPagoService and MockCalificacionesService no longer registered (services are now concrete HTTP classes)
@@ -44,7 +42,6 @@ export const dataProviders: Provider[] = [
   // PagosService and ReembolsosService: concrete HTTP services, no mock override
   { provide: PoliticasCancelacionService, useClass: MockPoliticasCancelacionService },
   { provide: TiposAsientoService, useClass: MockTiposAsientoService },
-  { provide: ClientesService, useClass: MockClientesService },
   { provide: PreciosService, useClass: MockPreciosService },
   { provide: UsuariosService, useClass: MockUsuariosService },
   // MetodosPagoService and CalificacionesService: concrete HTTP services, no mock override

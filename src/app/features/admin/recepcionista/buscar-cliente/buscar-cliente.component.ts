@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -17,7 +17,9 @@ import {
 
 import {
   Cliente,
+  ClienteDetalle,
   ClientesService,
+  ClientesStats,
 } from '../../../../shared/services/clientes.service';
 import {
   EstadoReserva,
@@ -25,6 +27,7 @@ import {
   ReservasService,
 } from '../../../../shared/services/reservas.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
+import { PagerComponent } from '../../../../shared/components/pager.component';
 
 @Component({
   selector: 'app-recepcionista-buscar-cliente',
@@ -34,6 +37,7 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
     FormsModule,
     RouterLink,
     AdminSidebarComponent,
+    PagerComponent,
     LucideSearch,
     LucideUserSearch,
     LucideMail,
@@ -67,15 +71,15 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
               <div class="stats">
                 <span class="stat">
                   <svg lucideUsers [size]="15"></svg>
-                  <b>{{ totalClientes() }}</b> clientes
+                  <b>{{ stats().total }}</b> clientes
                 </span>
                 <span class="stat ok">
                   <svg lucideUserCheck [size]="15"></svg>
-                  <b>{{ activos() }}</b> activos
+                  <b>{{ stats().activos }}</b> activos
                 </span>
                 <span class="stat danger">
                   <svg lucideBan [size]="15"></svg>
-                  <b>{{ bloqueados() }}</b> bloqueados
+                  <b>{{ stats().bloqueados }}</b> bloqueados
                 </span>
               </div>
             </div>
@@ -104,9 +108,9 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
                 Coincidencia exacta con reserva
                 <strong>#{{ r.numero_reserva }}</strong>
               } @else if (hasQuery()) {
-                {{ results().length }} coincidencia(s) para "{{ query() }}"
+                {{ total() }} coincidencia(s) para "{{ query() }}"
               } @else {
-                Mostrando todos los clientes
+                Mostrando {{ stats().total }} clientes
               }
             </span>
           </section>
@@ -118,7 +122,7 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
                 <span class="panel-title">
                   {{ hasQuery() ? 'Resultados' : 'Todos los clientes' }}
                 </span>
-                <span class="panel-count">{{ results().length }}</span>
+                <span class="panel-count">{{ total() }}</span>
               </div>
 
               @if (results().length === 0) {
@@ -151,6 +155,12 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
                     </li>
                   }
                 </ul>
+
+                <app-pager
+                  [value]="{ page: page(), pageSize: pageSize(), total: total() }"
+                  (pageChange)="page.set($event)"
+                  (pageSizeChange)="onPageSizeChange($event)"
+                />
               }
             </div>
 
@@ -281,33 +291,41 @@ export class RecepcionistaBuscarClienteComponent {
   readonly reservas = signal<Reserva[]>([]);
   readonly selectedId = signal<string | null>(null);
 
+  readonly page = signal(1);
+  readonly pageSize = signal(10);
+  readonly total = signal(0);
+  readonly stats = signal<ClientesStats>({ total: 0, activos: 0, bloqueados: 0 });
+  readonly selectedDetalle = signal<ClienteDetalle | null>(null);
+
   readonly hasQuery = computed(() => this.query().trim().length > 0);
 
   readonly sortedClientes = computed(() =>
     [...this.clientes()].sort((a, b) => a.nombre.localeCompare(b.nombre)),
   );
 
+  /**
+   * Server-side search hace el grueso (nombre/email/teléfono). Lo único que
+   * resolvemos en cliente es el match por número de reserva: si la query es un
+   * código de reserva conocido, agregamos su id_usuario al set de resultados.
+   */
   readonly results = computed(() => {
     const all = this.sortedClientes();
     if (!this.hasQuery()) return all;
-    const q = this.query().trim().toLowerCase();
-    const qDigits = q.replace(/\D/g, '');
 
-    const reservaQuery = q.replace(/^#/, '');
+    const reservaQuery = this.query().trim().toLowerCase().replace(/^#/, '');
     const usuariosPorReserva = new Set(
       this.reservas()
         .filter((r) => r.numero_reserva.toLowerCase().includes(reservaQuery))
         .map((r) => r.id_usuario),
     );
 
-    return all.filter((c) => {
-      if (c.nombre.toLowerCase().includes(q)) return true;
-      if (c.email.toLowerCase().includes(q)) return true;
-      if (qDigits && c.telefono) {
-        if (c.telefono.replace(/\D/g, '').includes(qDigits)) return true;
-      }
-      return usuariosPorReserva.has(c.id);
-    });
+    if (!usuariosPorReserva.size) return all;
+
+    const yaIncluidos = new Set(all.map((c) => c.id));
+    const extras = this.clientes().filter(
+      (c) => usuariosPorReserva.has(c.id) && !yaIncluidos.has(c.id),
+    );
+    return [...all, ...extras];
   });
 
   readonly matchedReserva = computed<Reserva | null>(() => {
@@ -319,26 +337,15 @@ export class RecepcionistaBuscarClienteComponent {
     );
   });
 
-  readonly totalClientes = computed(() => this.clientes().length);
-  readonly activos = computed(
-    () => this.clientes().filter((c) => c.estado === 'activo').length,
-  );
-  readonly bloqueados = computed(
-    () => this.clientes().filter((c) => c.estado === 'bloqueado').length,
-  );
-
   readonly selected = computed(() => {
     const id = this.selectedId();
-    return id ? (this.clientes().find((c) => c.id === id) ?? null) : null;
+    if (!id) return null;
+    return this.clientes().find((c) => c.id === id) ?? this.selectedDetalle();
   });
 
-  readonly selectedReservas = computed(() => {
-    const id = this.selectedId();
-    if (!id) return [];
-    return this.reservas()
-      .filter((r) => r.id_usuario === id)
-      .sort((a, b) => b.created_at.localeCompare(a.created_at));
-  });
+  readonly selectedReservas = computed(
+    () => this.selectedDetalle()?.reservas ?? [],
+  );
 
   readonly pendientes = computed(
     () => this.selectedReservas().filter((r) => r.estado === 'pendiente_pago').length,
@@ -350,26 +357,66 @@ export class RecepcionistaBuscarClienteComponent {
       .reduce((sum, r) => sum + r.monto_total, 0),
   );
 
+  private queryDebounce: ReturnType<typeof setTimeout> | null = null;
+
   constructor() {
-    this.clientesSvc.list().subscribe((page) => this.clientes.set(page.data));
     this.reservasSvc.list().subscribe((data) => this.reservas.set(data));
+    this.reloadStats();
+    effect(() => {
+      const busqueda = this.query().trim();
+      this.clientesSvc
+        .list({
+          page: this.page(),
+          limit: this.pageSize(),
+          busqueda: busqueda || undefined,
+        })
+        .subscribe((res) => {
+          this.clientes.set(res.data);
+          this.total.set(res.total);
+        });
+    });
+    effect(() => {
+      const id = this.selectedId();
+      if (!id) {
+        this.selectedDetalle.set(null);
+        return;
+      }
+      this.clientesSvc
+        .getById(id)
+        .subscribe((d) => this.selectedDetalle.set(d));
+    });
+  }
+
+  private reloadStats(): void {
+    this.clientesSvc.getStats().subscribe((s) => this.stats.set(s));
   }
 
   onQuery(value: string) {
-    this.query.set(value);
-    const matched = this.matchedReserva();
-    if (matched) {
-      this.selectedId.set(matched.id_usuario);
-      return;
-    }
-    const id = this.selectedId();
-    if (id && !this.results().some((c) => c.id === id)) {
-      this.selectedId.set(null);
-    }
+    if (this.queryDebounce) clearTimeout(this.queryDebounce);
+    this.queryDebounce = setTimeout(() => {
+      this.query.set(value);
+      this.page.set(1);
+      const matched = this.matchedReserva();
+      if (matched) {
+        this.selectedId.set(matched.id_usuario);
+        return;
+      }
+      const id = this.selectedId();
+      if (id && !this.results().some((c) => c.id === id)) {
+        this.selectedId.set(null);
+      }
+    }, 250);
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize.set(size);
+    this.page.set(1);
   }
 
   clear() {
+    if (this.queryDebounce) clearTimeout(this.queryDebounce);
     this.query.set('');
+    this.page.set(1);
   }
 
   select(id: string) {

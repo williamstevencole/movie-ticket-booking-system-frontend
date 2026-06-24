@@ -287,6 +287,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/recepcionista/pago-efectivo/:numero',
+    canActivate: [authGuard, roleGuard(['admin'])],
+    loadComponent: () =>
+      import('./features/admin/recepcionista/pago-efectivo/pago-efectivo.component').then(
+        (m) => m.RecepcionistaPagoEfectivoComponent,
+      ),
+  },
+  {
     path: 'admin/cupones',
     pathMatch: 'full',
     canActivate: [authGuard, roleGuard(['admin'])],

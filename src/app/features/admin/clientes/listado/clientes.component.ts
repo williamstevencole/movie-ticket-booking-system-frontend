@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import {
@@ -8,13 +8,20 @@ import {
   LucideUserRound,
   LucideMail,
   LucidePhone,
+  LucideRefreshCw,
 } from '@lucide/angular';
 
-import { Cliente, ClientesService } from '../../../../shared/services/clientes.service';
+import {
+  Cliente,
+  ClientesService,
+  EstadoCliente,
+  ListClientesQuery,
+} from '../../../../shared/services/clientes.service';
+import { ToastService } from '../../../../shared/services/toast.service';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 import { PagerComponent } from '../../../../shared/components/pager.component';
 
-type Toast = { kind: 'ok' | 'err'; text: string } | null;
 type EstadoFiltro = 'todos' | 'activos' | 'bloqueados';
 
 @Component({
@@ -31,6 +38,7 @@ type EstadoFiltro = 'todos' | 'activos' | 'bloqueados';
     LucideUserRound,
     LucideMail,
     LucidePhone,
+    LucideRefreshCw,
   ],
   template: `
     <div class="admin-body">
@@ -47,7 +55,11 @@ type EstadoFiltro = 'todos' | 'activos' | 'bloqueados';
             <div>
               <h1>Clientes</h1>
               <p class="lead">
-                {{ totalActivos() }} activos · {{ clientes().length }} en total
+                @if (loading() && total() === 0) {
+                  Cargando…
+                } @else {
+                  {{ total() }} en total
+                }
               </p>
             </div>
           </div>
@@ -80,14 +92,42 @@ type EstadoFiltro = 'todos' | 'activos' | 'bloqueados';
                 (click)="setEstadoFiltro('bloqueados')"
               >Bloqueados</button>
             </div>
-
-            <span class="result-count tnum">
-              {{ filtered().length }} de {{ clientes().length }}
-            </span>
           </section>
 
+          @if (error(); as msg) {
+            <section class="error-banner" role="alert">
+              <span>{{ msg }}</span>
+              <button class="btn btn-ghost" (click)="reload()">
+                <svg lucideRefreshCw [size]="14"></svg>
+                Reintentar
+              </button>
+            </section>
+          }
+
           <section class="card">
-            @if (paged().length === 0) {
+            @if (loading() && clientes().length === 0) {
+              <div class="table-scroll">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Cliente</th>
+                      <th class="col-tel">Teléfono</th>
+                      <th class="col-num">Reservas</th>
+                      <th class="col-fecha">Registro</th>
+                      <th>Estado</th>
+                      <th class="col-acc" aria-label="Acciones"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (_ of skeletonRows; track $index) {
+                      <tr class="row-skeleton">
+                        <td colspan="6"><span class="skeleton-bar"></span></td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else if (clientes().length === 0) {
               <div class="empty">
                 <span class="empty-mark">
                   <svg lucideUserRound [size]="22"></svg>
@@ -113,7 +153,7 @@ type EstadoFiltro = 'todos' | 'activos' | 'bloqueados';
                     </tr>
                   </thead>
                   <tbody>
-                    @for (c of paged(); track c.id) {
+                    @for (c of clientes(); track c.id) {
                       <tr [class.is-inactive]="c.estado === 'bloqueado'">
                         <td>
                           <div class="cliente-cell">
@@ -178,7 +218,7 @@ type EstadoFiltro = 'todos' | 'activos' | 'bloqueados';
               </div>
 
               <app-pager
-                [value]="{ page: page(), pageSize: pageSize(), total: filtered().length }"
+                [value]="{ page: page(), pageSize: pageSize(), total: total() }"
                 (pageChange)="page.set($event)"
                 (pageSizeChange)="onPageSizeChange($event)"
               />
@@ -187,73 +227,90 @@ type EstadoFiltro = 'todos' | 'activos' | 'bloqueados';
         </div>
       </main>
     </div>
-
-    @if (toast(); as t) {
-      <div class="toast" [class.ok]="t.kind === 'ok'" [class.err]="t.kind === 'err'">
-        {{ t.text }}
-      </div>
-    }
   `,
   styleUrl: './clientes.component.scss',
 })
 export class AdminClientesComponent {
   private clientesSvc = inject(ClientesService);
+  private toast = inject(ToastService);
 
   readonly clientes = signal<Cliente[]>([]);
+  readonly total = signal<number>(0);
+  readonly loading = signal<boolean>(true);
+  readonly error = signal<string | null>(null);
 
   readonly busqueda = signal<string>('');
   readonly estadoFiltro = signal<EstadoFiltro>('todos');
 
   readonly page = signal(1);
   readonly pageSize = signal(10);
-  readonly toast = signal<Toast>(null);
   readonly bloqueando = signal<string | null>(null);
 
-  readonly totalActivos = computed(
-    () => this.clientes().filter((c) => c.estado === 'activo').length,
-  );
+  readonly skeletonRows = Array.from({ length: 6 });
 
-  readonly filtered = computed(() => {
-    const needle = this.busqueda().trim().toLowerCase();
-    const estado = this.estadoFiltro();
-    return this.clientes().filter((c) => {
-      if (estado === 'activos' && c.estado !== 'activo') return false;
-      if (estado === 'bloqueados' && c.estado !== 'bloqueado') return false;
-      if (needle) {
-        const haystack = `${c.nombre} ${c.email} ${c.telefono ?? ''}`.toLowerCase();
-        if (!haystack.includes(needle)) return false;
-      }
-      return true;
-    });
-  });
-
-  readonly paged = computed(() => {
-    const all = this.filtered();
-    const start = (this.page() - 1) * this.pageSize();
-    return all.slice(start, start + this.pageSize());
-  });
+  private busquedaDebounce: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
-    this.clientesSvc.list().subscribe((page) => this.clientes.set(page.data));
-
+    // dispara una carga cada vez que cambia un parámetro de búsqueda o paginación
     effect(() => {
-      const total = this.filtered().length;
-      const maxPage = Math.max(1, Math.ceil(total / this.pageSize()));
-      if (this.page() > maxPage) this.page.set(maxPage);
+      const query: ListClientesQuery = {
+        page: this.page(),
+        limit: this.pageSize(),
+        busqueda: this.busqueda(),
+        estado: this.estadoFiltroToEstado(this.estadoFiltro()),
+      };
+      this.fetch(query);
     });
   }
 
-  onBusqueda(e: Event) {
-    this.busqueda.set((e.target as HTMLInputElement).value);
-    this.page.set(1);
+  private estadoFiltroToEstado(f: EstadoFiltro): EstadoCliente | undefined {
+    if (f === 'activos') return 'activo';
+    if (f === 'bloqueados') return 'bloqueado';
+    return undefined;
   }
 
-  setEstadoFiltro(f: EstadoFiltro) {
+  private fetch(query: ListClientesQuery): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.clientesSvc.list(query).subscribe({
+      next: (res) => {
+        this.clientes.set(res.data);
+        this.total.set(res.total);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.clientes.set([]);
+        this.total.set(0);
+        this.error.set(extractMessage(err));
+        this.loading.set(false);
+      },
+    });
+  }
+
+  reload(): void {
+    this.fetch({
+      page: this.page(),
+      limit: this.pageSize(),
+      busqueda: this.busqueda(),
+      estado: this.estadoFiltroToEstado(this.estadoFiltro()),
+    });
+  }
+
+  onBusqueda(e: Event): void {
+    const value = (e.target as HTMLInputElement).value;
+    if (this.busquedaDebounce) clearTimeout(this.busquedaDebounce);
+    this.busquedaDebounce = setTimeout(() => {
+      this.busqueda.set(value);
+      this.page.set(1);
+    }, 250);
+  }
+
+  setEstadoFiltro(f: EstadoFiltro): void {
     this.estadoFiltro.set(f);
     this.page.set(1);
   }
 
-  onPageSizeChange(size: number) {
+  onPageSizeChange(size: number): void {
     this.pageSize.set(size);
     this.page.set(1);
   }
@@ -266,7 +323,7 @@ export class AdminClientesComponent {
       .join('');
   }
 
-  toggleEstado(c: Cliente) {
+  toggleEstado(c: Cliente): void {
     if (c.estado === 'activo' && c.num_reservas > 0) {
       const ok = confirm(
         `¿Bloquear a ${c.nombre}? Tiene ${c.num_reservas} reservas activas.`,
@@ -281,18 +338,13 @@ export class AdminClientesComponent {
           list.map((item) => (item.id === updated.id ? updated : item)),
         );
         const accion = updated.estado === 'activo' ? 'activado' : 'bloqueado';
-        this.showToast('ok', `${updated.nombre} ${accion}`);
+        this.toast.show(`${updated.nombre} ${accion}`);
         this.bloqueando.set(null);
       },
-      error: () => {
-        this.showToast('err', 'No se pudo cambiar el estado. Inténtalo de nuevo.');
+      error: (err) => {
+        this.toast.show(`No se pudo cambiar el estado: ${extractMessage(err)}`);
         this.bloqueando.set(null);
       },
     });
-  }
-
-  private showToast(kind: 'ok' | 'err', text: string) {
-    this.toast.set({ kind, text });
-    setTimeout(() => this.toast.set(null), 3200);
   }
 }
