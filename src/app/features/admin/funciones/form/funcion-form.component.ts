@@ -276,7 +276,7 @@ export class AdminFuncionFormComponent {
   private conflictTimer: number | undefined;
 
   constructor() {
-    this.peliculasSvc.list().subscribe((d) => this.peliculas.set(d));
+    this.peliculasSvc.list().subscribe((d) => this.peliculas.set(d.data));
     this.cinesSvc.list().subscribe((p) => this.cines.set(p.data));
 
     const id = this.route.snapshot.paramMap.get('id');

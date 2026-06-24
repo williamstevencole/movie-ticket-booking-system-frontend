@@ -4,16 +4,14 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
-  AbstractControl,
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
-  ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   LucideTriangleAlert,
@@ -23,6 +21,7 @@ import {
 import {
   Pelicula,
   PeliculasService,
+  CrearPeliculaInput,
 } from '../../../../shared/services/peliculas.service';
 import {
   Genero,
@@ -32,10 +31,10 @@ import {
   Idioma,
   IdiomasService,
 } from '../../../../shared/services/idiomas.service';
+import { ToastService } from '../../../../shared/services/toast.service';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 import { PosterUploadComponent } from '../../../../shared/components/poster-upload.component';
-
-type Toast = { kind: 'ok' | 'err'; text: string } | null;
 
 @Component({
   selector: 'app-admin-pelicula-form',
@@ -175,25 +174,19 @@ type Toast = { kind: 'ok' | 'err'; text: string } | null;
                   }
                 </div>
 
-                <div class="field col-span-2">
-                  <label>Géneros</label>
-                  <div class="chips">
+                <div class="field">
+                  <label for="id_genero">Género</label>
+                  <select
+                    id="id_genero"
+                    class="select"
+                    formControlName="id_genero"
+                    [class.invalid]="invalid('id_genero')"
+                  >
+                    <option [ngValue]="null">— Sin género —</option>
                     @for (g of generos(); track g.id) {
-                      <button
-                        type="button"
-                        class="chip"
-                        [class.on]="hasGenero(g.id)"
-                        (click)="toggleGenero(g.id)"
-                      >
-                        {{ g.nombre }}
-                      </button>
+                      <option [ngValue]="g.id">{{ g.nombre }}</option>
                     }
-                  </div>
-                  @if (invalid('id_generos')) {
-                    <span class="field-err">Selecciona al menos un género.</span>
-                  } @else {
-                    <span class="help">Toca para añadir o quitar. Mín. 1, máx. 5.</span>
-                  }
+                  </select>
                 </div>
 
                 <div class="field col-span-2">
@@ -283,9 +276,9 @@ type Toast = { kind: 'ok' | 'err'; text: string } | null;
                 <button
                   type="submit"
                   class="btn btn-primary"
-                  [disabled]="saving() || form.invalid || !isDirtyLike()"
+                  [disabled]="submitting() || form.invalid || !isDirtyLike()"
                 >
-                  {{ saving()
+                  {{ submitting()
                     ? 'Guardando…'
                     : (isEdit() ? 'Guardar cambios' : 'Crear película')
                   }}
@@ -296,12 +289,6 @@ type Toast = { kind: 'ok' | 'err'; text: string } | null;
         </div>
       </main>
     </div>
-
-    @if (toast(); as t) {
-      <div class="toast" [class.ok]="t.kind === 'ok'" [class.err]="t.kind === 'err'">
-        {{ t.text }}
-      </div>
-    }
   `,
   styleUrl: './pelicula-form.component.scss',
 })
@@ -312,35 +299,29 @@ export class AdminPeliculaFormComponent {
   private peliculasSvc = inject(PeliculasService);
   private generosSvc = inject(GenerosService);
   private idiomasSvc = inject(IdiomasService);
-  private http = inject(HttpClient);
+  private toast = inject(ToastService);
 
   readonly generos = signal<Genero[]>([]);
   readonly idiomas = signal<Idioma[]>([]);
   readonly posterUrl = signal<string | null>(null);
   /** Raw File selected by the user; null if no new file chosen or poster removed */
   readonly posterFile = signal<File | null>(null);
-  readonly saving = signal(false);
+  readonly submitting = signal(false);
   readonly formError = signal<string | null>(null);
-  readonly toast = signal<Toast>(null);
   readonly originalSnapshot = signal<string>('');
 
   readonly editId = signal<string | null>(null);
   readonly isEdit = computed(() => this.editId() !== null);
 
   readonly form: FormGroup = this.fb.group({
-    titulo: ['', [Validators.required, Validators.minLength(2)]],
+    titulo: ['', [Validators.required, Validators.maxLength(200)]],
     tagline: ['', Validators.maxLength(200)],
-    sinopsis: ['', [Validators.required, Validators.minLength(10)]],
+    sinopsis: ['', Validators.maxLength(2000)],
     duracion_min: [120, [Validators.required, Validators.min(1), Validators.max(500)]],
     fecha_estreno: ['', Validators.required],
     id_idioma: ['', Validators.required],
-    id_generos: [
-      [] as string[],
-      (ctrl: AbstractControl): ValidationErrors | null =>
-        Array.isArray(ctrl.value) && ctrl.value.length > 0
-          ? null
-          : { required: true },
-    ],
+    id_genero: [null as string | null],
+    poster_url: [null as string | null],
     activo: [true],
     ficha_tecnica: this.fb.group({
       direccion: [''],
@@ -354,9 +335,15 @@ export class AdminPeliculaFormComponent {
     }),
   });
 
+  private readonly formValue = toSignal(this.form.valueChanges, {
+    initialValue: this.form.value,
+  });
+
   readonly isDirtyLike = computed(() => {
     if (!this.isEdit()) return true;
-    const snapshot = this.serializeForCompare();
+    const v = this.formValue();
+    const poster = this.posterUrl();
+    const snapshot = JSON.stringify({ ...v, poster_url: poster });
     return snapshot !== this.originalSnapshot();
   });
 
@@ -376,21 +363,6 @@ export class AdminPeliculaFormComponent {
     return !!ctrl && ctrl.invalid && (ctrl.touched || ctrl.dirty);
   }
 
-  hasGenero(id: string): boolean {
-    return (this.form.value.id_generos as string[]).includes(id);
-  }
-
-  toggleGenero(id: string) {
-    const current = (this.form.value.id_generos as string[]) ?? [];
-    const next = current.includes(id)
-      ? current.filter((x) => x !== id)
-      : current.length >= 5
-        ? current
-        : [...current, id];
-    this.form.patchValue({ id_generos: next });
-    this.form.get('id_generos')?.markAsDirty();
-  }
-
   onPosterChange(url: string | null) {
     this.posterUrl.set(url);
   }
@@ -399,88 +371,60 @@ export class AdminPeliculaFormComponent {
     this.posterFile.set(file);
   }
 
-  submit() {
-    this.formError.set(null);
-    this.form.markAllAsTouched();
-    if (this.form.invalid) return;
-
-    this.saving.set(true);
+  submit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.submitting.set(true);
     const raw = this.form.getRawValue();
+
     const repartoRaw: string = raw.ficha_tecnica?.reparto ?? '';
     const reparto = repartoRaw
       ? repartoRaw.split(',').map((s: string) => s.trim()).filter(Boolean)
       : undefined;
 
-    const fichaTecnica = {
+    const fichaTecnicaRaw = {
       ...raw.ficha_tecnica,
       reparto,
     };
+    const hasFicha = Object.values(fichaTecnicaRaw).some(
+      (v) => v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0),
+    );
 
-    const payload = {
-      titulo: raw.titulo!,
-      sinopsis: raw.sinopsis!,
-      duracion_min: Number(raw.duracion_min),
-      fecha_estreno: new Date(raw.fecha_estreno!).toISOString(),
-      id_generos: raw.id_generos!,
-      id_idioma: raw.id_idioma!,
-      poster_url: this.posterUrl(),
-      activo: raw.activo ?? true,
+    const file = this.posterFile();
+    const currentPosterUrl = this.posterUrl();
+    const isHttpUrl =
+      typeof currentPosterUrl === 'string' &&
+      /^https?:\/\//i.test(currentPosterUrl);
+
+    const input: CrearPeliculaInput = {
+      titulo: raw.titulo,
+      sinopsis: raw.sinopsis ?? '',
       tagline: raw.tagline || undefined,
-      ficha_tecnica: Object.values(fichaTecnica).some(
-        (v) => v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0),
-      )
-        ? fichaTecnica
-        : undefined,
+      duracion_min: Number(raw.duracion_min),
+      fecha_estreno: new Date(raw.fecha_estreno).toISOString(),
+      id_idioma: raw.id_idioma,
+      id_genero: raw.id_genero,
+      poster_url: file ? undefined : isHttpUrl ? currentPosterUrl : null,
+      activo: raw.activo ?? true,
+      ficha_tecnica: hasFicha ? fichaTecnicaRaw : undefined,
     };
 
     const editId = this.editId();
-    const obs = editId
-      ? this.peliculasSvc.update(editId, payload)
-      : this.peliculasSvc.create(payload);
+    const op$ = editId
+      ? this.peliculasSvc.updateWithPoster(editId, input, file)
+      : this.peliculasSvc.createWithPoster(input, file);
 
-    obs.subscribe({
-      next: (p) => {
-        const posterFile = this.posterFile();
-        if (posterFile) {
-          this.uploadPoster(p.id, posterFile, editId);
-        } else {
-          this.saving.set(false);
-          this.router.navigate(['/admin/peliculas'], {
-            state: { toast: editId ? `"${p.titulo}" actualizada` : `"${p.titulo}" creada` },
-          });
-        }
+    op$.subscribe({
+      next: () => {
+        this.toast.show(editId ? 'Película actualizada' : 'Película creada');
+        this.submitting.set(false);
+        this.router.navigate(['/admin/peliculas']);
       },
-      error: (e) => {
-        this.saving.set(false);
-        this.formError.set(e?.message ?? 'No se pudo guardar la película');
-      },
-    });
-  }
-
-  private uploadPoster(peliculaId: string, file: File, editId: string | null) {
-    const fd = new FormData();
-    fd.append('file', file);
-    this.http.post<{ poster_url: string }>(`/api/peliculas/${peliculaId}/poster`, fd).subscribe({
-      next: (res) => {
-        this.posterUrl.set(res.poster_url);
-        this.posterFile.set(null);
-        this.saving.set(false);
-        const titulo = this.form.get('titulo')?.value ?? '';
-        this.router.navigate(['/admin/peliculas'], {
-          state: { toast: editId ? `"${titulo}" actualizada` : `"${titulo}" creada` },
-        });
-      },
-      error: () => {
-        // Poster upload failed but película was saved — navigate with warning
-        this.saving.set(false);
-        const titulo = this.form.get('titulo')?.value ?? '';
-        this.router.navigate(['/admin/peliculas'], {
-          state: {
-            toast: editId
-              ? `"${titulo}" actualizada (poster no se pudo subir)`
-              : `"${titulo}" creada (poster no se pudo subir)`,
-          },
-        });
+      error: (err) => {
+        this.toast.show(`No se pudo guardar: ${extractMessage(err)}`);
+        this.submitting.set(false);
       },
     });
   }
@@ -505,7 +449,8 @@ export class AdminPeliculaFormComponent {
       duracion_min: p.duracion_min,
       fecha_estreno: fecha,
       id_idioma: p.id_idioma,
-      id_generos: [...p.id_generos],
+      id_genero: p.id_genero ?? null,
+      poster_url: p.poster_url ?? null,
       activo: p.activo,
       ficha_tecnica: {
         direccion: ft?.direccion ?? '',
@@ -523,10 +468,8 @@ export class AdminPeliculaFormComponent {
   }
 
   private serializeForCompare(): string {
-    const v = this.form.value;
     return JSON.stringify({
-      ...v,
-      id_generos: [...(v.id_generos ?? [])].sort(),
+      ...this.form.value,
       poster_url: this.posterUrl(),
     });
   }

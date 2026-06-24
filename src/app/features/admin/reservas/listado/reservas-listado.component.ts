@@ -338,7 +338,7 @@ export class AdminReservasListadoComponent {
     });
     this.reservasSvc.listUsuarios().subscribe((d) => this.usuarios.set(d));
     this.funcionesSvc.list().subscribe((d) => this.funciones.set(d));
-    this.peliculasSvc.list().subscribe((d) => this.peliculas.set(d));
+    this.peliculasSvc.list().subscribe((d) => this.peliculas.set(d.data));
     this.cinesSvc.list().subscribe((d) => this.cines.set(d.data));
 
     effect(() => {
