@@ -3,37 +3,14 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 import {
-  Reembolso,
-  ReembolsosService,
-} from '../../../../shared/services/reembolsos.service';
-import {
-  PoliticaCancelacion,
-  PoliticasCancelacionService,
-} from '../../../../shared/services/politicas-cancelacion.service';
-import {
-  Reserva,
-  ReservasService,
-} from '../../../../shared/services/reservas.service';
-import { Cine, CinesService } from '../../../../shared/services/cines.service';
+  ReportesService,
+  CancelacionesReporte,
+} from '../../../../shared/services/reportes.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
-import {
-  ExportButtonComponent,
-  ExportColumn,
-} from '../../../../shared/components/export-button.component';
 import {
   ReportFiltrosComponent,
   ReportFiltrosValue,
 } from '../../../../shared/components/report-filtros.component';
-
-type DistribucionRow = {
-  id_politica: string | null;
-  politicaNombre: string;
-  cineNombre: string;
-  count: number;
-  pctPromedio: number;
-  reembolsado: number;
-  retenido: number;
-};
 
 @Component({
   selector: 'app-admin-reporte-estadisticas-cancelacion',
@@ -43,7 +20,6 @@ type DistribucionRow = {
     RouterLink,
     DecimalPipe,
     AdminSidebarComponent,
-    ExportButtonComponent,
     ReportFiltrosComponent,
   ],
   template: `
@@ -66,11 +42,6 @@ type DistribucionRow = {
                 Comportamiento de cancelaciones por política y tendencia reciente.
               </p>
             </div>
-            <app-export-button
-              filename="estadisticas-cancelacion"
-              [columns]="exportColumns"
-              [rows]="reembolsosFiltrados()"
-            />
           </div>
 
           <app-report-filtros
@@ -79,7 +50,13 @@ type DistribucionRow = {
             (valueChange)="onFiltrosChange($event)"
           />
 
-          @if (kpis().cancelaciones === 0) {
+          @if (loading()) {
+            <div class="empty-state"><p>Cargando…</p></div>
+          } @else if (!reporte()) {
+            <div class="empty-state">
+              <p>Sin datos de cancelaciones.</p>
+            </div>
+          } @else if (reporte()!.total_canceladas === 0) {
             <div class="empty-state">
               <p>Sin cancelaciones en este período.</p>
               <p class="muted">Ajustá los filtros para ver datos.</p>
@@ -88,33 +65,21 @@ type DistribucionRow = {
             <section class="kpi-grid">
               <div class="kpi">
                 <span class="kpi-label">Cancelaciones</span>
-                <span class="kpi-value tnum">{{ kpis().cancelaciones | number }}</span>
+                <span class="kpi-value tnum">{{ reporte()!.total_canceladas | number }}</span>
                 <span class="kpi-sub">reservas afectadas</span>
               </div>
               <div class="kpi">
-                <span class="kpi-label">% del total</span>
-                <span class="kpi-value tnum">{{ kpis().pctDelTotal | number: '1.1-1' }}%</span>
+                <span class="kpi-label">Tasa</span>
+                <span class="kpi-value tnum">{{ reporte()!.tasa | number: '1.1-1' }}%</span>
                 <span class="kpi-sub">vs reservas creadas</span>
-              </div>
-              <div class="kpi refund">
-                <span class="kpi-label">Reembolsado</span>
-                <span class="kpi-value tnum">L {{ kpis().reembolsado | number }}</span>
-                <span class="kpi-sub">total devuelto a clientes</span>
-              </div>
-              <div class="kpi neto">
-                <span class="kpi-label">Retenido</span>
-                <span class="kpi-value tnum">L {{ kpis().retenido | number }}</span>
-                <span class="kpi-sub">lo que se queda el cine</span>
               </div>
             </section>
 
             <section class="panel">
               <div class="panel-head">
-                <span class="panel-title">Distribución por política</span>
-                <span class="panel-sub muted">Agrupado por política aplicada al reembolso</span>
+                <span class="panel-title">Por política</span>
               </div>
-
-              @if (distribucion().length === 0) {
+              @if (reporte()!.por_politica.length === 0) {
                 <div class="empty">Sin datos en este período.</div>
               } @else {
                 <div class="table-scroll">
@@ -122,35 +87,17 @@ type DistribucionRow = {
                     <thead>
                       <tr>
                         <th>Política</th>
-                        <th>Cine</th>
                         <th class="right"># cancelaciones</th>
-                        <th class="right">% aplicado promedio</th>
-                        <th class="right">Reembolsado</th>
-                        <th class="right">Retenido</th>
                       </tr>
                     </thead>
                     <tbody>
-                      @for (row of distribucion(); track row.id_politica) {
+                      @for (row of reporte()!.por_politica; track row.nombre) {
                         <tr>
-                          <td><span class="cell-strong">{{ row.politicaNombre }}</span></td>
-                          <td>{{ row.cineNombre }}</td>
+                          <td><span class="cell-strong">{{ row.nombre }}</span></td>
                           <td class="right tnum">{{ row.count | number }}</td>
-                          <td class="right tnum">{{ row.pctPromedio | number: '1.1-1' }}%</td>
-                          <td class="right tnum">L {{ row.reembolsado | number }}</td>
-                          <td class="right tnum">L {{ row.retenido | number }}</td>
                         </tr>
                       }
                     </tbody>
-                    <tfoot>
-                      <tr>
-                        <td></td>
-                        <td class="label">Total</td>
-                        <td class="right tnum">{{ totalesDistribucion().count | number }}</td>
-                        <td class="right">—</td>
-                        <td class="right tnum">L {{ totalesDistribucion().reembolsado | number }}</td>
-                        <td class="right tnum">L {{ totalesDistribucion().retenido | number }}</td>
-                      </tr>
-                    </tfoot>
                   </table>
                 </div>
               }
@@ -158,26 +105,53 @@ type DistribucionRow = {
 
             <section class="panel">
               <div class="panel-head">
-                <span class="panel-title">Tendencia últimos 6 meses</span>
-                <span class="panel-sub muted">Independiente del filtro de período</span>
+                <span class="panel-title">Por cine</span>
+              </div>
+              @if (reporte()!.por_cine.length === 0) {
+                <div class="empty">Sin datos en este período.</div>
+              } @else {
+                <div class="table-scroll">
+                  <table class="tbl dense">
+                    <thead>
+                      <tr>
+                        <th>Cine</th>
+                        <th class="right"># cancelaciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of reporte()!.por_cine; track row.nombre) {
+                        <tr>
+                          <td><span class="cell-strong">{{ row.nombre }}</span></td>
+                          <td class="right tnum">{{ row.count | number }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <span class="panel-title">Tendencia últimos 30 días</span>
+                <span class="panel-sub muted">Cancelaciones diarias</span>
               </div>
 
-              <svg class="trend-chart" viewBox="0 0 600 220" role="img" aria-label="Cancelaciones por mes">
-                @for (b of tendencia6Meses(); track b.ym; let i = $index) {
-                  <g [attr.transform]="'translate(' + (i * 90) + ', 0)'">
-                    <rect [attr.x]="10"
-                          [attr.y]="180 - (b.count / maxCount() * 150)"
-                          width="60"
-                          [attr.height]="b.count / maxCount() * 150"
-                          rx="3" class="bar">
-                      <title>{{ b.label }} — {{ b.count }} cancelaciones, L {{ b.monto | number }}</title>
-                    </rect>
-                    <text x="40" y="200" text-anchor="middle" class="bar-label">{{ b.label }}</text>
-                    <text x="40" [attr.y]="170 - (b.count / maxCount() * 150)"
-                          text-anchor="middle" class="bar-count">{{ b.count }}</text>
-                  </g>
-                }
-              </svg>
+              @if (tendencia30d().length > 0) {
+                <svg class="trend-chart" viewBox="0 0 600 220" role="img" aria-label="Cancelaciones por día">
+                  @for (b of tendencia30d(); track b.fecha; let i = $index) {
+                    <g [attr.transform]="'translate(' + (i * (600 / tendencia30d().length)) + ', 0)'">
+                      <rect [attr.x]="2"
+                            [attr.y]="180 - (maxCount() > 0 ? (b.count / maxCount() * 150) : 0)"
+                            [attr.width]="Math.max(2, (600 / tendencia30d().length) - 4)"
+                            [attr.height]="maxCount() > 0 ? (b.count / maxCount() * 150) : 0"
+                            rx="2" class="bar">
+                        <title>{{ b.fecha }} — {{ b.count }} cancelaciones</title>
+                      </rect>
+                    </g>
+                  }
+                </svg>
+              }
             </section>
           }
         </div>
@@ -187,15 +161,10 @@ type DistribucionRow = {
   styleUrls: ['../reportes.shared.scss', './estadisticas-cancelacion.component.scss'],
 })
 export class AdminReporteEstadisticasCancelacionComponent {
-  private reembolsosSvc = inject(ReembolsosService);
-  private politicasSvc = inject(PoliticasCancelacionService);
-  private reservasSvc = inject(ReservasService);
-  private cinesSvc = inject(CinesService);
+  private reportesSvc = inject(ReportesService);
 
-  readonly reembolsos = signal<Reembolso[]>([]);
-  readonly politicas = signal<PoliticaCancelacion[]>([]);
-  readonly reservas = signal<Reserva[]>([]);
-  readonly cines = signal<Cine[]>([]);
+  readonly reporte = signal<CancelacionesReporte | null>(null);
+  readonly loading = signal(false);
 
   readonly filtros = signal<ReportFiltrosValue>({
     periodo: { preset: '30d', from: '', to: '' },
@@ -203,194 +172,67 @@ export class AdminReporteEstadisticasCancelacionComponent {
     selects: {},
   });
 
-  readonly exportColumns: ExportColumn<Reembolso>[] = [
-    { key: 'id', label: 'ID', value: (r) => r.id },
-    { key: 'id_politica', label: 'Política', value: (r) => this.politicaNombre(r.id_politica) },
-    { key: 'porcentaje_aplicado', label: '% aplicado', value: (r) => r.porcentaje_aplicado },
-    { key: 'monto', label: 'Monto', value: (r) => r.monto },
-    { key: 'estado', label: 'Estado', value: (r) => r.estado },
-    { key: 'created_at', label: 'Fecha', value: (r) => r.created_at },
-  ];
+  readonly tendencia30d = computed(() => this.reporte()?.tendencia_30d ?? []);
 
-  readonly politicasById = computed(() => {
-    const map = new Map<string, PoliticaCancelacion>();
-    for (const p of this.politicas()) map.set(p.id, p);
-    return map;
-  });
+  readonly maxCount = computed(() =>
+    Math.max(1, ...this.tendencia30d().map((b) => b.count)),
+  );
 
-  readonly cinesById = computed(() => {
-    const map = new Map<string, Cine>();
-    for (const c of this.cines()) map.set(c.id, c);
-    return map;
-  });
+  // Expose Math to template
+  readonly Math = Math;
 
-  private range = computed(() => {
-    const periodo = this.filtros().periodo;
-    let fromTs = -Infinity;
-    let toTs = Infinity;
+  constructor() {
+    this.cargar();
+  }
+
+  private buildQuery(): Record<string, any> {
+    const f = this.filtros();
+    const q: Record<string, any> = {};
+
+    if (f.selects['cine']) q['id_cine'] = f.selects['cine'];
+    if (f.selects['politica-cancelacion']) q['id_politica'] = f.selects['politica-cancelacion'];
+
+    const periodo = f.periodo;
     if (periodo) {
-      const now = Date.now();
+      const now = new Date();
       switch (periodo.preset) {
         case '7d':
-          fromTs = now - 7 * 86_400_000;
-          toTs = now;
+          q['desde'] = new Date(Date.now() - 7 * 86_400_000).toISOString();
+          q['hasta'] = now.toISOString();
           break;
         case '30d':
-          fromTs = now - 30 * 86_400_000;
-          toTs = now;
+          q['desde'] = new Date(Date.now() - 30 * 86_400_000).toISOString();
+          q['hasta'] = now.toISOString();
           break;
         case 'mes': {
           const d = new Date();
-          fromTs = new Date(d.getFullYear(), d.getMonth(), 1).getTime();
-          toTs = now;
+          q['desde'] = new Date(d.getFullYear(), d.getMonth(), 1).toISOString();
+          q['hasta'] = now.toISOString();
           break;
         }
         case 'custom':
-          fromTs = periodo.from ? new Date(periodo.from).getTime() : -Infinity;
-          toTs = periodo.to ? new Date(periodo.to + 'T23:59:59').getTime() : Infinity;
+          if (periodo.from) q['desde'] = new Date(periodo.from).toISOString();
+          if (periodo.to) q['hasta'] = new Date(periodo.to + 'T23:59:59').toISOString();
           break;
       }
     }
-    return { fromTs, toTs };
-  });
 
-  private inRange(iso: string): boolean {
-    const ts = new Date(iso).getTime();
-    const { fromTs, toTs } = this.range();
-    return ts >= fromTs && ts <= toTs;
+    return q;
   }
 
-  readonly reembolsosFiltrados = computed(() => {
-    const cineSel = this.filtros().selects['cine'] ?? null;
-    const politicaSel = this.filtros().selects['politica-cancelacion'] ?? null;
-    return this.reembolsos().filter((r) => {
-      if (!this.inRange(r.created_at)) return false;
-      if (politicaSel && r.id_politica !== politicaSel) return false;
-      if (cineSel) {
-        if (!r.id_politica) return false;
-        const pol = this.politicasById().get(r.id_politica);
-        if (!pol || pol.id_cine !== cineSel) return false;
-      }
-      return true;
+  private cargar() {
+    this.loading.set(true);
+    this.reportesSvc.cancelaciones(this.buildQuery()).subscribe({
+      next: (data) => {
+        this.reporte.set(data);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
     });
-  });
-
-  readonly kpis = computed(() => {
-    const rows = this.reembolsosFiltrados();
-    let reembolsado = 0;
-    let retenido = 0;
-    for (const r of rows) {
-      reembolsado += Number(r.monto);
-      if (r.porcentaje_aplicado > 0) {
-        const original = r.monto / (r.porcentaje_aplicado / 100);
-        retenido += original - r.monto;
-      }
-    }
-    const cancelaciones = rows.length;
-    const reservasPeriodo = this.reservas().filter((rs) =>
-      this.inRange(rs.created_at),
-    ).length;
-    const pctDelTotal =
-      reservasPeriodo > 0 ? (cancelaciones / reservasPeriodo) * 100 : 0;
-    return { cancelaciones, pctDelTotal, reembolsado, retenido };
-  });
-
-  readonly distribucion = computed<DistribucionRow[]>(() => {
-    const groups = new Map<string, {
-      id_politica: string | null;
-      count: number;
-      pctSum: number;
-      reembolsado: number;
-      retenido: number;
-    }>();
-    for (const r of this.reembolsosFiltrados()) {
-      const key = r.id_politica ?? '__sin__';
-      let g = groups.get(key);
-      if (!g) {
-        g = {
-          id_politica: r.id_politica,
-          count: 0,
-          pctSum: 0,
-          reembolsado: 0,
-          retenido: 0,
-        };
-        groups.set(key, g);
-      }
-      g.count++;
-      g.pctSum += r.porcentaje_aplicado;
-      g.reembolsado += Number(r.monto);
-      if (r.porcentaje_aplicado > 0) {
-        g.retenido += r.monto / (r.porcentaje_aplicado / 100) - r.monto;
-      }
-    }
-
-    const out: DistribucionRow[] = [];
-    for (const g of groups.values()) {
-      const pol = g.id_politica ? this.politicasById().get(g.id_politica) : null;
-      const cine = pol ? this.cinesById().get(pol.id_cine) : null;
-      out.push({
-        id_politica: g.id_politica,
-        politicaNombre: pol?.nombre ?? 'Sin política',
-        cineNombre: cine?.nombre ?? '—',
-        count: g.count,
-        pctPromedio: g.count > 0 ? g.pctSum / g.count : 0,
-        reembolsado: g.reembolsado,
-        retenido: g.retenido,
-      });
-    }
-    out.sort((a, b) => b.count - a.count);
-    return out;
-  });
-
-  readonly totalesDistribucion = computed(() => {
-    let count = 0;
-    let reembolsado = 0;
-    let retenido = 0;
-    for (const row of this.distribucion()) {
-      count += row.count;
-      reembolsado += row.reembolsado;
-      retenido += row.retenido;
-    }
-    return { count, reembolsado, retenido };
-  });
-
-  readonly tendencia6Meses = computed(() => {
-    const hoy = new Date();
-    const buckets: { label: string; ym: string; count: number; monto: number }[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
-      const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const label = d.toLocaleDateString('es-HN', { month: 'short', year: '2-digit' });
-      buckets.push({ label, ym, count: 0, monto: 0 });
-    }
-    for (const r of this.reembolsos()) {
-      const d = new Date(r.created_at);
-      const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const b = buckets.find((x) => x.ym === ym);
-      if (!b) continue;
-      b.count++;
-      b.monto += Number(r.monto);
-    }
-    return buckets;
-  });
-
-  readonly maxCount = computed(() =>
-    Math.max(1, ...this.tendencia6Meses().map((b) => b.count)),
-  );
-
-  constructor() {
-    this.reembolsosSvc.list().subscribe((d) => this.reembolsos.set(d));
-    this.politicasSvc.list().subscribe((d) => this.politicas.set(d));
-    this.reservasSvc.list().subscribe((d) => this.reservas.set(d));
-    this.cinesSvc.list().subscribe((d) => this.cines.set(d.data));
   }
 
   onFiltrosChange(v: ReportFiltrosValue) {
     this.filtros.set(v);
-  }
-
-  politicaNombre(id: string | null): string {
-    if (!id) return 'Sin política';
-    return this.politicasById().get(id)?.nombre ?? id;
+    this.cargar();
   }
 }

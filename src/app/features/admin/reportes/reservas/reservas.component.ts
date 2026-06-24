@@ -4,23 +4,9 @@ import { RouterLink } from '@angular/router';
 import { LucideClipboardList } from '@lucide/angular';
 
 import {
-  Reserva,
-  ReservaUsuario,
-  ReservasService,
-} from '../../../../shared/services/reservas.service';
-import {
-  Funcion,
-  FuncionesService,
-} from '../../../../shared/services/funciones.service';
-import {
-  Pelicula,
-  PeliculasService,
-} from '../../../../shared/services/peliculas.service';
-import { Cine, CinesService } from '../../../../shared/services/cines.service';
-import {
-  Ciudad,
-  CiudadesService,
-} from '../../../../shared/services/ciudades.service';
+  ReportesService,
+  ReporteReservaRow,
+} from '../../../../shared/services/reportes.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 import { PagerComponent } from '../../../../shared/components/pager.component';
 import {
@@ -66,17 +52,13 @@ import {
                 Operación comercial en el período seleccionado. Cobrado, reembolsado y neto al pie.
               </p>
             </div>
-            <app-export-button
-              filename="reservas"
-              [columns]="exportColumns"
-              [rows]="filtered()"
-            />
+            <button class="btn" (click)="exportarCsv()">Exportar CSV</button>
           </div>
 
           <section class="kpi-grid">
             <div class="kpi">
               <span class="kpi-label">Reservas</span>
-              <span class="kpi-value tnum">{{ filtered().length | number }}</span>
+              <span class="kpi-value tnum">{{ total() | number }}</span>
               <span class="kpi-sub">{{ kpis().pagadas }} pagadas</span>
             </div>
             <div class="kpi">
@@ -110,11 +92,13 @@ import {
             <div class="card-head">
               <span class="card-title-h">Detalle</span>
               <span class="card-count tnum">
-                {{ filtered().length }} de {{ reservas().length }} reservas en período
+                {{ total() }} reservas en período
               </span>
             </div>
 
-            @if (paged().length === 0) {
+            @if (loading()) {
+              <div class="empty"><p>Cargando…</p></div>
+            } @else if (reservas().length === 0) {
               <div class="empty">
                 <span class="empty-mark">
                   <svg lucideClipboardList [size]="22"></svg>
@@ -137,20 +121,20 @@ import {
                     </tr>
                   </thead>
                   <tbody>
-                    @for (r of paged(); track r.id) {
+                    @for (r of reservas(); track r.id) {
                       <tr>
                         <td><span class="cell-strong tnum">{{ r.numero_reserva }}</span></td>
                         <td>
-                          <div class="cell-strong">{{ usuarioNombre(r.id_usuario) }}</div>
-                          <div class="cell-sub">{{ usuarioEmail(r.id_usuario) }}</div>
+                          <div class="cell-strong">{{ r.nombre_usuario }}</div>
+                          <div class="cell-sub">{{ r.email_usuario }}</div>
                         </td>
                         <td class="col-hide-sm">
-                          <div class="cell-strong">{{ peliculaTitulo(r.id_funcion) }}</div>
-                          <div class="cell-sub">{{ cineSala(r.id_funcion) }}</div>
+                          <div class="cell-strong">{{ r.titulo_pelicula }}</div>
+                          <div class="cell-sub">{{ r.nombre_cine }} · {{ r.nombre_sala }}</div>
                         </td>
                         <td class="tnum">
-                          <div>{{ fechaFuncion(r.id_funcion) | date: 'd MMM' }}</div>
-                          <div class="cell-sub">{{ fechaFuncion(r.id_funcion) | date: 'HH:mm' }}</div>
+                          <div>{{ r.fecha_hora_funcion | date: 'd MMM' }}</div>
+                          <div class="cell-sub">{{ r.fecha_hora_funcion | date: 'HH:mm' }}</div>
                         </td>
                         <td class="right tnum">{{ r.num_asientos }}</td>
                         <td class="right tnum cell-strong">L {{ r.monto_total | number }}</td>
@@ -173,8 +157,8 @@ import {
               </div>
 
               <app-pager
-                [value]="{ page: page(), pageSize: pageSize(), total: filtered().length }"
-                (pageChange)="page.set($event)"
+                [value]="{ page: page(), pageSize: pageSize(), total: total() }"
+                (pageChange)="onPageChange($event)"
                 (pageSizeChange)="onPageSizeChange($event)"
               />
             }
@@ -186,18 +170,11 @@ import {
   styleUrl: '../reportes.shared.scss',
 })
 export class AdminReporteReservasComponent {
-  private reservasSvc = inject(ReservasService);
-  private funcionesSvc = inject(FuncionesService);
-  private peliculasSvc = inject(PeliculasService);
-  private cinesSvc = inject(CinesService);
-  private ciudadesSvc = inject(CiudadesService);
+  private reportesSvc = inject(ReportesService);
 
-  readonly reservas = signal<Reserva[]>([]);
-  readonly funciones = signal<Funcion[]>([]);
-  readonly peliculas = signal<Pelicula[]>([]);
-  readonly cines = signal<Cine[]>([]);
-  readonly ciudades = signal<Ciudad[]>([]);
-  readonly usuarios = signal<ReservaUsuario[]>([]);
+  readonly reservas = signal<ReporteReservaRow[]>([]);
+  readonly total = signal(0);
+  readonly loading = signal(false);
 
   readonly filtros = signal<ReportFiltrosValue>({
     periodo: { preset: '30d', from: '', to: '' },
@@ -208,109 +185,21 @@ export class AdminReporteReservasComponent {
   readonly page = signal(1);
   readonly pageSize = signal(20);
 
-  readonly exportColumns: ExportColumn<Reserva>[] = [
+  readonly exportColumns: ExportColumn<ReporteReservaRow>[] = [
     { key: 'numero_reserva', label: '# Reserva', value: (r) => r.numero_reserva },
-    { key: 'cliente', label: 'Cliente', value: (r) => this.usuarioNombre(r.id_usuario) },
-    { key: 'email', label: 'Email', value: (r) => this.usuarioEmail(r.id_usuario) },
-    { key: 'pelicula', label: 'Película', value: (r) => this.peliculaTitulo(r.id_funcion) },
-    { key: 'cine', label: 'Cine / sala', value: (r) => this.cineSala(r.id_funcion) },
-    { key: 'fecha_funcion', label: 'Fecha función', value: (r) => this.fechaFuncion(r.id_funcion) },
+    { key: 'cliente', label: 'Cliente', value: (r) => r.nombre_usuario },
+    { key: 'email', label: 'Email', value: (r) => r.email_usuario },
+    { key: 'pelicula', label: 'Película', value: (r) => r.titulo_pelicula },
+    { key: 'cine', label: 'Cine / sala', value: (r) => `${r.nombre_cine} · ${r.nombre_sala}` },
+    { key: 'fecha_funcion', label: 'Fecha función', value: (r) => r.fecha_hora_funcion },
     { key: 'num_asientos', label: 'Asientos', value: (r) => r.num_asientos },
     { key: 'monto_total', label: 'Total', value: (r) => r.monto_total },
     { key: 'estado', label: 'Estado', value: (r) => r.estado },
     { key: 'created_at', label: 'Creada', value: (r) => r.created_at },
   ];
 
-  readonly funcionesById = computed(() => {
-    const map = new Map<string, Funcion>();
-    for (const f of this.funciones()) map.set(f.id, f);
-    return map;
-  });
-  readonly peliculasById = computed(() => {
-    const map = new Map<string, Pelicula>();
-    for (const p of this.peliculas()) map.set(p.id, p);
-    return map;
-  });
-  readonly cinesById = computed(() => {
-    const map = new Map<string, Cine>();
-    for (const c of this.cines()) map.set(c.id, c);
-    return map;
-  });
-  readonly usuariosById = computed(() => {
-    const map = new Map<string, ReservaUsuario>();
-    for (const u of this.usuarios()) map.set(u.id, u);
-    return map;
-  });
-
-  readonly filtered = computed(() => {
-    const f = this.filtros();
-    const periodo = f.periodo;
-    let fromTs = -Infinity;
-    let toTs = Infinity;
-    if (periodo) {
-      const now = Date.now();
-      switch (periodo.preset) {
-        case '7d':
-          fromTs = now - 7 * 86_400_000;
-          toTs = now;
-          break;
-        case '30d':
-          fromTs = now - 30 * 86_400_000;
-          toTs = now;
-          break;
-        case 'mes': {
-          const d = new Date();
-          fromTs = new Date(d.getFullYear(), d.getMonth(), 1).getTime();
-          toTs = now;
-          break;
-        }
-        case 'custom':
-          fromTs = periodo.from ? new Date(periodo.from).getTime() : -Infinity;
-          toTs = periodo.to ? new Date(periodo.to + 'T23:59:59').getTime() : Infinity;
-          break;
-      }
-    }
-
-    const term = (f.search || '').toLowerCase().trim();
-    const cine = f.selects['cine'] ?? null;
-    const ciudad = f.selects['ciudad'] ?? null;
-    const pelicula = f.selects['pelicula'] ?? null;
-    const estado = f.selects['estado-reserva'] ?? null;
-
-    const cinesOfCiudad = ciudad
-      ? new Set(this.cines().filter((c) => c.id_ciudad === ciudad).map((c) => c.id))
-      : null;
-
-    return this.reservas().filter((r) => {
-      const ts = new Date(r.created_at).getTime();
-      if (ts < fromTs || ts > toTs) return false;
-      if (estado && r.estado !== estado) return false;
-      if (term) {
-        const u = this.usuariosById().get(r.id_usuario);
-        const hit =
-          r.numero_reserva.toLowerCase().includes(term) ||
-          (u && u.nombre.toLowerCase().includes(term));
-        if (!hit) return false;
-      }
-      if (cinesOfCiudad || cine || pelicula) {
-        const fun = this.funcionesById().get(r.id_funcion);
-        if (!fun) return false;
-        if (cinesOfCiudad && !cinesOfCiudad.has(fun.id_cine)) return false;
-        if (cine && fun.id_cine !== cine) return false;
-        if (pelicula && fun.id_pelicula !== pelicula) return false;
-      }
-      return true;
-    });
-  });
-
-  readonly paged = computed(() => {
-    const all = this.filtered();
-    const start = (this.page() - 1) * this.pageSize();
-    return all.slice(start, start + this.pageSize());
-  });
-
   readonly kpis = computed(() => {
-    const rows = this.filtered();
+    const rows = this.reservas();
     let cobrado = 0;
     let reembolsado = 0;
     let pagadas = 0;
@@ -325,63 +214,103 @@ export class AdminReporteReservasComponent {
         reembolsadas++;
       }
     }
-    return {
-      cobrado,
-      reembolsado,
-      neto: cobrado - reembolsado,
-      pagadas,
-      reembolsadas,
-    };
+    return { cobrado, reembolsado, neto: cobrado - reembolsado, pagadas, reembolsadas };
   });
 
   readonly totalsRow = computed(() =>
-    this.filtered().reduce((sum, r) => sum + r.monto_total, 0),
+    this.reservas().reduce((sum, r) => sum + r.monto_total, 0),
   );
 
   constructor() {
-    this.reservasSvc.list().subscribe((d) => this.reservas.set(d));
-    this.reservasSvc.listUsuarios().subscribe((d) => this.usuarios.set(d));
-    this.funcionesSvc.list().subscribe((d) => this.funciones.set(d));
-    this.peliculasSvc.list().subscribe((d) => this.peliculas.set(d));
-    this.cinesSvc.list().subscribe((d) => this.cines.set(d.data));
-    this.ciudadesSvc.list().subscribe((d) => this.ciudades.set(d));
+    this.cargar();
+  }
 
-    effect(() => {
-      const total = this.filtered().length;
-      const maxPage = Math.max(1, Math.ceil(total / this.pageSize()));
-      if (this.page() > maxPage) this.page.set(maxPage);
+  private buildQuery(): Record<string, any> {
+    const f = this.filtros();
+    const q: Record<string, any> = {
+      page: this.page(),
+      limit: this.pageSize(),
+    };
+
+    if (f.search) q['search'] = f.search;
+    if (f.selects['cine']) q['id_cine'] = f.selects['cine'];
+    if (f.selects['ciudad']) q['id_ciudad'] = f.selects['ciudad'];
+    if (f.selects['pelicula']) q['id_pelicula'] = f.selects['pelicula'];
+    if (f.selects['estado-reserva']) q['estado'] = f.selects['estado-reserva'];
+
+    const periodo = f.periodo;
+    if (periodo) {
+      const now = new Date();
+      switch (periodo.preset) {
+        case '7d':
+          q['desde'] = new Date(Date.now() - 7 * 86_400_000).toISOString();
+          q['hasta'] = now.toISOString();
+          break;
+        case '30d':
+          q['desde'] = new Date(Date.now() - 30 * 86_400_000).toISOString();
+          q['hasta'] = now.toISOString();
+          break;
+        case 'mes': {
+          const d = new Date();
+          q['desde'] = new Date(d.getFullYear(), d.getMonth(), 1).toISOString();
+          q['hasta'] = now.toISOString();
+          break;
+        }
+        case 'custom':
+          if (periodo.from) q['desde'] = new Date(periodo.from).toISOString();
+          if (periodo.to) q['hasta'] = new Date(periodo.to + 'T23:59:59').toISOString();
+          break;
+      }
+    }
+
+    return q;
+  }
+
+  private cargar() {
+    this.loading.set(true);
+    this.reportesSvc.reservas(this.buildQuery()).subscribe({
+      next: (res) => {
+        this.reservas.set(res.data);
+        this.total.set(res.total);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
+    });
+  }
+
+  exportarCsv() {
+    const q = this.buildQuery();
+    // Remove pagination params for full export
+    delete q['page'];
+    delete q['limit'];
+    this.reportesSvc.reservasCsv(q).subscribe((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'reservas.csv';
+      a.click();
+      URL.revokeObjectURL(url);
     });
   }
 
   onFiltrosChange(v: ReportFiltrosValue) {
     this.filtros.set(v);
     this.page.set(1);
+    this.cargar();
   }
 
-  onPageSizeChange(s: number) { this.pageSize.set(s); this.page.set(1); }
+  onPageChange(p: number) {
+    this.page.set(p);
+    this.cargar();
+  }
 
-  usuarioNombre(id: string): string {
-    return this.usuariosById().get(id)?.nombre ?? '—';
+  onPageSizeChange(s: number) {
+    this.pageSize.set(s);
+    this.page.set(1);
+    this.cargar();
   }
-  usuarioEmail(id: string): string {
-    return this.usuariosById().get(id)?.email ?? '';
-  }
-  peliculaTitulo(idFuncion: string): string {
-    const f = this.funcionesById().get(idFuncion);
-    return f ? this.peliculasById().get(f.id_pelicula)?.titulo ?? '—' : '—';
-  }
-  cineSala(idFuncion: string): string {
-    const f = this.funcionesById().get(idFuncion);
-    if (!f) return '—';
-    const cine = this.cinesById().get(f.id_cine);
-    if (!cine) return '—';
-    const sala = cine.salas.find((s) => s.id === f.id_sala);
-    return sala ? `${cine.nombre} · Sala ${sala.nombre}` : cine.nombre;
-  }
-  fechaFuncion(idFuncion: string): string {
-    return this.funcionesById().get(idFuncion)?.fecha_hora ?? '';
-  }
-  estadoLabel(e: Reserva['estado']): string {
+
+  estadoLabel(e: ReporteReservaRow['estado']): string {
     switch (e) {
       case 'pagada': return 'Pagada';
       case 'pendiente_pago': return 'Pendiente';

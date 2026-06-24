@@ -234,7 +234,7 @@ export class AdminClientesComponent {
   });
 
   constructor() {
-    this.clientesSvc.list().subscribe((lista) => this.clientes.set(lista));
+    this.clientesSvc.list().subscribe((page) => this.clientes.set(page.data));
 
     effect(() => {
       const total = this.filtered().length;
@@ -275,7 +275,7 @@ export class AdminClientesComponent {
     }
 
     this.bloqueando.set(c.id);
-    this.clientesSvc.toggleEstado(c.id).subscribe({
+    this.clientesSvc.toggleEstado(c.id, c.estado).subscribe({
       next: (updated) => {
         this.clientes.update((list) =>
           list.map((item) => (item.id === updated.id ? updated : item)),

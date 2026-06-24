@@ -24,9 +24,9 @@ import {
   ReservasService,
 } from '../../../shared/services/reservas.service';
 import {
-  Reembolso,
-  ReembolsosService,
-} from '../../../shared/services/reembolsos.service';
+  AdminReembolsosService,
+  AdminReembolsoRow as Reembolso,
+} from '../../../shared/services/admin-reembolsos.service';
 import {
   Funcion,
   FuncionesService,
@@ -68,7 +68,7 @@ import {
 export class AdminPagosListadoComponent {
   private pagosSvc = inject(PagosService);
   private reservasSvc = inject(ReservasService);
-  private reembolsosSvc = inject(ReembolsosService);
+  private reembolsosSvc = inject(AdminReembolsosService);
   private funcionesSvc = inject(FuncionesService);
   private cinesSvc = inject(CinesService);
   private router = inject(Router);
@@ -209,7 +209,7 @@ export class AdminPagosListadoComponent {
 
   readonly filteredReembolsos = computed(() => {
     const pagoIds = new Set(this.filtered().map((p) => p.id));
-    return this.reembolsos().filter((r) => pagoIds.has(r.id_pago));
+    return this.reembolsos().filter((r) => r.id_pago != null && pagoIds.has(r.id_pago));
   });
 
   readonly kpis = computed(() => {
@@ -232,10 +232,10 @@ export class AdminPagosListadoComponent {
   readonly totals = this.kpis;
 
   constructor() {
-    this.pagosSvc.list().subscribe((d) => this.pagos.set(d));
+    this.pagosSvc.list().subscribe((d) => this.pagos.set(d.data));
     this.reservasSvc.list().subscribe((d) => this.reservas.set(d));
     this.reservasSvc.listUsuarios().subscribe((d) => this.usuarios.set(d));
-    this.reembolsosSvc.list().subscribe((d) => this.reembolsos.set(d));
+    this.reembolsosSvc.list().subscribe((res) => this.reembolsos.set(res.data));
     this.funcionesSvc.list().subscribe((d) => this.funciones.set(d));
     this.cinesSvc.list().subscribe((d) => this.cines.set(d.data));
 

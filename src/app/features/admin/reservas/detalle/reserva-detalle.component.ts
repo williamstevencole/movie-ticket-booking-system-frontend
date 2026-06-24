@@ -220,7 +220,9 @@ export class AdminReservaDetalleComponent {
       }
       this.reserva.set(r);
       this.reservasSvc.getUsuario(r.id_usuario).subscribe((u) => this.cliente.set(u ?? null));
-      this.pagosSvc.getByReserva(r.id).subscribe((p) => this.pago.set(p ?? null));
+      this.pagosSvc.getByReserva(r.id).subscribe((ps) =>
+        this.pago.set(ps.find((p) => p.estado === 'exitoso' || p.estado === 'reembolsado') ?? ps[0] ?? null)
+      );
       this.funcionesSvc.list().subscribe((funcs) => {
         const f = funcs.find((x) => x.id === r.id_funcion);
         if (!f) return;

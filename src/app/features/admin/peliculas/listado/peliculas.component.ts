@@ -401,7 +401,7 @@ export class AdminPeliculasComponent {
   onToggle(p: Pelicula) {
     if (this.togglingId()) return;
     this.togglingId.set(p.id);
-    this.peliculasSvc.toggleActivo(p.id).subscribe({
+    this.peliculasSvc.toggleActivo(p.id, !p.activo).subscribe({
       next: (updated) => {
         this.peliculas.update((arr) =>
           arr.map((x) => (x.id === updated.id ? updated : x)),

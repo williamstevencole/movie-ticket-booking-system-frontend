@@ -409,13 +409,13 @@ export class AdminFuncionFormComponent {
     }
     const iso = new Date(v.fecha_hora).toISOString();
     this.funcionesSvc
-      .checkConflictos(
-        v.id_cine,
-        v.id_sala,
-        iso,
-        pelicula.duracion_min,
-        this.editId() ?? undefined,
-      )
+      .checkConflictos({
+        id_cine: v.id_cine,
+        id_sala: v.id_sala,
+        fecha_hora: iso,
+        duracion_min: pelicula.duracion_min,
+        ignorar_id: this.editId() ?? undefined,
+      })
       .subscribe((cs) => {
         this.conflictos.set(cs);
         this.checkedConflicts.set(true);

@@ -14,10 +14,11 @@ import {
 } from '@lucide/angular';
 
 import {
+  AdminReembolsosService,
+  AdminReembolsoRow,
   EstadoReembolsoAdmin,
   ReembolsoAdmin,
-  ReembolsosService,
-} from '../../../shared/services/reembolsos.service';
+} from '../../../shared/services/admin-reembolsos.service';
 import { AdminSidebarComponent } from '../../../shared/components/admin-sidebar.component';
 
 type Toast = { kind: 'ok' | 'err'; text: string } | null;
@@ -324,7 +325,7 @@ const TABS: TabDef[] = [
   styleUrl: './reembolsos.component.scss',
 })
 export class AdminReembolsosComponent {
-  private svc = inject(ReembolsosService);
+  private svc = inject(AdminReembolsosService);
 
   readonly tabs = TABS;
 
@@ -448,7 +449,7 @@ export class AdminReembolsosComponent {
   }
 
   private refresh() {
-    this.svc.listAdmin().subscribe((data) => this.items.set(data));
+    this.svc.list().subscribe((res) => this.items.set(res.data));
   }
 
   private showToast(kind: 'ok' | 'err', text: string) {
