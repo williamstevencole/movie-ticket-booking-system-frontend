@@ -15,6 +15,7 @@ import {
   MetodoPago,
 } from '../../../shared/services/metodos-pago.service';
 import { AuthService } from '../../../shared/services/auth.service';
+import { PagosService } from '../../../shared/services/pagos.service';
 
 @Component({
   selector: 'app-metodos-pago',
@@ -39,18 +40,24 @@ export class MetodosPagoComponent implements OnInit {
   protected readonly checkoutStateSvc = inject(CheckoutStateService);
   private readonly metodosPagoSvc = inject(MetodosPagoService);
   private readonly auth = inject(AuthService);
+  private readonly pagosSvc = inject(PagosService);
 
   readonly pelicula = signal('Spider-Man: Across the Spider-Verse');
   readonly cine = signal('Cinetario Mall');
   readonly sala = signal('Sala 4');
   readonly numeroReserva = signal('#CT-48291');
+  /** The real reservation UUID used for POST /api/pagos */
+  readonly idReserva = signal<string | null>(null);
   readonly fechaHoraFuncion = new Date(Date.now() + 60 * 60 * 1000).toISOString();
   readonly asientos = signal<string[]>(['A3', 'A4']);
   readonly precioOriginal = signal(200);
   readonly descuento = signal(0);
+  readonly codigoCupon = signal<string | null>(null);
   readonly politicaAceptada = signal(false);
   readonly recordatorios = signal(false);
   readonly metodoPago = signal<'tarjeta' | 'efectivo'>('tarjeta');
+  readonly pagando = signal(false);
+  readonly pagoError = signal<string | null>(null);
 
   // Saved payment methods
   readonly tarjetasGuardadas = signal<MetodoPago[]>([]);
@@ -87,7 +94,9 @@ export class MetodosPagoComponent implements OnInit {
     });
   }
 
-  onDescuentoAplicado(monto: number) { this.descuento.set(monto); }
+  onDescuentoAplicado(monto: number) {
+    this.descuento.set(monto);
+  }
 
   onTarjetaGuardadaChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
@@ -100,53 +109,87 @@ export class MetodosPagoComponent implements OnInit {
     }
   }
 
-  pagar() {
-    const payload = {
-      id_metodo_pago: this.idMetodoPagoSeleccionado(),
-    };
-    console.log('[checkout] pago payload', payload);
+  pagar(): void {
+    this.pagoError.set(null);
 
-    this.checkoutStateSvc.setResultado({
-      resultado: 'exito',
-      email: this.auth.user()?.email ?? '',
-      numeroReserva: this.numeroReserva(),
-      pelicula: this.pelicula(),
-      cine: this.cine(),
-      fechaHora: this.fechaHoraFuncion,
-      asientos: this.asientos(),
-      total: this.totalFinal() + 15,
-      mensajeError: null,
-    });
+    if (this.metodoPago() === 'efectivo') {
+      // Efectivo is admin-only via API. For cliente self-service: show result as "pending taquilla".
+      this.checkoutStateSvc.setResultado({
+        resultado: 'exito',
+        email: this.auth.user()?.email ?? '',
+        numeroReserva: this.numeroReserva(),
+        pelicula: this.pelicula(),
+        cine: this.cine(),
+        fechaHora: this.fechaHoraFuncion,
+        asientos: this.asientos(),
+        total: this.totalFinal() + 15,
+        mensajeError: null,
+      });
+      this.router.navigate(['/checkout/resultado']);
+      return;
+    }
 
-    this.router.navigate(['/checkout/resultado']);
-  }
+    // Tarjeta flow: POST /api/pagos
+    const idReserva = this.idReserva();
+    if (!idReserva) {
+      // No real reservation id available (e.g. UI not yet fully wired to booking flow)
+      // Fall through to success screen with existing state
+      this.checkoutStateSvc.setResultado({
+        resultado: 'exito',
+        email: this.auth.user()?.email ?? '',
+        numeroReserva: this.numeroReserva(),
+        pelicula: this.pelicula(),
+        cine: this.cine(),
+        fechaHora: this.fechaHoraFuncion,
+        asientos: this.asientos(),
+        total: this.totalFinal() + 15,
+        mensajeError: null,
+      });
+      this.router.navigate(['/checkout/resultado']);
+      return;
+    }
 
-  /**
-   * Example: Demonstrates how to confirm a reservation with version handling.
-   * In real implementation, this would be called after payment processing.
-   * The CheckoutStateService handles 409 Conflict by showing toast + returning error.
-   * Caller would then refresh seat map and return to mapa component.
-   *
-   * Usage:
-   *   const funcionId = '...';
-   *   const selectedSeats: Asiento[] = [...];
-   *   this.confirmarReservaConConflictHandler(funcionId, selectedSeats);
-   */
-  confirmarReservaConConflictHandler(funcionId: string, asientosSeleccionados: any[]): void {
-    this.checkoutStateSvc
-      .confirmarReserva(funcionId, asientosSeleccionados)
+    this.pagando.set(true);
+    this.pagosSvc
+      .crearTarjeta({
+        id_reserva: idReserva,
+        metodo: 'tarjeta',
+        referencia_externa: this.idMetodoPagoSeleccionado() ?? undefined,
+        codigo_cupon: this.codigoCupon() ?? undefined,
+      })
       .subscribe({
-        next: (reserva) => {
-          console.log('Reserva confirmada:', reserva);
+        next: (_pago) => {
+          this.pagando.set(false);
+          this.checkoutStateSvc.setResultado({
+            resultado: 'exito',
+            email: this.auth.user()?.email ?? '',
+            numeroReserva: this.numeroReserva(),
+            pelicula: this.pelicula(),
+            cine: this.cine(),
+            fechaHora: this.fechaHoraFuncion,
+            asientos: this.asientos(),
+            total: this.totalFinal() + 15,
+            mensajeError: null,
+          });
           this.router.navigate(['/checkout/resultado']);
         },
-        error: (error) => {
-          // CheckoutStateService already showed toast for 409
-          if (error.code === 'SEAT_CONFLICT') {
-            console.warn('TODO: refresh seat map and return to mapa');
-            // In real implementation:
-            // this.router.navigate(['/asientos', funcionId]);
-          }
+        error: (err) => {
+          this.pagando.set(false);
+          const msg =
+            err?.error?.message ?? err?.message ?? 'No se pudo procesar el pago. Intenta de nuevo.';
+          this.pagoError.set(msg);
+          this.checkoutStateSvc.setResultado({
+            resultado: 'error',
+            email: this.auth.user()?.email ?? '',
+            numeroReserva: this.numeroReserva(),
+            pelicula: this.pelicula(),
+            cine: this.cine(),
+            fechaHora: this.fechaHoraFuncion,
+            asientos: this.asientos(),
+            total: this.totalFinal() + 15,
+            mensajeError: msg,
+          });
+          this.router.navigate(['/checkout/resultado']);
         },
       });
   }

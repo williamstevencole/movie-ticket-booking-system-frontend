@@ -1,7 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { BoletosService, Boleto } from '../../../shared/services/boletos.service';
+import { Boleto } from '../../../shared/services/boletos.service';
+import { MisReservasService } from '../../../shared/services/mis-reservas.service';
 import { PoliticasComponent } from '../politicas/politicas.component';
 import { PoliticasCardComponent } from '../politicas-card/politicas-card.component';
 import { TiempoRestanteComponent } from '../../boletos/mis-boletos/tiempo-restante/tiempo-restante.component';
@@ -27,7 +28,7 @@ import { FooterComponent } from '../../../shared/components/footer/footer.compon
 })
 export class CancelarComponent {
   private readonly route = inject(ActivatedRoute);
-  private readonly boletosSvc = inject(BoletosService);
+  private readonly misReservasSvc = inject(MisReservasService);
 
   reserva: Boleto | null = null;
   readonly mostrarConfirmacion = signal(false);
@@ -42,8 +43,9 @@ export class CancelarComponent {
 
   constructor() {
     const id = this.route.snapshot.paramMap.get('id') ?? '';
-    this.boletosSvc.getByNumeroReserva(id).subscribe((b) => {
-      this.reserva = b ?? null;
+    this.misReservasSvc.getByNumero(id).subscribe({
+      next: (b) => { this.reserva = b ?? null; },
+      error: () => { this.reserva = null; },
     });
   }
 
