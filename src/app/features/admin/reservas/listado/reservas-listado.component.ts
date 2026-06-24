@@ -13,6 +13,7 @@ import {
   LucideMail,
   LucideEye,
   LucideBan,
+  LucideBanknote,
   LucideTicketX,
   LucideCheckCircle2,
 } from '@lucide/angular';
@@ -61,6 +62,7 @@ interface Toast {
     LucideMail,
     LucideEye,
     LucideBan,
+    LucideBanknote,
     LucideTicketX,
     LucideCheckCircle2,
   ],
@@ -178,6 +180,15 @@ interface Toast {
                         </td>
                         <td class="right" (click)="$event.stopPropagation()">
                           <div class="row-actions">
+                            @if (r.estado === 'pendiente_pago') {
+                              <a
+                                class="primary"
+                                title="Cobrar en taquilla"
+                                [routerLink]="['/admin/recepcionista/pago-efectivo', r.numero_reserva]"
+                              >
+                                <svg lucideBanknote [size]="15"></svg>
+                              </a>
+                            }
                             <button
                               type="button"
                               title="Reenviar boleto"
