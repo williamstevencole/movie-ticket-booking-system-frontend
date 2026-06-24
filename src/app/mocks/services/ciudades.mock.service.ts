@@ -39,7 +39,7 @@ export class MockCiudadesService extends CiudadesService {
     if (idx === -1) {
       return throwError(() => ({ code: 'NOT_FOUND', message: 'Ciudad no encontrada' }));
     }
-    const nombre = input.nombre.trim();
+    const nombre = (input.nombre ?? this.store[idx]?.nombre ?? '').trim();
     if (!nombre) {
       return throwError(() => ({ code: 'EMPTY', message: 'El nombre no puede estar vacío' }));
     }

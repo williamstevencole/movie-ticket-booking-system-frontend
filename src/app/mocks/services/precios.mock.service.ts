@@ -48,44 +48,6 @@ export class MockPreciosService extends PreciosService {
     );
   }
 
-  override upsert(item: {
-    id_cine: string;
-    id_tipo_asiento: string;
-    precio: number;
-  }): Observable<PrecioCine> {
-    if (!item.precio || item.precio <= 0) {
-      return throwError(() => ({
-        code: 'BAD_PRICE',
-        message: 'El precio debe ser mayor a 0',
-      }));
-    }
-
-    const existing = this.store.find(
-      (p) =>
-        p.id_cine === item.id_cine &&
-        p.id_tipo_asiento === item.id_tipo_asiento,
-    );
-
-    if (existing) {
-      existing.precio = item.precio;
-      return of({ ...existing });
-    }
-
-    const newItem: PrecioCine = {
-      id: `${item.id_cine}__${item.id_tipo_asiento}`,
-      id_cine: item.id_cine,
-      id_tipo_asiento: item.id_tipo_asiento,
-      precio: item.precio,
-    };
-    this.store = [...this.store, newItem];
-    return of({ ...newItem });
-  }
-
-  override borrar(id: string): Observable<void> {
-    this.store = this.store.filter((p) => p.id !== id);
-    return of(undefined);
-  }
-
   // ── Backwards-compat matrix API (admin/precios UI) ─────────────────────
 
   override getMatriz(): Observable<PreciosMatriz> {

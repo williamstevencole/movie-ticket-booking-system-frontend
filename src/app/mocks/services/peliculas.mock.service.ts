@@ -93,16 +93,13 @@ export class MockPeliculasService extends PeliculasService {
     return of({ ...next });
   }
 
-  override toggleActivo(id: string): Observable<Pelicula> {
+  override toggleActivo(id: string, activo: boolean): Observable<Pelicula> {
     const idx = this.store.findIndex((x) => x.id === id);
     if (idx === -1) {
       return throwError(() => ({ code: 'NOT_FOUND', message: 'Película no encontrada' }));
     }
     const current = this.store[idx]!;
-    const next: Pelicula = {
-      ...current,
-      activo: !current.activo,
-    };
+    const next: Pelicula = { ...current, activo };
     this.store[idx] = next;
     return of({ ...next });
   }

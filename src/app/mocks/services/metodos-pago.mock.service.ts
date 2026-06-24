@@ -1,13 +1,16 @@
+/**
+ * MockMetodosPagoService — kept for reference / test use.
+ * No longer registered as a provider (MetodosPagoService is now a concrete HTTP class).
+ */
 import { Injectable } from '@angular/core';
 import { Observable, of, delay } from 'rxjs';
 import {
-  MetodosPagoService,
   MetodoPago,
   CrearMetodoPagoDto,
 } from '../../shared/services/metodos-pago.service';
 
 @Injectable()
-export class MockMetodosPagoService extends MetodosPagoService {
+export class MockMetodosPagoService {
   private items: MetodoPago[] = [
     {
       id: '1',
@@ -33,11 +36,11 @@ export class MockMetodosPagoService extends MetodosPagoService {
     },
   ];
 
-  override listar(): Observable<MetodoPago[]> {
+  listar(): Observable<MetodoPago[]> {
     return of([...this.items]).pipe(delay(80));
   }
 
-  override crear(dto: CrearMetodoPagoDto): Observable<MetodoPago> {
+  crear(dto: CrearMetodoPagoDto): Observable<MetodoPago> {
     const id = String(Date.now());
     const mp: MetodoPago = {
       id,
@@ -57,28 +60,12 @@ export class MockMetodosPagoService extends MetodosPagoService {
     return of({ ...mp }).pipe(delay(120));
   }
 
-  override actualizar(
-    id: string,
-    dto: Partial<CrearMetodoPagoDto>,
-  ): Observable<MetodoPago> {
-    const idx = this.items.findIndex((i) => i.id === id);
-    if (idx < 0) throw new Error('NotFound');
-    this.items[idx] = {
-      ...this.items[idx]!,
-      ...dto,
-      ultimos4: dto.numero
-        ? dto.numero.replace(/\s/g, '').slice(-4)
-        : this.items[idx]!.ultimos4,
-    };
-    return of({ ...this.items[idx]! }).pipe(delay(80));
-  }
-
-  override borrar(id: string): Observable<void> {
+  borrar(id: string): Observable<void> {
     this.items = this.items.filter((i) => i.id !== id);
     return of(void 0).pipe(delay(80));
   }
 
-  override marcarPredeterminado(id: string): Observable<MetodoPago> {
+  marcarPredeterminado(id: string): Observable<MetodoPago> {
     this.items.forEach((i) => (i.predeterminado = i.id === id));
     const found = this.items.find((i) => i.id === id)!;
     return of({ ...found }).pipe(delay(80));
