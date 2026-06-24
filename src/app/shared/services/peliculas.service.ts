@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { MOCK_PELICULAS } from '../../mocks/data/peliculas.mock';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, switchMap, of, map } from 'rxjs';
+import { API_URL } from '../../core/config/env';
 
 export type FichaTecnica = {
   direccion?: string;
@@ -21,7 +21,7 @@ export type Pelicula = {
   sinopsis: string;
   duracion_min: number;
   fecha_estreno: string;
-  id_generos: string[];
+  id_genero: string | null;
   id_idioma: string;
   poster_url: string | null;
   activo: boolean;
@@ -40,9 +40,9 @@ export type CrearPeliculaInput = {
   sinopsis: string;
   duracion_min: number;
   fecha_estreno: string;
-  id_generos: string[];
+  id_genero: string | null;
   id_idioma: string;
-  poster_url: string | null;
+  poster_url?: string | null;
   activo?: boolean;
   tagline?: string;
   ficha_tecnica?: FichaTecnica;
@@ -50,60 +50,161 @@ export type CrearPeliculaInput = {
 
 export type EditarPeliculaInput = Partial<CrearPeliculaInput>;
 
+export type ListPeliculasQuery = {
+  page?: number;
+  limit?: number;
+  titulo?: string;
+  genero?: string;
+  idioma?: string;
+  fecha_inicio?: string;
+  fecha_fin?: string;
+  ciudad_id?: string;
+};
+
+export type PeliculasPage = {
+  data: Pelicula[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+type BackendPelicula = Omit<Pelicula, 'funciones_programadas' | 'boletos_vendidos' | 'rating_count' | 'id_genero' | 'id_idioma'> & {
+  id: string | number;
+  id_genero: string | number | null;
+  id_idioma: string | number | null;
+  funciones_programadas?: number;
+  boletos_vendidos?: number;
+  rating_count?: number;
+};
+
+function mapBackendPelicula(p: BackendPelicula): Pelicula {
+  return {
+    id: String(p.id),
+    titulo: p.titulo,
+    sinopsis: p.sinopsis ?? '',
+    duracion_min: p.duracion_min ?? 0,
+    fecha_estreno: p.fecha_estreno,
+    id_genero: p.id_genero == null ? null : String(p.id_genero),
+    id_idioma: p.id_idioma == null ? '' : String(p.id_idioma),
+    poster_url: p.poster_url ?? null,
+    activo: p.activo,
+    funciones_programadas: p.funciones_programadas ?? 0,
+    boletos_vendidos: p.boletos_vendidos ?? 0,
+    created_at: String(p.created_at),
+    tagline: p.tagline,
+    ficha_tecnica: p.ficha_tecnica as FichaTecnica | undefined,
+    rating_promedio: p.rating_promedio == null ? null : Number(p.rating_promedio),
+    rating_count: p.rating_count ?? 0,
+    mi_calificacion: p.mi_calificacion ?? null,
+  };
+}
+
 @Injectable({ providedIn: 'root' })
 export class PeliculasService {
-  list(): Observable<Pelicula[]> {
-    return of([...MOCK_PELICULAS]).pipe(delay(120));
+  private readonly http = inject(HttpClient);
+  private readonly base = `${API_URL}/peliculas`;
+
+  list(q: ListPeliculasQuery = {}): Observable<PeliculasPage> {
+    let params = new HttpParams();
+    if (q.page) params = params.set('page', String(q.page));
+    if (q.limit) params = params.set('limit', String(q.limit));
+    if (q.titulo && q.titulo.trim()) params = params.set('titulo', q.titulo.trim());
+    if (q.genero) params = params.set('genero', q.genero);
+    if (q.idioma) params = params.set('idioma', q.idioma);
+    if (q.fecha_inicio) params = params.set('fecha_inicio', q.fecha_inicio);
+    if (q.fecha_fin) params = params.set('fecha_fin', q.fecha_fin);
+    if (q.ciudad_id) params = params.set('ciudad_id', q.ciudad_id);
+    return this.http
+      .get<{ data: BackendPelicula[]; total: number; page: number; limit: number }>(this.base, { params })
+      .pipe(
+        map((res) => ({
+          data: res.data.map(mapBackendPelicula),
+          total: res.total,
+          page: res.page,
+          limit: res.limit,
+        })),
+      );
   }
 
   getById(id: string): Observable<Pelicula> {
-    const found = MOCK_PELICULAS.find((p) => p.id === id) ?? MOCK_PELICULAS[0]!;
-    return of({ ...found }).pipe(delay(120));
+    return this.http
+      .get<BackendPelicula>(`${this.base}/${id}`)
+      .pipe(map(mapBackendPelicula));
   }
 
   create(input: CrearPeliculaInput): Observable<Pelicula> {
-    const nueva: Pelicula = {
-      id: `p-new-${Date.now()}`,
-      titulo: input.titulo,
-      sinopsis: input.sinopsis,
-      duracion_min: input.duracion_min,
-      fecha_estreno: input.fecha_estreno,
-      id_generos: input.id_generos,
-      id_idioma: input.id_idioma,
-      poster_url: input.poster_url,
-      activo: input.activo ?? true,
-      funciones_programadas: 0,
-      boletos_vendidos: 0,
-      created_at: new Date().toISOString(),
-      tagline: input.tagline,
-      ficha_tecnica: input.ficha_tecnica,
-      rating_promedio: null,
-      rating_count: 0,
-    };
-    return of({ ...nueva }).pipe(delay(120));
+    return this.http
+      .post<BackendPelicula>(this.base, this.toBackendInput(input))
+      .pipe(map(mapBackendPelicula));
   }
 
   update(id: string, input: EditarPeliculaInput): Observable<Pelicula> {
-    const found = MOCK_PELICULAS.find((p) => p.id === id) ?? MOCK_PELICULAS[0]!;
-    return of({ ...found, ...input }).pipe(delay(120));
+    return this.http
+      .patch<BackendPelicula>(`${this.base}/${id}`, this.toBackendInput(input))
+      .pipe(map(mapBackendPelicula));
   }
 
-  /** PATCH /api/peliculas/:id/activo — explicit activo boolean */
   toggleActivo(id: string, activo: boolean): Observable<Pelicula> {
-    const found = MOCK_PELICULAS.find((p) => p.id === id) ?? MOCK_PELICULAS[0]!;
-    return of({ ...found, activo }).pipe(delay(120));
+    return this.http
+      .patch<BackendPelicula>(`${this.base}/${id}/activo`, { activo })
+      .pipe(map(mapBackendPelicula));
   }
 
   delete(id: string): Observable<void> {
-    return of(undefined as void).pipe(delay(120));
+    return this.http.delete<void>(`${this.base}/${id}`);
+  }
+
+  /** Sube un archivo de imagen como poster. Devuelve la URL final de Cloudinary. */
+  uploadPoster(id: string, file: File): Observable<{ id: string; poster_url: string | null }> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<{ id: string | number; poster_url: string | null }>(
+      `${this.base}/${id}/poster`,
+      form,
+    ).pipe(
+      map((res) => ({ id: String(res.id), poster_url: res.poster_url ?? null })),
+    );
   }
 
   /**
-   * Aplica los nuevos valores de rating tras un voto/borrado en CalificacionesService.
-   * En la implementación mock esto es un no-op (datos locales no mutados).
+   * Variante de `create` que adicionalmente sube el poster cuando el form provee un File.
+   * Si `posterFile` es null, equivale a `create`.
    */
+  createWithPoster(input: CrearPeliculaInput, posterFile: File | null): Observable<Pelicula> {
+    return this.create(input).pipe(
+      switchMap((p) =>
+        posterFile
+          ? this.uploadPoster(p.id, posterFile).pipe(
+              map((res) => ({ ...p, poster_url: res.poster_url })),
+            )
+          : of(p),
+      ),
+    );
+  }
+
+  /** Variante de `update` que también sube poster si vino archivo. */
+  updateWithPoster(id: string, input: EditarPeliculaInput, posterFile: File | null): Observable<Pelicula> {
+    return this.update(id, input).pipe(
+      switchMap((p) =>
+        posterFile
+          ? this.uploadPoster(p.id, posterFile).pipe(
+              map((res) => ({ ...p, poster_url: res.poster_url })),
+            )
+          : of(p),
+      ),
+    );
+  }
+
+  /** No-op kept for compatibility with CalificacionesService callers (mocked path). */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  aplicarRatingActualizado(_idPelicula: string, _ratingPromedio: number | null, _ratingCount: number): void {
-    // no-op for mock implementation
+  aplicarRatingActualizado(_id: string, _ratingPromedio: number | null, _ratingCount: number): void {
+    // server-driven now; no-op
+  }
+
+  private toBackendInput(input: EditarPeliculaInput): Record<string, unknown> {
+    const out: Record<string, unknown> = { ...input };
+    // Backend uses `id_genero` already; nothing to remap there.
+    // Drop fields the DTO does not accept and let undefined pass through.
+    return out;
   }
 }
