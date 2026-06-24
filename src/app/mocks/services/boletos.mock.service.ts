@@ -1,8 +1,13 @@
+/**
+ * MockBoletosService — kept for reference / possible future test use.
+ * No longer registered as a provider (BoletosService abstract class removed in Task 11).
+ * Components now use MisReservasService directly.
+ */
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs';
 
-import { Boleto, BoletosService } from '../../shared/services/boletos.service';
+import { Boleto } from '../../shared/services/mis-reservas.service';
 import { MOCK_RESERVAS } from '../data/reservas.mock';
 import { MOCK_FUNCIONES } from '../data/funciones.mock';
 import { MOCK_PELICULAS } from '../data/peliculas.mock';
@@ -10,7 +15,7 @@ import { MOCK_CINES } from '../data/cines.mock';
 import { MOCK_PAGOS } from '../data/pagos.mock';
 
 @Injectable()
-export class MockBoletosService extends BoletosService {
+export class MockBoletosService {
   list(): Observable<Boleto[]> {
     return of(this.buildAll());
   }
