@@ -9,6 +9,7 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideTriangleAlert, LucideCircleCheck } from '@lucide/angular';
 
+import { extractMessage } from '../../../../shared/utils/http-errors';
 import {
   ConflictoFuncion,
   Funcion,
@@ -94,7 +95,7 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
                     [class.invalid]="invalid('id_cine')"
                   >
                     <option value="" disabled>Selecciona…</option>
-                    @for (c of cines(); track c.id) {
+                    @for (c of cinesActivos(); track c.id) {
                       <option [value]="c.id">{{ c.nombre }}</option>
                     }
                   </select>
@@ -253,6 +254,10 @@ export class AdminFuncionFormComponent {
     this.peliculas().filter((p) => p.activo),
   );
 
+  readonly cinesActivos = computed(() =>
+    this.cines().filter((c) => c.activo),
+  );
+
   readonly form: FormGroup = this.fb.group({
     id_pelicula: ['', Validators.required],
     id_cine: ['', Validators.required],
@@ -328,9 +333,9 @@ export class AdminFuncionFormComponent {
         const msg = editId ? 'Función actualizada' : 'Función programada';
         this.router.navigate(['/admin/funciones'], { state: { toast: msg } });
       },
-      error: (e) => {
+      error: (err) => {
         this.saving.set(false);
-        this.formError.set(e?.message ?? 'No se pudo guardar la función');
+        this.formError.set(extractMessage(err));
       },
     });
   }
