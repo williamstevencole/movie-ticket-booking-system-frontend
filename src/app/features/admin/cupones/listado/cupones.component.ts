@@ -9,12 +9,14 @@ import {
   LucidePower,
   LucidePowerOff,
   LucideTriangleAlert,
+  LucideRefreshCw,
 } from '@lucide/angular';
 
 import { Cupon, CuponesService } from '../../../../shared/services/cupones.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 import { PagerComponent } from '../../../../shared/components/pager.component';
 import { ToastService } from '../../../../shared/services/toast.service';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 
 type EstadoCupon = 'activo' | 'inactivo' | 'expirado';
 type EstadoFiltro = 'todos' | EstadoCupon;
@@ -37,6 +39,7 @@ const POR_EXPIRAR_DIAS = 7;
     LucidePower,
     LucidePowerOff,
     LucideTriangleAlert,
+    LucideRefreshCw,
   ],
   template: `
     <div class="admin-body">
@@ -122,8 +125,42 @@ const POR_EXPIRAR_DIAS = 7;
             </span>
           </section>
 
+          @if (error(); as msg) {
+            <section class="error-banner" role="alert">
+              <span>{{ msg }}</span>
+              <button class="btn btn-ghost" (click)="reload()">
+                <svg lucideRefreshCw [size]="14"></svg>
+                Reintentar
+              </button>
+            </section>
+          }
+
           <section class="card">
-            @if (paged().length === 0) {
+            @if (loading() && cupones().length === 0) {
+              <div class="table-scroll">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Código</th>
+                      <th>Tipo</th>
+                      <th class="col-num">Valor</th>
+                      <th>Vence</th>
+                      <th class="col-num">Usos</th>
+                      <th class="col-num">Descontado</th>
+                      <th>Estado</th>
+                      <th class="col-acc" aria-label="Acciones"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (_ of skeletonRows; track $index) {
+                      <tr class="row-skeleton">
+                        <td colspan="8"><span class="skeleton-bar"></span></td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else if (paged().length === 0) {
               <div class="empty">
                 <span class="empty-mark">
                   <svg lucideGift [size]="22"></svg>
@@ -258,6 +295,10 @@ export class AdminCuponesComponent {
   readonly estadoFiltro = signal<EstadoFiltro>('todos');
   readonly tipoFiltro = signal<TipoFiltro>('todos');
 
+  readonly loading = signal<boolean>(true);
+  readonly error = signal<string | null>(null);
+  readonly skeletonRows = Array.from({ length: 6 });
+
   readonly page = signal(1);
   readonly pageSize = signal(10);
 
@@ -288,12 +329,32 @@ export class AdminCuponesComponent {
   });
 
   constructor() {
-    this.cuponesSvc.list().subscribe((c) => this.cupones.set(c));
+    this.fetchCupones();
 
     effect(() => {
       const total = this.filtered().length;
       const maxPage = Math.max(1, Math.ceil(total / this.pageSize()));
       if (this.page() > maxPage) this.page.set(maxPage);
+    });
+  }
+
+  reload(): void {
+    this.fetchCupones();
+  }
+
+  private fetchCupones(): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.cuponesSvc.list().subscribe({
+      next: (data) => {
+        this.cupones.set(data);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.cupones.set([]);
+        this.error.set(extractMessage(err));
+        this.loading.set(false);
+      },
     });
   }
 
@@ -373,13 +434,13 @@ export class AdminCuponesComponent {
     }
     const next = !c.activo;
     this.cuponesSvc.setActivo(c.id, next).subscribe({
-      next: (updated) => {
+      next: (slim) => {
         this.cupones.update((list) =>
-          list.map((x) => (x.id === updated.id ? updated : x)),
+          list.map((x) => (x.id === c.id ? { ...x, activo: slim.activo } : x)),
         );
         this.toast.show(`${c.codigo} ${next ? 'activado' : 'desactivado'}`);
       },
-      error: (e) => this.toast.show(e?.message ?? 'No se pudo actualizar el cupón'),
+      error: (err) => this.toast.show(extractMessage(err)),
     });
   }
 
@@ -393,7 +454,7 @@ export class AdminCuponesComponent {
         this.cupones.update((list) => list.filter((x) => x.id !== c.id));
         this.toast.show(`${c.codigo} eliminado`);
       },
-      error: (e) => this.toast.show(e?.message ?? 'No se pudo eliminar el cupón'),
+      error: (err) => this.toast.show(extractMessage(err)),
     });
   }
 }
