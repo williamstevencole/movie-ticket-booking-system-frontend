@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideTriangleAlert } from '@lucide/angular';
 
+import { extractMessage } from '../../../../shared/utils/http-errors';
 import {
   Funcion,
   FuncionesService,
@@ -243,9 +244,9 @@ export class AdminCancelarFuncionComponent {
           : 'Función cancelada';
         this.router.navigate(['/admin/funciones'], { state: { toast: msg } });
       },
-      error: (e) => {
+      error: (err) => {
         this.saving.set(false);
-        this.showToast('err', e?.message ?? 'No se pudo cancelar la función');
+        this.showToast('err', extractMessage(err));
       },
     });
   }

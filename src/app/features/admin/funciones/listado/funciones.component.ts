@@ -6,8 +6,10 @@ import {
   LucidePencil,
   LucideX,
   LucideClapperboard,
+  LucideRefreshCw,
 } from '@lucide/angular';
 
+import { extractMessage } from '../../../../shared/utils/http-errors';
 import {
   Funcion,
   FuncionesService,
@@ -43,6 +45,7 @@ type Filtro = 'todas' | 'hoy' | 'proximas' | 'pasadas';
     LucidePencil,
     LucideX,
     LucideClapperboard,
+    LucideRefreshCw,
   ],
   template: `
     <div class="admin-body">
@@ -111,8 +114,40 @@ type Filtro = 'todas' | 'hoy' | 'proximas' | 'pasadas';
             </span>
           </section>
 
+          @if (error(); as msg) {
+            <section class="error-banner" role="alert">
+              <span>{{ msg }}</span>
+              <button class="btn btn-ghost" (click)="reload()">
+                <svg lucideRefreshCw [size]="14"></svg>
+                Reintentar
+              </button>
+            </section>
+          }
+
           <section class="card">
-            @if (paged().length === 0) {
+            @if (loading() && funciones().length === 0) {
+              <div class="table-scroll">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Hora</th>
+                      <th>Película</th>
+                      <th class="col-sala">Cine · sala</th>
+                      <th class="col-ocupacion">Ocupación</th>
+                      <th>Estado</th>
+                      <th class="col-acc" aria-label="Acciones"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (_ of skeletonRows; track $index) {
+                      <tr class="row-skeleton">
+                        <td colspan="6"><span class="skeleton-bar"></span></td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else if (paged().length === 0) {
               <div class="empty">
                 <span class="empty-mark">
                   <svg lucideClapperboard [size]="22"></svg>
@@ -252,6 +287,9 @@ export class AdminFuncionesComponent {
   readonly page = signal(1);
   readonly pageSize = signal(10);
   readonly toast = signal<Toast>(null);
+  readonly loading = signal<boolean>(true);
+  readonly error = signal<string | null>(null);
+  readonly skeletonRows = Array.from({ length: 6 });
 
   readonly peliculasById = computed(() => {
     const map = new Map<string, Pelicula>();
@@ -303,7 +341,7 @@ export class AdminFuncionesComponent {
   });
 
   constructor() {
-    this.refresh();
+    this.fetchFunciones();
     this.peliculasSvc.list().subscribe((d) => this.peliculas.set(d.data));
     this.cinesSvc.list().subscribe((p) => this.cines.set(p.data));
     this.ciudadesSvc.list().subscribe((c) => this.ciudades.set(c));
@@ -397,8 +435,24 @@ export class AdminFuncionesComponent {
     );
   }
 
-  private refresh() {
-    this.funcionesSvc.list().subscribe((data) => this.funciones.set(data));
+  reload(): void {
+    this.fetchFunciones();
+  }
+
+  private fetchFunciones(): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.funcionesSvc.list().subscribe({
+      next: (data) => {
+        this.funciones.set(data);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.funciones.set([]);
+        this.error.set(extractMessage(err));
+        this.loading.set(false);
+      },
+    });
   }
 
   private showToast(kind: 'ok' | 'err', text: string) {
