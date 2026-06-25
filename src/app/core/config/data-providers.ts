@@ -1,6 +1,5 @@
 import { Provider } from '@angular/core';
 
-import { CiudadesService } from '../../shared/services/ciudades.service';
 // CinesService is now concrete HTTP — no mock override needed
 import { CuponesService } from '../../shared/services/cupones.service';
 // GenerosService and IdiomasService are now concrete @Injectable — no mock override needed
@@ -13,7 +12,6 @@ import { PreciosService } from '../../shared/services/precios.service';
 import { UsuariosService } from '../../shared/services/usuarios.service';
 // MetodosPagoService and CalificacionesService are now concrete @Injectable — no mock override needed
 
-import { MockCiudadesService } from '../../mocks/services/ciudades.mock.service';
 import { MockCuponesService } from '../../mocks/services/cupones.mock.service';
 // MockGenerosService and MockIdiomasService no longer registered (services are now concrete HTTP classes)
 import { MockFuncionesService } from '../../mocks/services/funciones.mock.service';
@@ -26,7 +24,6 @@ import { MockUsuariosService } from '../../mocks/services/usuarios.mock.service'
 // MockMetodosPagoService and MockCalificacionesService no longer registered (services are now concrete HTTP classes)
 
 export const dataProviders: Provider[] = [
-  { provide: CiudadesService, useClass: MockCiudadesService },
   { provide: CuponesService, useClass: MockCuponesService },
   // GenerosService and IdiomasService: concrete HTTP services, no mock override
   { provide: FuncionesService, useClass: MockFuncionesService },
