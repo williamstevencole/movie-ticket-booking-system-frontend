@@ -3,20 +3,17 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { API_URL } from '../../core/config/env';
 import type { MessageResponse } from '../../core/types/api.types';
+import type { components } from '../../core/types/api.generated';
 
 // ─── tipos ────────────────────────────────────────────────────
-export type LoginRequest = {
-  email: string;
-  password: string;
-};
+export type LoginRequest = components['schemas']['LoginDto'];
+export type RegisterRequest = components['schemas']['RegisterDto'];
 
-export type RegisterRequest = {
-  nombre: string;
-  email: string;
-  password: string;
-  telefono?: string;
-};
-
+/**
+ * Frontend-side user state. Extends the API's UsuarioResponse with the
+ * `notificaciones_activas` field that the frontend reads/writes from
+ * localStorage and the user-profile endpoint.
+ */
 export type AuthUser = {
   id: string;
   nombre: string;
@@ -26,10 +23,7 @@ export type AuthUser = {
   notificaciones_activas?: boolean;
 };
 
-export type AuthResponse = {
-  access_token: string;
-  usuario: AuthUser;
-};
+export type AuthResponse = components['schemas']['AuthResponse'];
 
 export type JwtPayload = {
   email: string;

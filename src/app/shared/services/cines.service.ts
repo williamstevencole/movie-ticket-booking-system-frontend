@@ -2,6 +2,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map, switchMap } from 'rxjs';
 import { API_URL } from '../../core/config/env';
+import type { components } from '../../core/types/api.generated';
+import { toStr } from '../../core/api/normalize';
 
 export type Sala = {
   id: string;
@@ -36,13 +38,8 @@ export type ListCinesQuery = {
   id_ciudad?: number | string;
 };
 
-export type CrearCineInput = {
-  nombre: string;
-  id_ciudad: string;
-  direccion: string | null;
-};
-
-export type EditarCineInput = Partial<CrearCineInput>;
+export type CrearCineInput = components['schemas']['CreateCineDto'];
+export type EditarCineInput = components['schemas']['UpdateCineDto'];
 
 export type CrearSalaInput = {
   nombre: string;
@@ -76,13 +73,13 @@ type BackendCineRaw = {
 function mapListItem(c: BackendCineListItem): Cine {
   const rawDate = c.fecha_creacion ?? c.created_at;
   return {
-    id: String(c.id),
+    id: toStr(c.id),
     nombre: c.nombre,
     direccion: c.direccion ?? null,
-    id_ciudad: String(c.id_ciudad),
+    id_ciudad: toStr(c.id_ciudad),
     activo: c.activo ?? true,
     salas: (c.salas ?? []).map((s) => ({
-      id: String(s.id),
+      id: toStr(s.id),
       nombre: s.nombre,
     })),
     created_at:
@@ -94,10 +91,10 @@ function mapListItem(c: BackendCineListItem): Cine {
 
 function mapRaw(c: BackendCineRaw): Cine {
   return {
-    id: String(c.id),
+    id: toStr(c.id),
     nombre: c.nombre,
     direccion: c.direccion ?? null,
-    id_ciudad: String(c.id_ciudad),
+    id_ciudad: toStr(c.id_ciudad),
     activo: c.activo ?? true,
     salas: [],
     created_at:
@@ -118,7 +115,7 @@ export class CinesService {
     if (q.limit) params = params.set('limit', String(q.limit));
     if (q.name && q.name.trim()) params = params.set('name', q.name.trim());
     if (q.id_ciudad != null && q.id_ciudad !== '') {
-      params = params.set('id_ciudad', String(q.id_ciudad));
+      params = params.set('id_ciudad', toStr(q.id_ciudad));
     }
     return this.http
       .get<{ data: BackendCineListItem[]; total: number; page: number; limit: number }>(
@@ -144,7 +141,7 @@ export class CinesService {
   create(input: CrearCineInput): Observable<Cine> {
     return this.http
       .post<{ id: string | number }>(this.base, input)
-      .pipe(switchMap((res) => this.getById(String(res.id))));
+      .pipe(switchMap((res) => this.getById(toStr(res.id))));
   }
 
   update(id: string, input: EditarCineInput): Observable<Cine> {

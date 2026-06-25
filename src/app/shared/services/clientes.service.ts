@@ -2,10 +2,11 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_URL } from '../../core/config/env';
+import type { components } from '../../core/types/api.generated';
 import { EstadoReserva } from './reservas.service';
 
 // Espejo de Usuarios (rol = cliente) en api/prisma/schema.prisma
-export type EstadoCliente = 'activo' | 'bloqueado';
+export type EstadoCliente = components['schemas']['EstadoCliente'];
 
 export type Cliente = {
   id: string;
@@ -82,7 +83,8 @@ export class ClientesService {
   }
 
   setEstado(id: string, estado: EstadoCliente): Observable<Cliente> {
-    return this.http.patch<Cliente>(`${this.base}/${id}/estado`, { estado });
+    const body: components['schemas']['UpdateClienteEstadoDto'] = { estado };
+    return this.http.patch<Cliente>(`${this.base}/${id}/estado`, body);
   }
 
   /** @deprecated Use setEstado instead. Kept so the listado component compiles. */

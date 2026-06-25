@@ -2,16 +2,15 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { API_URL } from '../../core/config/env';
+import type { components } from '../../core/types/api.generated';
+import { toStr } from '../../core/api/normalize';
 
 export type Idioma = {
   id: string;
   nombre: string;
 };
 
-export type CrearIdiomaInput = {
-  nombre: string;
-};
-
+export type CrearIdiomaInput = components['schemas']['CreateIdiomaDto'];
 export type EditarIdiomaInput = {
   nombre: string;
 };
@@ -22,7 +21,7 @@ type BackendIdioma = {
 };
 
 function mapIdioma(i: BackendIdioma): Idioma {
-  return { id: String(i.id), nombre: i.nombre };
+  return { id: toStr(i.id), nombre: i.nombre };
 }
 
 @Injectable({ providedIn: 'root' })
