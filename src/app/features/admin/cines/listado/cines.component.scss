@@ -313,26 +313,6 @@
   p { color: var(--text-2); margin-bottom: var(--s5); font-size: 14px; }
 }
 
-.toast {
-  position: fixed;
-  bottom: var(--s6);
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 12px var(--s5);
-  border-radius: var(--r);
-  font-size: 13px;
-  font-weight: 600;
-  box-shadow: var(--shadow-lg);
-  z-index: 80;
-  animation: toast-in 220ms var(--ease);
-  &.ok { background: var(--text); color: var(--bg); }
-  &.err { background: var(--red); color: white; }
-}
-@keyframes toast-in {
-  from { opacity: 0; transform: translate(-50%, 8px); }
-  to   { opacity: 1; transform: translate(-50%, 0); }
-}
-
 @media (max-width: 880px) {
   .tbl .col-dir { display: none; }
 }
@@ -341,4 +321,60 @@
   .tbl th, .tbl td { padding: 12px var(--s4); }
   .tbl .col-ciudad { display: none; }
   .search input { min-width: 0; width: 100%; }
+}
+
+/* --- inline error banner --------------------------------------------------- */
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  margin-bottom: var(--s4);
+  border-radius: var(--r);
+  background: var(--red-soft);
+  color: var(--red-ink);
+  border: 1px solid color-mix(in oklch, var(--red) 22%, transparent);
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s1);
+    background: transparent;
+    border: 1px solid currentColor;
+    color: inherit;
+    padding: 4px 10px;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 500;
+    transition: background 160ms var(--ease);
+
+    &:hover { background: color-mix(in oklch, var(--bg) 70%, transparent); }
+  }
+}
+
+/* --- skeleton row --------------------------------------------------------- */
+.row-skeleton td {
+  padding: 14px var(--s3);
+}
+
+.skeleton-bar {
+  display: block;
+  height: 14px;
+  width: 100%;
+  border-radius: 7px;
+  background: linear-gradient(
+    90deg,
+    var(--surface) 0%,
+    var(--surface-2) 50%,
+    var(--surface) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
