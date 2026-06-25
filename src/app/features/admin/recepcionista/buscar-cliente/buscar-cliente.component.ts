@@ -241,9 +241,9 @@ import { PagerComponent } from '../../../../shared/components/pager.component';
                             </div>
                             <div class="r-meta">
                               <span>{{ r.num_asientos }} {{ r.num_asientos === 1 ? 'asiento' : 'asientos' }}</span>
-                              @if (r.asientos.length) {
+                              @if (r.asientos?.length) {
                                 <span class="r-seats">
-                                  @for (a of r.asientos; track a.id) {
+                                  @for (a of (r.asientos ?? []); track a.id) {
                                     <span class="seat-chip">{{ a.codigo }}</span>
                                   }
                                 </span>
