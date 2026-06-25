@@ -149,8 +149,8 @@ export class AdminSalaDistribucionComponent {
     this.cinesSvc.getSala(this.idCine, this.idSala).subscribe({
       next: (sala) => {
         this.salaNombre.set(sala.nombre);
-        this.filas.set(sala.filas);
-        this.columnas.set(sala.columnas);
+        this.filas.set(sala.filas ?? 0);
+        this.columnas.set(sala.columnas ?? 0);
       },
       error: (e) =>
         this.loadError.set(e?.message ?? 'No se pudo cargar la sala'),

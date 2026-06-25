@@ -360,7 +360,7 @@ export class AdminFuncionesComponent {
     const sala = this.cinesById()
       .get(idCine)
       ?.salas.find((s) => s.id === idSala);
-    return sala ? sala.filas * sala.columnas : 0;
+    return sala ? (sala.filas ?? 0) * (sala.columnas ?? 0) : 0;
   }
   estadoLabel(e: Funcion['estado']): string {
     switch (e) {
