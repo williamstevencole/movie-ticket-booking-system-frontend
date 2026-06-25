@@ -27,6 +27,7 @@ import {
   PoliticaCancelacion,
   ReglaPolitica,
 } from '../../../shared/services/politicas-cancelacion.service';
+import { extractMessage } from '../../../shared/utils/http-errors';
 
 @Component({
   selector: 'app-reserva-detalle-cliente',
@@ -208,18 +209,15 @@ export class ReservaDetalleClienteComponent {
                 this.cine.set(cine);
                 this.cargando.set(false);
 
-                this.politicasSvc.listByCine(funcion.id_cine).subscribe({
-                  next: (politicas) => {
-                    this.politicas.set(politicas);
-                    const activa = politicas.find((p) => p.activa);
+                this.politicasSvc.getPublicByCine(funcion.id_cine, true).subscribe({
+                  next: (arr) => {
+                    this.politicas.set(arr);
+                    const activa = arr[0];
                     if (activa) {
-                      this.politicasSvc.listReglas(activa.id).subscribe({
-                        next: (r) => this.reglas.set(r),
-                        error: () => {},
-                      });
+                      this.reglas.set(activa.reglas ?? []);
                     }
                   },
-                  error: () => {},
+                  error: (err) => this.showToast('err', extractMessage(err)),
                 });
               },
               error: () => {
