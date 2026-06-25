@@ -2,6 +2,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, switchMap, of, map } from 'rxjs';
 import { API_URL } from '../../core/config/env';
+import type { components } from '../../core/types/api.generated';
+import { toStr, toStrOrNull, toNumOrNull } from '../../core/api/normalize';
 
 export type FichaTecnica = {
   direccion?: string;
@@ -79,21 +81,21 @@ type BackendPelicula = Omit<Pelicula, 'funciones_programadas' | 'boletos_vendido
 
 function mapBackendPelicula(p: BackendPelicula): Pelicula {
   return {
-    id: String(p.id),
+    id: toStr(p.id),
     titulo: p.titulo,
     sinopsis: p.sinopsis ?? '',
     duracion_min: p.duracion_min ?? 0,
     fecha_estreno: p.fecha_estreno,
-    id_genero: p.id_genero == null ? null : String(p.id_genero),
-    id_idioma: p.id_idioma == null ? '' : String(p.id_idioma),
+    id_genero: toStrOrNull(p.id_genero),
+    id_idioma: p.id_idioma == null ? '' : toStr(p.id_idioma),
     poster_url: p.poster_url ?? null,
     activo: p.activo,
     funciones_programadas: p.funciones_programadas ?? 0,
     boletos_vendidos: p.boletos_vendidos ?? 0,
-    created_at: String(p.created_at),
+    created_at: toStr(p.created_at),
     tagline: p.tagline,
     ficha_tecnica: p.ficha_tecnica as FichaTecnica | undefined,
-    rating_promedio: p.rating_promedio == null ? null : Number(p.rating_promedio),
+    rating_promedio: toNumOrNull(p.rating_promedio),
     rating_count: p.rating_count ?? 0,
     mi_calificacion: p.mi_calificacion ?? null,
   };
@@ -145,8 +147,9 @@ export class PeliculasService {
   }
 
   toggleActivo(id: string, activo: boolean): Observable<Pelicula> {
+    const body: components['schemas']['SetActivoPeliculaDto'] = { activo };
     return this.http
-      .patch<BackendPelicula>(`${this.base}/${id}/activo`, { activo })
+      .patch<BackendPelicula>(`${this.base}/${id}/activo`, body)
       .pipe(map(mapBackendPelicula));
   }
 

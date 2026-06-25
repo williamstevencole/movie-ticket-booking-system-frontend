@@ -10,6 +10,7 @@ import {
   LucideX,
   LucideMapPin,
   LucideTriangleAlert,
+  LucideRefreshCw,
 } from '@lucide/angular';
 
 import {
@@ -18,6 +19,7 @@ import {
 } from '../../../shared/services/ciudades.service';
 import { CinesService, Cine } from '../../../shared/services/cines.service';
 import { AdminSidebarComponent } from '../../../shared/components/admin-sidebar.component';
+import { extractMessage } from '../../../shared/utils/http-errors';
 
 type Toast = { kind: 'ok' | 'err'; text: string } | null;
 type ModalMode =
@@ -44,6 +46,7 @@ type DeleteState =
     LucideX,
     LucideMapPin,
     LucideTriangleAlert,
+    LucideRefreshCw,
   ],
   template: `
     <div class="admin-body">
@@ -86,8 +89,38 @@ type DeleteState =
         </span>
       </section>
 
+      @if (error(); as msg) {
+        <section class="error-banner" role="alert">
+          <span>{{ msg }}</span>
+          <button class="btn btn-ghost" (click)="reload()">
+            <svg lucideRefreshCw [size]="14"></svg>
+            Reintentar
+          </button>
+        </section>
+      }
+
       <section class="card">
-        @if (filtered().length === 0) {
+        @if (loading() && ciudades().length === 0) {
+          <div class="table-scroll">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th class="col-nombre">Ciudad</th>
+                  <th class="col-cines">Cines</th>
+                  <th class="col-fecha">Registrada</th>
+                  <th class="col-acc" aria-label="Acciones"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (_ of skeletonRows; track $index) {
+                  <tr class="row-skeleton">
+                    <td colspan="4"><span class="skeleton-bar"></span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else if (filtered().length === 0) {
           <div class="empty">
             <span class="empty-mark">
               <svg lucideMapPin [size]="22"></svg>
@@ -272,6 +305,10 @@ export class AdminCiudadesComponent {
   readonly modalError = signal<string | null>(null);
   readonly toast = signal<Toast>(null);
 
+  readonly loading = signal<boolean>(true);
+  readonly error = signal<string | null>(null);
+  readonly skeletonRows = Array.from({ length: 6 });
+
   readonly filtered = computed(() => {
     const t = this.searchTerm().trim().toLowerCase();
     if (!t) return this.ciudades();
@@ -308,7 +345,7 @@ export class AdminCiudadesComponent {
   });
 
   constructor() {
-    this.refresh();
+    this.fetchCiudades();
     this.cinesSvc.list().subscribe((page) => this.cines.set(page.data));
   }
 
@@ -337,20 +374,20 @@ export class AdminCiudadesComponent {
     if (mode.kind === 'create') {
       this.ciudadesSvc.create({ nombre }).subscribe({
         next: () => {
-          this.refresh();
+          this.fetchCiudades();
           this.closeModal();
           this.showToast('ok', `Ciudad "${nombre}" creada`);
         },
-        error: (e) => this.modalError.set(e?.message ?? 'No se pudo crear'),
+        error: (err) => this.modalError.set(extractMessage(err)),
       });
     } else if (mode.kind === 'edit') {
       this.ciudadesSvc.update(mode.ciudad.id, { nombre }).subscribe({
         next: () => {
-          this.refresh();
+          this.fetchCiudades();
           this.closeModal();
           this.showToast('ok', `"${mode.ciudad.nombre}" actualizada`);
         },
-        error: (e) => this.modalError.set(e?.message ?? 'No se pudo guardar'),
+        error: (err) => this.modalError.set(extractMessage(err)),
       });
     }
   }
@@ -368,19 +405,35 @@ export class AdminCiudadesComponent {
     if (!target) return;
     this.ciudadesSvc.delete(target.id).subscribe({
       next: () => {
-        this.refresh();
+        this.fetchCiudades();
         this.deleteState.set({ kind: 'idle' });
         this.showToast('ok', `"${target.nombre}" eliminada`);
       },
-      error: (e) => {
+      error: (err) => {
         this.deleteState.set({ kind: 'idle' });
-        this.showToast('err', e?.message ?? 'No se pudo eliminar');
+        this.showToast('err', extractMessage(err));
       },
     });
   }
 
-  private refresh() {
-    this.ciudadesSvc.list().subscribe((data) => this.ciudades.set(data));
+  reload(): void {
+    this.fetchCiudades();
+  }
+
+  private fetchCiudades(): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.ciudadesSvc.list().subscribe({
+      next: (data) => {
+        this.ciudades.set(data);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.ciudades.set([]);
+        this.error.set(extractMessage(err));
+        this.loading.set(false);
+      },
+    });
   }
 
   private showToast(kind: 'ok' | 'err', text: string) {

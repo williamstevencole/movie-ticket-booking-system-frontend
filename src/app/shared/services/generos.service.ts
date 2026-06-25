@@ -2,16 +2,15 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { API_URL } from '../../core/config/env';
+import type { components } from '../../core/types/api.generated';
+import { toStr } from '../../core/api/normalize';
 
 export type Genero = {
   id: string;
   nombre: string;
 };
 
-export type CrearGeneroInput = {
-  nombre: string;
-};
-
+export type CrearGeneroInput = components['schemas']['CreateGeneroDto'];
 export type EditarGeneroInput = {
   nombre: string;
 };
@@ -22,7 +21,7 @@ type BackendGenero = {
 };
 
 function mapGenero(g: BackendGenero): Genero {
-  return { id: String(g.id), nombre: g.nombre };
+  return { id: toStr(g.id), nombre: g.nombre };
 }
 
 @Injectable({ providedIn: 'root' })
