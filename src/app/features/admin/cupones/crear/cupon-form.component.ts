@@ -12,6 +12,7 @@ import { LucideTriangleAlert, LucideGift } from '@lucide/angular';
 import { CuponesService } from '../../../../shared/services/cupones.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 
 @Component({
   selector: 'app-admin-cupon-form',
@@ -307,9 +308,9 @@ export class AdminCuponFormComponent {
           this.toast.show(`Cupón ${cupon.codigo} creado`);
           this.router.navigate(['/admin/cupones']);
         },
-        error: (e) => {
+        error: (err) => {
           this.saving.set(false);
-          this.formError.set(e?.message ?? 'No se pudo crear el cupón');
+          this.formError.set(extractMessage(err));
         },
       });
   }
