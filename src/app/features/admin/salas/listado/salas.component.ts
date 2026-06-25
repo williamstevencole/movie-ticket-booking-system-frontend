@@ -257,9 +257,9 @@ export class AdminSalasComponent {
           nombre: s.nombre,
           cineId: c.id,
           cineNombre: c.nombre,
-          filas: s.filas,
-          columnas: s.columnas,
-          asientos: s.filas * s.columnas,
+          filas: s.filas ?? 0,
+          columnas: s.columnas ?? 0,
+          asientos: (s.filas ?? 0) * (s.columnas ?? 0),
         });
       }
     }

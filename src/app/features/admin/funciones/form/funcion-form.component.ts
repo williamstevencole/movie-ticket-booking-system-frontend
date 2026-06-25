@@ -115,7 +115,7 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
                     <option value="" disabled>Selecciona…</option>
                     @for (s of salasDelCine(); track s.id) {
                       <option [value]="s.id">
-                        Sala {{ s.nombre }} · {{ s.filas * s.columnas }} asientos
+                        Sala {{ s.nombre }} · {{ (s.filas ?? 0) * (s.columnas ?? 0) }} asientos
                       </option>
                     }
                   </select>
@@ -266,7 +266,7 @@ export class AdminFuncionFormComponent {
 
   readonly capacidadSala = computed(() => {
     const s = this.salaSeleccionada();
-    return s ? s.filas * s.columnas : 0;
+    return s ? (s.filas ?? 0) * (s.columnas ?? 0) : 0;
   });
 
   readonly fechaInicioValid = signal(false);

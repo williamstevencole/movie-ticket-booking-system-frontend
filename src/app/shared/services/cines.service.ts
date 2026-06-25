@@ -1,13 +1,13 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { MOCK_CINES } from '../../mocks/data/cines.mock';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, map, switchMap } from 'rxjs';
+import { API_URL } from '../../core/config/env';
 
 export type Sala = {
   id: string;
   nombre: string;
-  filas: number;
-  columnas: number;
+  filas?: number;
+  columnas?: number;
   id_cine?: string;
 };
 
@@ -16,6 +16,8 @@ export type Cine = {
   nombre: string;
   direccion: string | null;
   id_ciudad: string;
+  ciudad_nombre?: string;
+  activo: boolean;
   salas: Sala[];
   created_at: string;
 };
@@ -51,63 +53,128 @@ export type CrearSalaInput = {
 
 export type EditarSalaInput = Partial<CrearSalaInput>;
 
+type BackendCineListItem = {
+  id: string | number;
+  nombre: string;
+  direccion: string | null;
+  id_ciudad: string | number;
+  activo?: boolean;
+  salas?: Array<{ id: string | number; nombre: string }>;
+  fecha_creacion?: string | Date;
+  created_at?: string | Date;
+};
+
+type BackendCineRaw = {
+  id: string | number;
+  nombre: string;
+  direccion: string | null;
+  id_ciudad: string | number;
+  activo?: boolean;
+  created_at?: string | Date;
+};
+
+function mapListItem(c: BackendCineListItem): Cine {
+  const rawDate = c.fecha_creacion ?? c.created_at;
+  return {
+    id: String(c.id),
+    nombre: c.nombre,
+    direccion: c.direccion ?? null,
+    id_ciudad: String(c.id_ciudad),
+    activo: c.activo ?? true,
+    salas: (c.salas ?? []).map((s) => ({
+      id: String(s.id),
+      nombre: s.nombre,
+    })),
+    created_at:
+      rawDate instanceof Date
+        ? rawDate.toISOString()
+        : (rawDate as string | undefined) ?? new Date(0).toISOString(),
+  };
+}
+
+function mapRaw(c: BackendCineRaw): Cine {
+  return {
+    id: String(c.id),
+    nombre: c.nombre,
+    direccion: c.direccion ?? null,
+    id_ciudad: String(c.id_ciudad),
+    activo: c.activo ?? true,
+    salas: [],
+    created_at:
+      c.created_at instanceof Date
+        ? c.created_at.toISOString()
+        : (c.created_at as string | undefined) ?? new Date(0).toISOString(),
+  };
+}
+
 @Injectable({ providedIn: 'root' })
 export class CinesService {
-  list(query?: ListCinesQuery): Observable<CinesPage> {
-    let rows = [...MOCK_CINES];
-    if (query?.name) rows = rows.filter((c) => c.nombre.toLowerCase().includes(query.name!.toLowerCase()));
-    if (query?.id_ciudad != null) rows = rows.filter((c) => c.id_ciudad === String(query.id_ciudad));
-    const page = query?.page ?? 1;
-    const limit = query?.limit ?? 10;
-    const start = (page - 1) * limit;
-    return of({ data: rows.slice(start, start + limit), total: rows.length, page, limit }).pipe(delay(120));
+  private readonly http = inject(HttpClient);
+  private readonly base = `${API_URL}/cine`;
+
+  list(q: ListCinesQuery = {}): Observable<CinesPage> {
+    let params = new HttpParams();
+    if (q.page) params = params.set('page', String(q.page));
+    if (q.limit) params = params.set('limit', String(q.limit));
+    if (q.name && q.name.trim()) params = params.set('name', q.name.trim());
+    if (q.id_ciudad != null && q.id_ciudad !== '') {
+      params = params.set('id_ciudad', String(q.id_ciudad));
+    }
+    return this.http
+      .get<{ data: BackendCineListItem[]; total: number; page: number; limit: number }>(
+        this.base,
+        { params },
+      )
+      .pipe(
+        map((res) => ({
+          data: res.data.map(mapListItem),
+          total: res.total,
+          page: res.page,
+          limit: res.limit,
+        })),
+      );
   }
 
   getById(id: string): Observable<Cine> {
-    const found = MOCK_CINES.find((c) => c.id === id) ?? MOCK_CINES[0]!;
-    return of({ ...found }).pipe(delay(120));
+    return this.http
+      .get<BackendCineListItem>(`${this.base}/${id}`)
+      .pipe(map(mapListItem));
   }
 
   create(input: CrearCineInput): Observable<Cine> {
-    const nuevo: Cine = {
-      id: `cine-${Date.now()}`,
-      nombre: input.nombre,
-      id_ciudad: input.id_ciudad,
-      direccion: input.direccion,
-      salas: [],
-      created_at: new Date().toISOString(),
-    };
-    return of({ ...nuevo }).pipe(delay(120));
+    return this.http
+      .post<{ id: string | number }>(this.base, input)
+      .pipe(switchMap((res) => this.getById(String(res.id))));
   }
 
   update(id: string, input: EditarCineInput): Observable<Cine> {
-    const found = MOCK_CINES.find((c) => c.id === id) ?? MOCK_CINES[0]!;
-    return of({ ...found, ...input }).pipe(delay(120));
+    return this.http
+      .patch<BackendCineRaw>(`${this.base}/${id}`, input)
+      .pipe(map(mapRaw));
   }
 
-  /** POST /api/salas — backend sala creation is flat (not nested under cine) */
-  addSala(idCine: string, input: CrearSalaInput): Observable<Sala> {
-    const sala: Sala = {
-      id: `sala-${Date.now()}`,
-      nombre: input.nombre,
-      filas: input.filas,
-      columnas: input.columnas,
-      id_cine: idCine,
-    };
-    return of({ ...sala }).pipe(delay(120));
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/${id}`);
   }
 
-  /** GET /api/salas/:id */
-  getSala(_idCine: string, idSala: string): Observable<Sala> {
-    const cine = MOCK_CINES.find((c) => c.id === _idCine) ?? MOCK_CINES[0]!;
-    const sala = cine.salas.find((s) => s.id === idSala) ?? cine.salas[0]!;
-    return of({ ...sala, id_cine: _idCine }).pipe(delay(120));
+  setActivo(id: string, activo: boolean): Observable<Cine> {
+    return this.http
+      .patch<BackendCineRaw>(`${this.base}/${id}/activo`, { activo })
+      .pipe(map(mapRaw));
   }
 
-  /** PUT /api/salas/:id */
-  updateSala(_idCine: string, idSala: string, input: EditarSalaInput): Observable<Sala> {
-    const cine = MOCK_CINES.find((c) => c.id === _idCine) ?? MOCK_CINES[0]!;
-    const sala = cine.salas.find((s) => s.id === idSala) ?? cine.salas[0]!;
-    return of({ ...sala, ...input, id_cine: _idCine }).pipe(delay(120));
+  /** @deprecated Unit 4 will replace this stub with a real HTTP call */
+  addSala(_idCine: string, _input: CrearSalaInput): Observable<Sala> {
+    throw new Error('addSala: not yet wired — use Unit 4 plan');
+  }
+
+  /** @deprecated Unit 4 will replace this stub */
+  getSala(_idCine: string, _idSala: string): Observable<Sala> {
+    throw new Error('getSala: not yet wired — use Unit 4 plan');
+  }
+
+  /** @deprecated Unit 4 will replace this stub */
+  updateSala(_idCine: string, _idSala: string, _input: EditarSalaInput): Observable<Sala> {
+    throw new Error('updateSala: not yet wired — use Unit 4 plan');
   }
 }

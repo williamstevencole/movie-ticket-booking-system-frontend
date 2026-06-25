@@ -15,6 +15,8 @@ import {
   CiudadesService,
 } from '../../../../shared/services/ciudades.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
+import { ToastService } from '../../../../shared/services/toast.service';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 
 @Component({
   selector: 'app-admin-cine-form',
@@ -149,6 +151,7 @@ export class AdminCineFormComponent {
   private router = inject(Router);
   private cinesSvc = inject(CinesService);
   private ciudadesSvc = inject(CiudadesService);
+  private toast = inject(ToastService);
 
   readonly ciudades = signal<Ciudad[]>([]);
   readonly saving = signal(false);
@@ -196,13 +199,13 @@ export class AdminCineFormComponent {
       .subscribe({
         next: (cine) => {
           this.saving.set(false);
-          this.router.navigate(['/admin/cines'], {
-            state: { toast: `${cine.nombre} creado` },
-          });
+          this.toast.show(`${cine.nombre} creado`);
+          this.router.navigate(['/admin/cines']);
         },
-        error: (e) => {
+        error: (err) => {
           this.saving.set(false);
-          this.formError.set(e?.message ?? 'No se pudo crear el cine');
+          this.formError.set(extractMessage(err));
+          this.toast.show(`Error al crear el cine: ${extractMessage(err)}`);
         },
       });
   }

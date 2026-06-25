@@ -15,6 +15,8 @@ import {
   CiudadesService,
 } from '../../../../shared/services/ciudades.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
+import { ToastService } from '../../../../shared/services/toast.service';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 
 @Component({
   selector: 'app-admin-cine-editar',
@@ -163,6 +165,7 @@ export class AdminCineEditarComponent {
   private router = inject(Router);
   private cinesSvc = inject(CinesService);
   private ciudadesSvc = inject(CiudadesService);
+  private toast = inject(ToastService);
 
   readonly ciudades = signal<Ciudad[]>([]);
   readonly saving = signal(false);
@@ -194,7 +197,10 @@ export class AdminCineEditarComponent {
     }
     this.cinesSvc.getById(id).subscribe({
       next: (cine) => this.fillFromCine(cine),
-      error: () => this.fail(),
+      error: (err) => {
+        this.formError.set(extractMessage(err));
+        this.fail();
+      },
     });
   }
 
@@ -224,13 +230,13 @@ export class AdminCineEditarComponent {
       .subscribe({
         next: (cine) => {
           this.saving.set(false);
-          this.router.navigate(['/admin/cines'], {
-            state: { toast: `${cine.nombre} actualizado` },
-          });
+          this.toast.show(`${cine.nombre} actualizado`);
+          this.router.navigate(['/admin/cines']);
         },
-        error: (e) => {
+        error: (err) => {
           this.saving.set(false);
-          this.formError.set(e?.message ?? 'No se pudo actualizar el cine');
+          this.formError.set(extractMessage(err));
+          this.toast.show(`Error al actualizar: ${extractMessage(err)}`);
         },
       });
   }

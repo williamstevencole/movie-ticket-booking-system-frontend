@@ -308,7 +308,7 @@ export class AdminGenerosComponent {
 
   constructor() {
     this.refresh();
-    this.peliculasSvc.list({ limit: 1000 }).subscribe((page) => this.peliculas.set(page.data));
+    this.peliculasSvc.list({ limit: 100 }).subscribe((page) => this.peliculas.set(page.data));
   }
 
   openCreate() {

@@ -7,12 +7,18 @@ import {
   LucideArmchair,
   LucideBuilding2,
   LucideSearch,
+  LucideChevronRight,
+  LucideRefreshCw,
   LucidePower,
   LucidePowerOff,
-  LucideChevronRight,
 } from '@lucide/angular';
 
-import { Cine, CinesService } from '../../../../shared/services/cines.service';
+import {
+  Cine,
+  CinesService,
+  CinesPage,
+  ListCinesQuery,
+} from '../../../../shared/services/cines.service';
 import {
   Ciudad,
   CiudadesService,
@@ -23,8 +29,9 @@ import {
 } from '../../../../shared/services/funciones.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 import { PagerComponent } from '../../../../shared/components/pager.component';
+import { ToastService } from '../../../../shared/services/toast.service';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 
-type Toast = { kind: 'ok' | 'err'; text: string } | null;
 type EstadoFiltro = 'todos' | 'activos' | 'inactivos';
 
 @Component({
@@ -40,9 +47,10 @@ type EstadoFiltro = 'todos' | 'activos' | 'inactivos';
     LucideArmchair,
     LucideBuilding2,
     LucideSearch,
+    LucideChevronRight,
+    LucideRefreshCw,
     LucidePower,
     LucidePowerOff,
-    LucideChevronRight,
   ],
   template: `
     <div class="admin-body">
@@ -59,7 +67,7 @@ type EstadoFiltro = 'todos' | 'activos' | 'inactivos';
             <div>
               <h1>Cines</h1>
               <p class="lead">
-                {{ totalActivos() }} activos · {{ cines().length }} en total
+                {{ totalActivos() }} activos · {{ totalCines() }} en total
               </p>
             </div>
             <a routerLink="/admin/cines/crear" class="btn btn-primary">
@@ -113,8 +121,41 @@ type EstadoFiltro = 'todos' | 'activos' | 'inactivos';
             </span>
           </section>
 
+          @if (error(); as msg) {
+            <section class="error-banner" role="alert">
+              <span>{{ msg }}</span>
+              <button class="btn btn-ghost" (click)="reload()">
+                <svg lucideRefreshCw [size]="14"></svg>
+                Reintentar
+              </button>
+            </section>
+          }
+
           <section class="card">
-            @if (paged().length === 0) {
+            @if (loading() && cines().length === 0) {
+              <div class="table-scroll">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Cine</th>
+                      <th class="col-ciudad">Ciudad</th>
+                      <th class="col-dir">Dirección</th>
+                      <th class="col-num">Salas</th>
+                      <th class="col-num">Funciones</th>
+                      <th>Estado</th>
+                      <th class="col-acc" aria-label="Acciones"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (_ of skeletonRows; track $index) {
+                      <tr class="row-skeleton">
+                        <td colspan="7"><span class="skeleton-bar"></span></td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else if (paged().length === 0) {
               <div class="empty">
                 <span class="empty-mark">
                   <svg lucideBuilding2 [size]="22"></svg>
@@ -146,7 +187,7 @@ type EstadoFiltro = 'todos' | 'activos' | 'inactivos';
                   </thead>
                   <tbody>
                     @for (c of paged(); track c.id) {
-                      <tr [class.is-inactive]="!isActivo(c.id)">
+                      <tr [class.is-inactive]="!c.activo">
                         <td>
                           <div class="cine-cell">
                             <span class="cine-mark">
@@ -177,10 +218,10 @@ type EstadoFiltro = 'todos' | 'activos' | 'inactivos';
                         <td>
                           <span
                             class="estado-badge"
-                            [class.activo]="isActivo(c.id)"
-                            [class.inactivo]="!isActivo(c.id)"
+                            [class.activo]="c.activo"
+                            [class.inactivo]="!c.activo"
                           >
-                            {{ isActivo(c.id) ? 'Activo' : 'Inactivo' }}
+                            {{ c.activo ? 'Activo' : 'Inactivo' }}
                           </span>
                         </td>
                         <td class="col-acc">
@@ -201,11 +242,12 @@ type EstadoFiltro = 'todos' | 'activos' | 'inactivos';
                             </button>
                             <button
                               class="icon-btn"
-                              [class.danger]="isActivo(c.id)"
+                              [class.danger]="c.activo"
+                              [disabled]="togglingId() === c.id"
                               (click)="toggleEstado(c)"
-                              [title]="isActivo(c.id) ? 'Desactivar' : 'Activar'"
+                              [title]="c.activo ? 'Desactivar' : 'Activar'"
                             >
-                              @if (isActivo(c.id)) {
+                              @if (c.activo) {
                                 <svg lucidePower [size]="15"></svg>
                               } @else {
                                 <svg lucidePowerOff [size]="15"></svg>
@@ -229,12 +271,6 @@ type EstadoFiltro = 'todos' | 'activos' | 'inactivos';
         </div>
       </main>
     </div>
-
-    @if (toast(); as t) {
-      <div class="toast" [class.ok]="t.kind === 'ok'" [class.err]="t.kind === 'err'">
-        {{ t.text }}
-      </div>
-    }
   `,
   styleUrl: './cines.component.scss',
 })
@@ -243,6 +279,7 @@ export class AdminCinesComponent {
   private ciudadesSvc = inject(CiudadesService);
   private funcionesSvc = inject(FuncionesService);
   private router = inject(Router);
+  private toast = inject(ToastService);
 
   readonly cines = signal<Cine[]>([]);
   readonly ciudades = signal<Ciudad[]>([]);
@@ -251,11 +288,15 @@ export class AdminCinesComponent {
   readonly busqueda = signal<string>('');
   readonly idCiudad = signal<string>('');
   readonly estadoFiltro = signal<EstadoFiltro>('todos');
-  readonly inactivos = signal<Set<string>>(new Set());
 
   readonly page = signal(1);
   readonly pageSize = signal(10);
-  readonly toast = signal<Toast>(null);
+
+  readonly loading = signal<boolean>(true);
+  readonly error = signal<string | null>(null);
+  readonly total = signal<number>(0);
+  readonly togglingId = signal<string | null>(null);
+  readonly skeletonRows = Array.from({ length: 6 });
 
   readonly ciudadesById = computed(() => {
     const map = new Map<string, Ciudad>();
@@ -273,19 +314,19 @@ export class AdminCinesComponent {
     return map;
   });
 
+  readonly totalCines = computed(() => this.cines().length);
   readonly totalActivos = computed(
-    () => this.cines().filter((c) => !this.inactivos().has(c.id)).length,
+    () => this.cines().filter((c) => c.activo).length,
   );
 
   readonly filtered = computed(() => {
     const needle = this.busqueda().trim().toLowerCase();
     const ciudad = this.idCiudad();
     const estado = this.estadoFiltro();
-    const inactivos = this.inactivos();
     return this.cines().filter((c) => {
       if (ciudad && c.id_ciudad !== ciudad) return false;
-      if (estado === 'activos' && inactivos.has(c.id)) return false;
-      if (estado === 'inactivos' && !inactivos.has(c.id)) return false;
+      if (estado === 'activos' && !c.activo) return false;
+      if (estado === 'inactivos' && c.activo) return false;
       if (needle) {
         const haystack = `${c.nombre} ${c.direccion ?? ''} ${this.ciudadNombre(c.id_ciudad)}`.toLowerCase();
         if (!haystack.includes(needle)) return false;
@@ -301,9 +342,9 @@ export class AdminCinesComponent {
   });
 
   constructor() {
-    this.cinesSvc.list().subscribe((p) => this.cines.set(p.data));
     this.ciudadesSvc.list().subscribe((c) => this.ciudades.set(c));
     this.funcionesSvc.list().subscribe((f) => this.funciones.set(f));
+    this.fetch();
 
     effect(() => {
       const total = this.filtered().length;
@@ -312,13 +353,36 @@ export class AdminCinesComponent {
     });
   }
 
-  onBusqueda(e: Event) {
-    this.busqueda.set((e.target as HTMLInputElement).value);
-    this.page.set(1);
+  private fetch(): void {
+    const q: ListCinesQuery = {
+      page: 1,
+      limit: 100,
+      name: this.busqueda() || undefined,
+      id_ciudad: this.idCiudad() || undefined,
+    };
+    this.loading.set(true);
+    this.error.set(null);
+    this.cinesSvc.list(q).subscribe({
+      next: (res: CinesPage) => {
+        this.cines.set(res.data);
+        this.total.set(res.total);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.cines.set([]);
+        this.total.set(0);
+        this.error.set(extractMessage(err));
+        this.loading.set(false);
+      },
+    });
   }
 
-  setEstadoFiltro(f: EstadoFiltro) {
-    this.estadoFiltro.set(f);
+  reload(): void {
+    this.fetch();
+  }
+
+  onBusqueda(e: Event) {
+    this.busqueda.set((e.target as HTMLInputElement).value);
     this.page.set(1);
   }
 
@@ -327,13 +391,33 @@ export class AdminCinesComponent {
     this.page.set(1);
   }
 
-  onPageSizeChange(size: number) {
-    this.pageSize.set(size);
+  setEstadoFiltro(f: EstadoFiltro) {
+    this.estadoFiltro.set(f);
     this.page.set(1);
   }
 
-  isActivo(id: string): boolean {
-    return !this.inactivos().has(id);
+  toggleEstado(c: Cine) {
+    if (this.togglingId() === c.id) return;
+    const next = !c.activo;
+    this.togglingId.set(c.id);
+    this.cinesSvc.setActivo(c.id, next).subscribe({
+      next: (updated) => {
+        this.cines.update((list) =>
+          list.map((x) => (x.id === c.id ? { ...x, activo: updated.activo } : x)),
+        );
+        this.togglingId.set(null);
+        this.toast.show(`${c.nombre} ${next ? 'activado' : 'desactivado'}`);
+      },
+      error: (err) => {
+        this.togglingId.set(null);
+        this.toast.show(`Error: ${extractMessage(err)}`);
+      },
+    });
+  }
+
+  onPageSizeChange(size: number) {
+    this.pageSize.set(size);
+    this.page.set(1);
   }
 
   ciudadNombre(id: string): string {
@@ -346,22 +430,5 @@ export class AdminCinesComponent {
 
   verSalas(c: Cine) {
     this.router.navigate(['/admin/salas'], { queryParams: { cine: c.id } });
-  }
-
-  toggleEstado(c: Cine) {
-    const next = new Set(this.inactivos());
-    if (next.has(c.id)) {
-      next.delete(c.id);
-      this.showToast('ok', `${c.nombre} activado`);
-    } else {
-      next.add(c.id);
-      this.showToast('ok', `${c.nombre} desactivado`);
-    }
-    this.inactivos.set(next);
-  }
-
-  private showToast(kind: 'ok' | 'err', text: string) {
-    this.toast.set({ kind, text });
-    setTimeout(() => this.toast.set(null), 3200);
   }
 }
