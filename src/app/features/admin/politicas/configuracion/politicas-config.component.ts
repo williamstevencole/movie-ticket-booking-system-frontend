@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -10,6 +10,7 @@ import {
   LucideChevronRight,
   LucideClipboardList,
   LucideBuilding2,
+  LucideRefreshCw,
 } from '@lucide/angular';
 
 import { Cine, CinesService } from '../../../../shared/services/cines.service';
@@ -17,8 +18,10 @@ import {
   PoliticaCancelacion,
   PoliticasCancelacionService,
   ReglaPolitica,
+  ReglaPoliticaInput,
 } from '../../../../shared/services/politicas-cancelacion.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 
 @Component({
   selector: 'app-admin-politicas-config',
@@ -35,6 +38,7 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
     LucideChevronRight,
     LucideClipboardList,
     LucideBuilding2,
+    LucideRefreshCw,
   ],
   template: `
     <div class="admin-body">
@@ -85,8 +89,28 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
             }
           </section>
 
+          <!-- Inline error banner -->
+          @if (error(); as msg) {
+            <section class="error-banner" role="alert">
+              <span>{{ msg }}</span>
+              <button class="btn-ghost" (click)="reload()">
+                <svg lucideRefreshCw [size]="14"></svg>
+                Reintentar
+              </button>
+            </section>
+          }
+
+          <!-- Skeleton durante el load inicial por cine -->
+          @if (idCineSel() && loading() && politicas().length === 0) {
+            <ul class="politicas-list">
+              @for (_ of skeletonRows; track $index) {
+                <li class="row-skeleton"><span class="skeleton-bar"></span></li>
+              }
+            </ul>
+          }
+
           <!-- Estado vacío -->
-          @if (idCineSel() && politicas().length === 0) {
+          @if (idCineSel() && !loading() && politicas().length === 0 && !error()) {
             <div class="empty-state">
               <span class="empty-icon">
                 <svg lucideClipboardList [size]="24"></svg>
@@ -246,8 +270,33 @@ export class AdminPoliticasConfigComponent {
   readonly nuevoNombre = signal('');
   readonly toast = signal<{ kind: 'ok' | 'err'; text: string } | null>(null);
 
+  readonly loading = signal<boolean>(false);
+  readonly error = signal<string | null>(null);
+  readonly skeletonRows = Array.from({ length: 5 });
+
   constructor() {
     this.cinesSvc.list().subscribe((p) => this.cines.set(p.data));
+  }
+
+  reload(): void {
+    const id = this.idCineSel();
+    if (id) this.fetchByCine(id);
+  }
+
+  private fetchByCine(idCine: string): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.politicasSvc.listByCine(idCine).subscribe({
+      next: (data) => {
+        this.politicas.set(data);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.politicas.set([]);
+        this.error.set(extractMessage(err));
+        this.loading.set(false);
+      },
+    });
   }
 
   onCineChange(e: Event): void {
@@ -257,11 +306,12 @@ export class AdminPoliticasConfigComponent {
     this.politicas.set([]);
     this.reglasPorPolitica.set(new Map());
     this.politicasDirty.set(new Set());
+    this.error.set(null);
 
     if (id) {
-      this.politicasSvc.listByCine(id).subscribe((list) => {
-        this.politicas.set(list);
-      });
+      this.fetchByCine(id);
+    } else {
+      this.loading.set(false);
     }
   }
 
@@ -274,10 +324,13 @@ export class AdminPoliticasConfigComponent {
 
     // Lazy-load reglas si no están en el Map
     if (!this.reglasPorPolitica().has(id)) {
-      this.politicasSvc.listReglas(id).subscribe((reglas) => {
-        const nextMap = new Map(this.reglasPorPolitica());
-        nextMap.set(id, reglas);
-        this.reglasPorPolitica.set(nextMap);
+      this.politicasSvc.listReglas(id).subscribe({
+        next: (reglas) => {
+          const nextMap = new Map(this.reglasPorPolitica());
+          nextMap.set(id, reglas);
+          this.reglasPorPolitica.set(nextMap);
+        },
+        error: (err) => this.showToast('err', extractMessage(err)),
       });
     }
   }
@@ -313,7 +366,7 @@ export class AdminPoliticasConfigComponent {
   agregarRegla(idPolitica: string): void {
     const currentReglas = [...(this.reglasPorPolitica().get(idPolitica) ?? [])];
     const nueva: ReglaPolitica = {
-      id: `tmp-${Date.now()}`,
+      id: `tmp-${currentReglas.length + 1}`,
       id_politica: idPolitica,
       horas_antes_minimo: 0,
       horas_antes_maximo: null,
@@ -346,51 +399,95 @@ export class AdminPoliticasConfigComponent {
 
   onActivaToggle(idPolitica: string, e: Event): void {
     const activa = (e.target as HTMLInputElement).checked;
-    const updated = this.politicas().map((p) =>
-      p.id === idPolitica ? { ...p, activa } : p,
+    // Optimistic toggle (activar uno desactiva sus hermanos del mismo cine en backend)
+    const target = this.politicas().find((p) => p.id === idPolitica);
+    const idCine = target?.id_cine;
+    this.politicas.update((arr) =>
+      arr.map((p) =>
+        p.id === idPolitica
+          ? { ...p, activa }
+          : activa && p.id_cine === idCine
+            ? { ...p, activa: false }
+            : p,
+      ),
     );
-    this.politicas.set(updated);
-    this.markDirty(idPolitica);
+
+    this.politicasSvc.setActiva(idPolitica, activa).subscribe({
+      next: (updated) => {
+        this.politicas.update((arr) =>
+          arr.map((p) =>
+            p.id === updated.id
+              ? { ...p, ...updated, reglas: p.reglas }
+              : p.id_cine === updated.id_cine
+                ? { ...p, activa: false }
+                : p,
+          ),
+        );
+      },
+      error: (err) => {
+        // rollback: refetch del cine
+        this.reload();
+        this.showToast('err', extractMessage(err));
+      },
+    });
   }
 
   guardarPolitica(p: PoliticaCancelacion): void {
-    const reglas = this.reglas(p.id);
+    const reglasInput: ReglaPoliticaInput[] = this.reglas(p.id).map((r) => ({
+      horas_antes_minimo: r.horas_antes_minimo,
+      horas_antes_maximo: r.horas_antes_maximo,
+      porcentaje_reembolso: r.porcentaje_reembolso,
+    }));
 
-    this.politicasSvc.update(p.id, { nombre: p.nombre, activa: p.activa }).subscribe({
-      next: () => {
-        this.politicasSvc.saveReglas(p.id, reglas).subscribe({
-          next: (savedReglas) => {
+    this.politicasSvc
+      .update(p.id, { nombre: p.nombre, reglas: reglasInput })
+      .subscribe({
+        next: (updated) => {
+          // Reemplaza la politica con la respuesta (mantiene activa actual del row)
+          this.politicas.update((arr) =>
+            arr.map((row) =>
+              row.id === updated.id ? { ...updated, activa: row.activa } : row,
+            ),
+          );
+          // Sincroniza las reglas guardadas (vienen embebidas en la respuesta)
+          if (updated.reglas) {
             const nextMap = new Map(this.reglasPorPolitica());
-            nextMap.set(p.id, savedReglas);
+            nextMap.set(p.id, updated.reglas);
             this.reglasPorPolitica.set(nextMap);
-            this.clearDirty(p.id);
-            this.showToast('ok', `Política "${p.nombre}" guardada`);
-          },
-          error: () => this.showToast('err', 'Error al guardar las reglas'),
-        });
-      },
-      error: () => this.showToast('err', 'Error al guardar la política'),
-    });
+          }
+          this.clearDirty(p.id);
+          this.showToast('ok', `Política "${updated.nombre}" guardada`);
+        },
+        error: (err) => this.showToast('err', extractMessage(err)),
+      });
   }
 
   crearPolitica(): void {
     const nombre = this.nuevoNombre().trim();
     if (!nombre) return;
 
+    // Backend requiere ≥1 regla; sembramos una placeholder editable
+    const reglasIniciales: ReglaPoliticaInput[] = [
+      { horas_antes_minimo: 0, horas_antes_maximo: null, porcentaje_reembolso: 0 },
+    ];
+
     this.politicasSvc
-      .create({ id_cine: this.idCineSel(), nombre })
+      .create({
+        id_cine: this.idCineSel(),
+        nombre,
+        reglas: reglasIniciales,
+      })
       .subscribe({
         next: (nueva) => {
           this.politicas.set([...this.politicas(), nueva]);
           this.nuevoNombre.set('');
-          // Inicializar reglas vacías y expandir la nueva política
           const nextMap = new Map(this.reglasPorPolitica());
-          nextMap.set(nueva.id, []);
+          nextMap.set(nueva.id, nueva.reglas ?? []);
           this.reglasPorPolitica.set(nextMap);
           this.expandida.set(nueva.id);
           this.showToast('ok', `Política "${nueva.nombre}" creada`);
         },
-        error: () => this.showToast('err', 'Error al crear la política'),
+        error: (err) => this.showToast('err', extractMessage(err)),
       });
   }
 
