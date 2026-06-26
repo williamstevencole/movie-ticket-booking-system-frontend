@@ -1979,6 +1979,13 @@ export interface components {
              */
             id_ciudad: string;
         };
+        CineCreatedResponseDto: {
+            /**
+             * @description ID del cine creado
+             * @example 1
+             */
+            id: string;
+        };
         SalaListItemResponseDto: {
             /**
              * @description ID de la sala
@@ -2045,13 +2052,6 @@ export interface components {
              */
             limit: number;
         };
-        CineCreatedResponseDto: {
-            /**
-             * @description ID del cine creado
-             * @example 1
-             */
-            id: string;
-        };
         UpdateCineDto: {
             /**
              * @description Nombre del cine
@@ -2069,6 +2069,31 @@ export interface components {
              */
             id_ciudad?: string;
         };
+        DeleteResponseDto: {
+            /**
+             * @description ID del recurso eliminado
+             * @example 1
+             */
+            id: string;
+        };
+        CiudadResponseDto: {
+            /**
+             * @description ID de la ciudad
+             * @example 1
+             */
+            id: string;
+            /**
+             * @description Nombre de la ciudad
+             * @example Guatemala
+             */
+            nombre: string;
+            /**
+             * Format: date-time
+             * @description Fecha de creación
+             * @example 2026-01-01T00:00:00.000Z
+             */
+            created_at: string;
+        };
         CreateCiudadesDto: {
             /**
              * @description Nombre único de la ciudad
@@ -2076,7 +2101,94 @@ export interface components {
              */
             nombre: string;
         };
-        UpdateCiudadesDto: Record<string, never>;
+        UpdateCiudadesDto: {
+            /**
+             * @description Nombre único de la ciudad
+             * @example Guatemala
+             */
+            nombre?: string;
+        };
+        FichaTecnicaDto: {
+            /** @example Christopher Nolan */
+            direccion?: string;
+            /** @example Christopher Nolan */
+            guion?: string;
+            /** @example Wally Pfister */
+            fotografia?: string;
+            /**
+             * @example [
+             *       "Leonardo DiCaprio",
+             *       "Marion Cotillard"
+             *     ]
+             */
+            reparto?: string[];
+            /** @example Hans Zimmer */
+            musica?: string;
+            /** @example USA */
+            pais?: string;
+            /** @example Warner Bros */
+            productora?: string;
+            /** @example Warner Bros Distribution */
+            distribuidor?: string;
+        };
+        PeliculaResponseDto: {
+            /** @example 1 */
+            id: string;
+            /** @example Inception */
+            titulo: string;
+            /** @example Un ladrón que roba secretos a través de sueños. */
+            sinopsis?: Record<string, never> | null;
+            /** @example 148 */
+            duracion_min?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @example 2023-07-16T00:00:00.000Z
+             */
+            fecha_estreno?: Record<string, never> | null;
+            /** @example 1 */
+            id_genero?: string | null;
+            /** @example 1 */
+            id_idioma?: string | null;
+            /** @example https://res.cloudinary.com/demo/image/upload/movie.jpg */
+            poster_url?: Record<string, never> | null;
+            /** @example true */
+            activo: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-01-01T00:00:00.000Z
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @example 2026-01-02T00:00:00.000Z
+             */
+            updated_at: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            deleted_at?: Record<string, never> | null;
+            /** @example 1 */
+            id_usuario?: string | null;
+            /** @example Tu mente es la escena del crimen. */
+            tagline?: Record<string, never>;
+            ficha_tecnica?: components["schemas"]["FichaTecnicaDto"] | null;
+            /** @example 4.2 */
+            rating_promedio?: Record<string, never> | null;
+            /** @example 187 */
+            rating_count: number;
+            /** @example 5 */
+            mi_calificacion?: Record<string, never> | null;
+        };
+        PeliculasPageResponseDto: {
+            data: components["schemas"]["PeliculaResponseDto"][];
+            /** @example 100 */
+            total: number;
+            /** @example 1 */
+            page: number;
+            /** @example 20 */
+            limit: number;
+        };
         CreatePeliculaDto: {
             /**
              * @description Título de la película
@@ -2199,6 +2311,96 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        PosterUploadResponseDto: {
+            /** @example 1 */
+            id: string;
+            /** @example https://res.cloudinary.com/demo/image/upload/poster.jpg */
+            poster_url?: Record<string, never> | null;
+        };
+        CiudadResumenDto: {
+            /** @example 1 */
+            id: string;
+            /** @example Ciudad de México */
+            nombre: string;
+        };
+        FuncionResumenDto: {
+            /** @example 10 */
+            id: string;
+            /**
+             * Format: date-time
+             * @example 2026-07-01T20:30:00.000Z
+             */
+            fecha_hora: string;
+            /** @example programada */
+            estado: string;
+        };
+        SalaConFuncionesDto: {
+            /** @example 2 */
+            id: string;
+            /** @example Sala 2 */
+            nombre: string;
+            funciones: components["schemas"]["FuncionResumenDto"][];
+        };
+        CineConFuncionesResponseDto: {
+            /** @example 5 */
+            id: string;
+            /** @example Cinépolis Plaza Mayor */
+            nombre: string;
+            /** @example Av. Principal 123, Ciudad de México */
+            direccion?: Record<string, never> | null;
+            /** @example 1 */
+            id_ciudad: string;
+            ciudades: components["schemas"]["CiudadResumenDto"];
+            salas: components["schemas"]["SalaConFuncionesDto"][];
+        };
+        PeliculaResumenDto: {
+            /** @example 1 */
+            id: string;
+            /** @example Inception */
+            titulo: string;
+        };
+        CineResumenDto: {
+            /** @example 5 */
+            id: string;
+            /** @example Cinépolis Plaza Mayor */
+            nombre: string;
+        };
+        SalaResumenDto: {
+            /** @example 3 */
+            id: string;
+            /** @example Sala 3 IMAX */
+            nombre: string;
+        };
+        AsientosDisponibilidadDto: {
+            /** @example 120 */
+            total: number;
+            /** @example 80 */
+            disponibles: number;
+            /** @example 5 */
+            bloqueados: number;
+            /** @example 10 */
+            reservados: number;
+            /** @example 25 */
+            ocupados: number;
+        };
+        FuncionConDisponibilidadDto: {
+            /** @example 42 */
+            id: string;
+            /**
+             * Format: date-time
+             * @example 2026-07-01T20:30:00.000Z
+             */
+            fecha_hora: string;
+            /** @example programada */
+            estado: string;
+            sala: components["schemas"]["SalaResumenDto"];
+            asientos: components["schemas"]["AsientosDisponibilidadDto"];
+        };
+        FuncionesPorCineResponseDto: {
+            pelicula: components["schemas"]["PeliculaResumenDto"];
+            cine: components["schemas"]["CineResumenDto"];
+            funciones: components["schemas"]["FuncionConDisponibilidadDto"][];
+        };
         SetActivoPeliculaDto: {
             /**
              * @description Indica si la película debe estar activa o inactiva
@@ -2260,7 +2462,28 @@ export interface components {
              */
             warning?: string;
         };
-        UpdateSalaDto: Record<string, never>;
+        UpdateSalaDto: {
+            /**
+             * @description Nombre de la sala
+             * @example Sala 1
+             */
+            nombre?: string;
+            /**
+             * @description Número de filas en la sala
+             * @example 10
+             */
+            filas?: number;
+            /**
+             * @description Número de columnas en la sala
+             * @example 10
+             */
+            columnas?: number;
+            /**
+             * @description ID del cine (serializador como string)
+             * @example 1
+             */
+            id_cine?: string;
+        };
         LoginDto: {
             /**
              * Format: email
@@ -2340,6 +2563,13 @@ export interface components {
              */
             email: string;
         };
+        MessageResponseDto: {
+            /**
+             * @description Mensaje confirmando la operación
+             * @example Operación completada exitosamente
+             */
+            message: string;
+        };
         ResetPasswordDto: {
             /**
              * @description Token de recuperación recibido por email
@@ -2387,6 +2617,13 @@ export interface components {
              */
             estado: components["schemas"]["EstadoUsuario"];
         };
+        ToggleNotificacionesResponseDto: {
+            /**
+             * @description Nuevo estado de las notificaciones del usuario
+             * @example true
+             */
+            notificaciones_activas: boolean;
+        };
         UpdatePerfilDto: {
             /**
              * @description Nombre del usuario (máximo 150 caracteres)
@@ -2404,48 +2641,296 @@ export interface components {
              */
             notificaciones_activas?: boolean;
         };
+        UpdatePerfilResponseDto: {
+            /**
+             * @description ID del usuario
+             * @example 1
+             */
+            id: string;
+            /**
+             * @description Nombre completo
+             * @example Juan Pérez
+             */
+            nombre: string;
+            /**
+             * @description Email del usuario
+             * @example juan@example.com
+             */
+            email: string;
+            /**
+             * @description Teléfono del usuario
+             * @example +502 1234 5678
+             */
+            telefono?: Record<string, never> | null;
+            /**
+             * @description Preferencia de notificaciones
+             * @example true
+             */
+            notificaciones_activas: boolean;
+        };
         /** @enum {string} */
         EstadoUsuarioFilter: "activo" | "inactivo" | "suspendido";
-        UsuarioItem: {
-            /** @example 1 */
+        UsuarioItemDto: {
+            /**
+             * @description ID del usuario
+             * @example 1
+             */
             id: string;
-            /** @example Juan Pérez */
+            /**
+             * @description Nombre completo
+             * @example Juan Pérez
+             */
             nombre: string;
-            /** @example juan@email.com */
+            /**
+             * @description Email del usuario
+             * @example juan@email.com
+             */
             email: string;
-            /** @example +502 5555-0001 */
-            telefono: Record<string, never> | null;
-            /** @example activo */
+            /**
+             * @description Teléfono del usuario (puede ser null)
+             * @example +502 5555-0001
+             */
+            telefono?: Record<string, never> | null;
+            /**
+             * @description Estado del usuario
+             * @example activo
+             */
             estado: string;
-            /** @example 1 */
+            /**
+             * @description ID del rol
+             * @example 1
+             */
             id_rol: string;
-            /** @example cliente */
+            /**
+             * @description Nombre del rol
+             * @example cliente
+             */
             rol: string;
-            /** @example false */
+            /**
+             * @description Si el usuario recibe notificaciones
+             * @example false
+             */
             notificaciones_activas: boolean;
             /**
              * Format: date-time
+             * @description Fecha de creación
              * @example 2026-01-01T00:00:00.000Z
              */
             created_at: string;
         };
-        PaginationMeta: {
-            /** @example 50 */
+        PaginationMetaDto: {
+            /**
+             * @description Total de usuarios en la BD
+             * @example 50
+             */
             total: number;
-            /** @example 1 */
+            /**
+             * @description Página actual
+             * @example 1
+             */
             page: number;
-            /** @example 10 */
+            /**
+             * @description Tamaño de página
+             * @example 10
+             */
             limit: number;
-            /** @example 5 */
+            /**
+             * @description Total de páginas
+             * @example 5
+             */
             totalPages: number;
         };
-        UserListResponse: {
-            data: components["schemas"]["UsuarioItem"][];
-            meta: components["schemas"]["PaginationMeta"];
+        UserListResponseDto: {
+            /** @description Lista de usuarios */
+            data: components["schemas"]["UsuarioItemDto"][];
+            /** @description Metadatos de paginación */
+            meta: components["schemas"]["PaginationMetaDto"];
         };
         Object: Record<string, never>;
         /** @enum {string} */
         EstadoClienteFilter: "activo" | "bloqueado";
+        ClienteListItemDto: {
+            /**
+             * @description ID del cliente
+             * @example 1
+             */
+            id: string;
+            /**
+             * @description Nombre completo
+             * @example Juan Pérez
+             */
+            nombre: string;
+            /**
+             * @description Email del cliente
+             * @example juan@email.com
+             */
+            email: string;
+            /**
+             * @description Teléfono del cliente (puede ser null)
+             * @example +502 5555-0001
+             */
+            telefono?: Record<string, never> | null;
+            /**
+             * @description Estado del cliente
+             * @example activo
+             */
+            estado: string;
+            /**
+             * @description Si el cliente recibe notificaciones
+             * @example false
+             */
+            notificaciones_activas: boolean;
+            /**
+             * @description Número de reservas del cliente
+             * @example 3
+             */
+            num_reservas: number;
+            /**
+             * Format: date-time
+             * @description Fecha de creación
+             * @example 2026-01-01T00:00:00.000Z
+             */
+            created_at: string;
+        };
+        ClientesPageResponseDto: {
+            /** @description Lista de clientes */
+            data: components["schemas"]["ClienteListItemDto"][];
+            /**
+             * @description Total de clientes
+             * @example 50
+             */
+            total: number;
+            /**
+             * @description Página actual
+             * @example 1
+             */
+            page: number;
+            /**
+             * @description Tamaño de página
+             * @example 10
+             */
+            limit: number;
+        };
+        ClientesStatsResponseDto: {
+            /**
+             * @description Total de clientes registrados
+             * @example 100
+             */
+            total: number;
+            /**
+             * @description Clientes con estado activo
+             * @example 80
+             */
+            activos: number;
+            /**
+             * @description Clientes con estado bloqueado
+             * @example 20
+             */
+            bloqueados: number;
+        };
+        ClienteReservaAsientoDto: {
+            /**
+             * @description ID del asiento
+             * @example 5
+             */
+            id: string;
+            /**
+             * @description Código del asiento
+             * @example A1
+             */
+            codigo: string;
+        };
+        ClienteDetalleReservaDto: {
+            /**
+             * @description ID de la reserva
+             * @example 42
+             */
+            id: string;
+            /**
+             * @description Número de reserva
+             * @example RES-0042
+             */
+            numero_reserva: string;
+            /**
+             * @description Estado de la reserva
+             * @example confirmada
+             */
+            estado: string;
+            /**
+             * Format: date-time
+             * @description Fecha de creación de la reserva
+             * @example 2026-03-15T20:00:00.000Z
+             */
+            created_at: string;
+            /**
+             * @description Título de la película (null si no existe)
+             * @example Dune: Part Two
+             */
+            pelicula: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @description Fecha y hora de la función
+             * @example 2026-03-20T19:30:00.000Z
+             */
+            fecha_hora: string;
+            /**
+             * @description Número de asientos reservados
+             * @example 2
+             */
+            num_asientos: number;
+            /** @description Asientos reservados */
+            asientos: components["schemas"]["ClienteReservaAsientoDto"][];
+            /**
+             * @description Monto total de la reserva (pagado o calculado)
+             * @example 120
+             */
+            monto_total: number;
+        };
+        ClienteDetalleResponseDto: {
+            /**
+             * @description ID del cliente
+             * @example 1
+             */
+            id: string;
+            /**
+             * @description Nombre completo
+             * @example Juan Pérez
+             */
+            nombre: string;
+            /**
+             * @description Email del cliente
+             * @example juan@email.com
+             */
+            email: string;
+            /**
+             * @description Teléfono del cliente (puede ser null)
+             * @example +502 5555-0001
+             */
+            telefono?: Record<string, never> | null;
+            /**
+             * @description Estado del cliente
+             * @example activo
+             */
+            estado: string;
+            /**
+             * @description Si el cliente recibe notificaciones
+             * @example true
+             */
+            notificaciones_activas: boolean;
+            /**
+             * @description Total de reservas del cliente (histórico completo)
+             * @example 12
+             */
+            num_reservas: number;
+            /**
+             * Format: date-time
+             * @description Fecha de creación del cliente
+             * @example 2026-01-01T00:00:00.000Z
+             */
+            created_at: string;
+            /** @description Últimas 10 reservas del cliente */
+            reservas: components["schemas"]["ClienteDetalleReservaDto"][];
+        };
         /**
          * @description Nuevo estado del cliente
          * @enum {string}
@@ -2460,6 +2945,59 @@ export interface components {
         };
         /** @enum {string} */
         EstadoStaffFilter: "activo" | "bloqueado";
+        StaffListItemDto: {
+            /**
+             * @description ID del staff
+             * @example 10
+             */
+            id: string;
+            /**
+             * @description Nombre completo
+             * @example María García
+             */
+            nombre: string;
+            /**
+             * @description Email del staff
+             * @example maria.garcia@cine.com
+             */
+            email: string;
+            /**
+             * @description Estado del staff
+             * @example activo
+             */
+            estado: string;
+            /**
+             * Format: date-time
+             * @description Último acceso (puede ser null si nunca ha ingresado)
+             * @example 2026-06-24T14:30:00.000Z
+             */
+            ultimo_acceso?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @description Fecha de creación
+             * @example 2026-01-01T00:00:00.000Z
+             */
+            created_at: string;
+        };
+        StaffPageResponseDto: {
+            /** @description Lista de staff */
+            data: components["schemas"]["StaffListItemDto"][];
+            /**
+             * @description Total de staff
+             * @example 5
+             */
+            total: number;
+            /**
+             * @description Página actual
+             * @example 1
+             */
+            page: number;
+            /**
+             * @description Tamaño de página
+             * @example 10
+             */
+            limit: number;
+        };
         CrearStaffDto: {
             /**
              * @description Nombre del personal (mínimo 2 caracteres)
@@ -2479,6 +3017,15 @@ export interface components {
              */
             password?: string;
         };
+        CrearStaffResponseDto: {
+            /** @description Datos del staff creado */
+            user: components["schemas"]["StaffListItemDto"];
+            /**
+             * @description Contraseña temporal generada (solo presente si no se envió password)
+             * @example a3f8b2c9d1e4f7a0
+             */
+            tempPassword?: string;
+        };
         ActualizarStaffDto: {
             /**
              * @description Nombre del personal (mínimo 2 caracteres)
@@ -2492,6 +3039,63 @@ export interface components {
              */
             email?: string;
         };
+        ResetPasswordResponseDto: {
+            /**
+             * @description Contraseña temporal generada para el staff
+             * @example a3f8b2c9d1e4f7a0
+             */
+            tempPassword: string;
+        };
+        PerfilResponseDto: {
+            /**
+             * @description ID del usuario
+             * @example 1
+             */
+            id: string;
+            /**
+             * @description Nombre completo
+             * @example Juan Pérez
+             */
+            nombre: string;
+            /**
+             * @description Email del usuario
+             * @example juan@example.com
+             */
+            email: string;
+            /**
+             * @description Teléfono del usuario (puede ser null)
+             * @example +502 1234 5678
+             */
+            telefono?: Record<string, never> | null;
+            /**
+             * @description Preferencia de notificaciones
+             * @example true
+             */
+            notificaciones_activas: boolean;
+            /**
+             * @description Estado del usuario
+             * @example activo
+             */
+            estado: string;
+            /**
+             * Format: date-time
+             * @description Fecha de creación
+             * @example 2026-01-01T00:00:00.000Z
+             */
+            created_at: string;
+        };
+        GeneroResponseDto: {
+            /**
+             * @description ID del género
+             * @example 1
+             */
+            id: string;
+            /**
+             * @description Nombre del género
+             * @example Acción
+             */
+            nombre: string;
+        };
         CreateGeneroDto: {
             /**
              * @description Nombre único del género
@@ -2499,7 +3103,25 @@ export interface components {
              */
             nombre: string;
         };
-        UpdateGeneroDto: Record<string, never>;
+        UpdateGeneroDto: {
+            /**
+             * @description Nombre único del género
+             * @example Acción
+             */
+            nombre?: string;
+        };
+        IdiomaResponseDto: {
+            /**
+             * @description ID del idioma
+             * @example 1
+             */
+            id: string;
+            /**
+             * @description Nombre del idioma
+             * @example Español
+             */
+            nombre: string;
+        };
         CreateIdiomaDto: {
             /**
              * @description Nombre único del idioma
@@ -2507,7 +3129,25 @@ export interface components {
              */
             nombre: string;
         };
-        UpdateIdiomaDto: Record<string, never>;
+        UpdateIdiomaDto: {
+            /**
+             * @description Nombre único del idioma
+             * @example Español
+             */
+            nombre?: string;
+        };
+        RolResponseDto: {
+            /**
+             * @description ID del rol
+             * @example 1
+             */
+            id: string;
+            /**
+             * @description Nombre del rol
+             * @example admin
+             */
+            nombre: string;
+        };
         CreateRolDto: {
             /**
              * @description Nombre único del rol
@@ -2524,7 +3164,82 @@ export interface components {
              */
             permisos?: string[];
         };
-        UpdateRolDto: Record<string, never>;
+        UpdateRolDto: {
+            /**
+             * @description Nombre único del rol
+             * @example admin
+             */
+            nombre?: string;
+            /**
+             * @description Lista de permisos asociados al rol
+             * @example [
+             *       "usuarios.crear",
+             *       "usuarios.editar",
+             *       "usuarios.eliminar"
+             *     ]
+             */
+            permisos?: string[];
+        };
+        AsientoSalaDto: {
+            /**
+             * @description Número de filas de la sala
+             * @example 10
+             */
+            filas: number;
+            /**
+             * @description Número de columnas de la sala
+             * @example 15
+             */
+            columnas: number;
+        };
+        AsientoMapaItemDto: {
+            /**
+             * @description ID de asiento-función
+             * @example 12
+             */
+            id_asiento_funcion: string;
+            /**
+             * @description Fila del asiento
+             * @example A
+             */
+            fila: string;
+            /**
+             * @description Columna del asiento
+             * @example 3
+             */
+            columna: number;
+            /**
+             * @description Código de asiento
+             * @example A-03
+             */
+            codigo: string;
+            /**
+             * @description Tipo de asiento
+             * @example Estándar
+             */
+            tipo: string;
+            /**
+             * @description Estado del asiento (DISPONIBLE, BLOQUEADO, RESERVADO)
+             * @example DISPONIBLE
+             */
+            estado: string;
+            /**
+             * @description Indica si el asiento está bloqueado por el usuario actual
+             * @example false
+             */
+            es_mio: boolean;
+        };
+        AsientoMapaResponseDto: {
+            /**
+             * @description ID de la función
+             * @example 1
+             */
+            funcion_id: string;
+            /** @description Dimensiones de la sala */
+            sala: components["schemas"]["AsientoSalaDto"];
+            /** @description Lista de asientos de la función con su estado */
+            asientos: components["schemas"]["AsientoMapaItemDto"][];
+        };
         BloquearAsientosDto: {
             /**
              * @description Array de IDs de asientos-función a bloquear (serializados como strings)
@@ -2534,6 +3249,22 @@ export interface components {
              *     ]
              */
             ids_asiento_funcion: string[];
+        };
+        BloquearAsientosResponseDto: {
+            /**
+             * @description IDs de los asientos-función que fueron bloqueados
+             * @example [
+             *       "12",
+             *       "13"
+             *     ]
+             */
+            bloqueados: string[];
+            /**
+             * Format: date-time
+             * @description Timestamp hasta el que los asientos permanecerán bloqueados (ISO 8601)
+             * @example 2026-06-25T14:20:00.000Z
+             */
+            bloqueado_hasta: string;
         };
         CrearReservaDto: {
             /**
@@ -2550,12 +3281,402 @@ export interface components {
              */
             ids_asiento_funcion: string[];
         };
+        ReservaCreatedAsientoDto: {
+            /** @example A12 */
+            codigo: string;
+            /** @example VIP */
+            tipo: string;
+        };
+        ReservaCreatedResponseDto: {
+            /** @example 42 */
+            id_reserva: string;
+            /** @example RES-20260625-ABCDE */
+            numero_reserva: string;
+            /** @example pendiente_pago */
+            estado: string;
+            asientos: components["schemas"]["ReservaCreatedAsientoDto"][];
+            /** @example 25.00 */
+            total_estimado: string;
+        };
+        CancelarReservaResponseDto: {
+            /** @example 42 */
+            id_reserva: string;
+            /** @example cancelada */
+            estado: string;
+            /** @example 25.00 */
+            monto_reembolso: string;
+            /** @example 7 */
+            id_reembolso?: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-06-25T14:30:00.000Z
+             */
+            fecha_cancelacion: string;
+        };
+        BoletoPeliculaDto: {
+            /** @example 3 */
+            id: string;
+            /** @example Dune: Part Two */
+            titulo: string;
+            /** @example https://example.com/poster.jpg */
+            poster_url?: string | null;
+            /** @example 8.50 */
+            rating_promedio?: string | null;
+            /** @example 1240 */
+            rating_count: number;
+        };
+        BoletoSalaDto: {
+            /** @example 2 */
+            id: string;
+            /** @example Sala 1 IMAX */
+            nombre: string;
+        };
+        BoletoCineDto: {
+            /** @example 1 */
+            id: string;
+            /** @example Cine Metropolis */
+            nombre: string;
+        };
+        BoletoAsientoDto: {
+            /** @example 12 */
+            id: string;
+            /** @example A12 */
+            codigo: string;
+            /** @example A */
+            fila: string;
+            /** @example 12 */
+            columna: number;
+            /** @example VIP */
+            tipo_asiento?: string | null;
+            /** @example 12.50 */
+            precio?: string | null;
+        };
+        BoletoResponseDto: {
+            /** @example 42 */
+            id: string;
+            /** @example RES-20260625-ABCDE */
+            numero_reserva: string;
+            /** @example pagada */
+            estado: string;
+            /**
+             * Format: date-time
+             * @example 2026-06-25T10:00:00.000Z
+             */
+            created_at: string;
+            /** @example 5 */
+            id_funcion: string;
+            /**
+             * Format: date-time
+             * @example 2026-06-30T20:00:00.000Z
+             */
+            fecha_hora: string;
+            pelicula: components["schemas"]["BoletoPeliculaDto"];
+            sala: components["schemas"]["BoletoSalaDto"];
+            cine: components["schemas"]["BoletoCineDto"];
+            asientos: components["schemas"]["BoletoAsientoDto"][];
+            /** @example 25.00 */
+            monto_total?: string | null;
+            /** @example 4242 */
+            ultimos4_snapshot?: string | null;
+            /** @example VISA */
+            marca_snapshot?: string | null;
+        };
+        CancelarPorClienteReservaDto: {
+            /** @example 42 */
+            id_reserva: string;
+            /** @example RES-20260625-ABCDE */
+            numero_reserva: string;
+            /** @example cancelada */
+            estado: string;
+            /**
+             * Format: date-time
+             * @example 2026-06-25T14:30:00.000Z
+             */
+            fecha_cancelacion: string;
+        };
+        CancelarPorClienteReembolsoDto: {
+            /** @example 7 */
+            id_reembolso: string;
+            /** @example PENDIENTE */
+            estado: string;
+            /** @example 12.50 */
+            monto: string;
+        };
+        CancelarPorClienteResponseDto: {
+            reserva: components["schemas"]["CancelarPorClienteReservaDto"];
+            reembolso?: components["schemas"]["CancelarPorClienteReembolsoDto"] | null;
+        };
         /** @enum {string} */
         EstadoReserva: "pendiente_pago" | "pagada" | "cancelada" | "expirada";
+        AdminReservaClienteDto: {
+            /** @example 1 */
+            id: string;
+            /** @example Juan Pérez */
+            nombre: string;
+            /** @example juan@example.com */
+            email: string;
+        };
+        AdminReservaFuncionRefDto: {
+            /** @example 5 */
+            id: string;
+            /**
+             * Format: date-time
+             * @example 2026-06-30T20:00:00.000Z
+             */
+            fecha_hora: string;
+        };
+        AdminReservaPeliculaRefDto: {
+            /** @example 3 */
+            id: string;
+            /** @example Dune: Part Two */
+            titulo: string;
+        };
+        AdminReservaCineRefDto: {
+            /** @example 2 */
+            id: string;
+            /** @example Cine Metropolis */
+            nombre: string;
+        };
+        AdminReservaSalaRefDto: {
+            /** @example 4 */
+            id: string;
+            /** @example Sala 1 IMAX */
+            nombre: string;
+        };
+        AdminReservaAsientoRowDto: {
+            /** @example A12 */
+            codigo: string;
+            /** @example VIP */
+            tipo?: string | null;
+        };
+        AdminReservaRowDto: {
+            /** @example 42 */
+            id: string;
+            /** @example RES-20260625-ABCDE */
+            numero_reserva: string;
+            /** @example pagada */
+            estado: string;
+            /**
+             * Format: date-time
+             * @example 2026-06-25T10:00:00.000Z
+             */
+            created_at: string;
+            cliente: components["schemas"]["AdminReservaClienteDto"];
+            funcion: components["schemas"]["AdminReservaFuncionRefDto"];
+            pelicula: components["schemas"]["AdminReservaPeliculaRefDto"];
+            cine: components["schemas"]["AdminReservaCineRefDto"];
+            sala: components["schemas"]["AdminReservaSalaRefDto"];
+            /** @example 2 */
+            num_asientos: number;
+            asientos: components["schemas"]["AdminReservaAsientoRowDto"][];
+        };
+        AdminReservasPageResponseDto: {
+            data: components["schemas"]["AdminReservaRowDto"][];
+            /** @example 150 */
+            total: number;
+            /** @example 1 */
+            page: number;
+            /** @example 20 */
+            limit: number;
+        };
+        AdminReservaDetailPeliculaDto: {
+            /** @example 3 */
+            id: string;
+            /** @example Dune: Part Two */
+            titulo: string;
+            /** @example https://example.com/poster.jpg */
+            poster_url?: string | null;
+        };
+        AdminReservaDetailSalaDto: {
+            /** @example 4 */
+            id: string;
+            /** @example Sala 1 IMAX */
+            nombre: string;
+        };
+        AdminReservaDetailCineDto: {
+            /** @example 2 */
+            id: string;
+            /** @example Cine Metropolis */
+            nombre: string;
+        };
+        AdminReservaDetailFuncionDto: {
+            /** @example 5 */
+            id: string;
+            /**
+             * Format: date-time
+             * @example 2026-06-30T20:00:00.000Z
+             */
+            fecha_hora: string;
+            pelicula: components["schemas"]["AdminReservaDetailPeliculaDto"];
+            sala: components["schemas"]["AdminReservaDetailSalaDto"];
+            cine: components["schemas"]["AdminReservaDetailCineDto"];
+        };
+        AdminReservaDetailAsientoDto: {
+            /** @example 12 */
+            id: string;
+            /** @example A12 */
+            codigo: string;
+            /** @example A */
+            fila: string;
+            /** @example 12 */
+            columna: number;
+            /** @example VIP */
+            tipo?: string | null;
+        };
+        AdminReservaDetailPagoDto: {
+            /** @example 99 */
+            id: string;
+            /** @example 25.00 */
+            monto_final: string;
+            /** @example tarjeta */
+            metodo: string;
+            /** @example exitoso */
+            estado: string;
+            /**
+             * Format: date-time
+             * @example 2026-06-25T10:05:00.000Z
+             */
+            created_at: string;
+        };
+        AdminReservaDetailResponseDto: {
+            /** @example 42 */
+            id: string;
+            /** @example RES-20260625-ABCDE */
+            numero_reserva: string;
+            /** @example pagada */
+            estado: string;
+            /** @example 25.00 */
+            monto_total?: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-06-25T10:00:00.000Z
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @example 2026-06-25T10:05:00.000Z
+             */
+            updated_at: string;
+            cliente: components["schemas"]["AdminReservaClienteDto"];
+            funcion: components["schemas"]["AdminReservaDetailFuncionDto"];
+            asientos: components["schemas"]["AdminReservaDetailAsientoDto"][];
+            pago?: components["schemas"]["AdminReservaDetailPagoDto"] | null;
+        };
+        AdminCancelarReservaDto: {
+            /** @example 42 */
+            id: string;
+            /** @example RES-20260625-ABCDE */
+            numero_reserva: string;
+            /** @example cancelada */
+            estado: string;
+            /**
+             * Format: date-time
+             * @example 2026-06-25T14:30:00.000Z
+             */
+            fecha_cancelacion: string;
+        };
+        AdminCancelarReembolsoDto: {
+            /** @example 7 */
+            id: string;
+            /** @example PENDIENTE */
+            estado: string;
+            /** @example 12.50 */
+            monto: string;
+        };
+        AdminCancelarReservaResponseDto: {
+            reserva: components["schemas"]["AdminCancelarReservaDto"];
+            reembolso?: components["schemas"]["AdminCancelarReembolsoDto"] | null;
+        };
         /** @enum {string} */
         EstadoReembolso: "pendiente" | "procesado" | "rechazado";
         /** @enum {string} */
         MetodoPago: "tarjeta" | "efectivo";
+        ClienteReembolsoDto: {
+            /** @example 1 */
+            id: string;
+            /** @example Juan Pérez */
+            nombre: string;
+            /** @example juan@example.com */
+            email: string;
+        };
+        PeliculaReembolsoDto: {
+            /** @example 5 */
+            id: string;
+            /** @example Dune: Part Two */
+            titulo: string;
+        };
+        CineReembolsoDto: {
+            /** @example 2 */
+            id: string;
+            /** @example Cine Metropolis */
+            nombre: string;
+        };
+        PoliticaReembolsoDto: {
+            /** @example 1 */
+            id: string;
+            /** @example Política Cine A 2026 */
+            nombre: string;
+        };
+        AdminReembolsoRowDto: {
+            /** @example 7 */
+            id: string;
+            /** @example RES-2026-000123 */
+            numero_reserva: string;
+            cliente: components["schemas"]["ClienteReembolsoDto"];
+            pelicula: components["schemas"]["PeliculaReembolsoDto"];
+            cine: components["schemas"]["CineReembolsoDto"];
+            /** @example tarjeta */
+            metodo_pago_original: string;
+            /** @example 15.00 */
+            monto: string;
+            /** @example 50.00 */
+            porcentaje_aplicado: string;
+            politica?: components["schemas"]["PoliticaReembolsoDto"] | null;
+            /** @example 2 */
+            dias_en_cola: number;
+            /** @example PENDIENTE */
+            estado: string;
+            motivo_rechazo?: string | null;
+            nota?: string | null;
+            /** Format: date-time */
+            fecha_procesado?: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-06-25T14:30:00.000Z
+             */
+            created_at: string;
+        };
+        AdminReembolsoPageResponseDto: {
+            data: components["schemas"]["AdminReembolsoRowDto"][];
+            /** @example 50 */
+            total: number;
+            /** @example 1 */
+            page: number;
+            /** @example 20 */
+            limit: number;
+        };
+        ReembolsosKpisResponseDto: {
+            /**
+             * @description Reembolsos en estado PENDIENTE
+             * @example 5
+             */
+            pendientes: number;
+            /**
+             * @description Alias de pendientes (igual a pendientes)
+             * @example 5
+             */
+            en_procesamiento: number;
+            /**
+             * @description Suma de montos pendientes de reembolso
+             * @example 75.00
+             */
+            monto_pendiente: string;
+            /**
+             * @description Reembolsos completados en los últimos 30 días
+             * @example 12
+             */
+            completados_30d: number;
+        };
         ProcesarReembolsoDto: {
             /**
              * @description Nota adicional sobre el procesamiento
@@ -2563,12 +3684,43 @@ export interface components {
              */
             nota?: string;
         };
+        ProcesarReembolsoResponseDto: {
+            /** @example 7 */
+            id: string;
+            /** @example PROCESADO */
+            estado: string;
+            /** Format: date-time */
+            fecha_procesado?: string | null;
+            nota?: string | null;
+        };
         RechazarReembolsoDto: {
             /**
              * @description Motivo del rechazo
              * @example Documentación incompleta
              */
             motivo: string;
+        };
+        RechazarReembolsoResponseDto: {
+            /** @example 7 */
+            id: string;
+            /** @example RECHAZADO */
+            estado: string;
+            motivo_rechazo?: string | null;
+        };
+        MiReembolsoResponseDto: {
+            /** @example 7 */
+            id: string;
+            /** @example RES-2026-000123 */
+            numero_reserva: string;
+            /** @example 15.00 */
+            monto: string;
+            /** @example PENDIENTE */
+            estado: string;
+            /** @example 50.00 */
+            porcentaje_aplicado: string;
+            /** Format: date-time */
+            fecha_procesado?: string | null;
+            motivo_rechazo?: string | null;
         };
         CrearPagoDto: {
             /**
@@ -2592,6 +3744,20 @@ export interface components {
              */
             codigo_cupon?: string;
         };
+        PagoCreatedResponseDto: {
+            /** @example 42 */
+            id_pago: string;
+            /** @example exitoso */
+            estado: string;
+            /** @example 25.00 */
+            monto_original: string;
+            /** @example 5.00 */
+            monto_descuento: string;
+            /** @example 20.00 */
+            monto_final: string;
+            /** @example RES-2026-000123 */
+            numero_reserva: string;
+        };
         CrearPagoEfectivoDto: {
             /**
              * @description ID de la reserva a pagar en efectivo
@@ -2608,6 +3774,78 @@ export interface components {
         EstadoPagoFilter: "procesando" | "exitoso" | "rechazado" | "reembolsado";
         /** @enum {string} */
         MetodoPagoFilter: "tarjeta" | "efectivo";
+        ClientePagoDto: {
+            /** @example 1 */
+            id: string;
+            /** @example Juan Pérez */
+            nombre: string;
+            /** @example juan@example.com */
+            email: string;
+        };
+        CineRefPagoDto: {
+            /** @example 2 */
+            id: string;
+            /** @example Cine Metropolis */
+            nombre: string;
+        };
+        CiudadRefPagoDto: {
+            /** @example 1 */
+            id: string;
+            /** @example Bogotá */
+            nombre: string;
+        };
+        CuponPagoDto: {
+            /** @example 3 */
+            id: string;
+            /** @example DESCUENTO20 */
+            codigo: string;
+            /** @example porcentaje */
+            tipo: string;
+            /** @example 20.00 */
+            valor: string;
+        };
+        AdminPagoRowDto: {
+            /** @example 42 */
+            id: string;
+            /** @example TRX123456789 */
+            referencia_externa?: string | null;
+            /** @example RES-2026-000123 */
+            numero_reserva: string;
+            cliente: components["schemas"]["ClientePagoDto"];
+            cine: components["schemas"]["CineRefPagoDto"];
+            ciudad?: components["schemas"]["CiudadRefPagoDto"] | null;
+            /** @example tarjeta */
+            metodo: string;
+            /** @example 25.00 */
+            monto_original: string;
+            /** @example 0.00 */
+            monto_descuento: string;
+            /** @example 25.00 */
+            monto_final: string;
+            /** @example exitoso */
+            estado: string;
+            /** @example 4242 */
+            ultimos4_snapshot?: string | null;
+            /** @example VISA */
+            marca_snapshot?: string | null;
+            cupon?: components["schemas"]["CuponPagoDto"] | null;
+            /** @example 10 */
+            id_reserva: string;
+            /**
+             * Format: date-time
+             * @example 2026-06-25T14:30:00.000Z
+             */
+            created_at: string;
+        };
+        AdminPagoPageResponseDto: {
+            data: components["schemas"]["AdminPagoRowDto"][];
+            /** @example 100 */
+            total: number;
+            /** @example 1 */
+            page: number;
+            /** @example 20 */
+            limit: number;
+        };
         ReglaPoliticaResponseDto: {
             /**
              * @description ID de la regla de cancelación
@@ -2713,6 +3951,38 @@ export interface components {
             /** @description Reglas actualizadas que conforman esta política */
             reglas?: components["schemas"]["ReglaPoliticaDto"][];
         };
+        DesactivarPoliticaResponseDto: {
+            /**
+             * @description ID de la política desactivada
+             * @example 1
+             */
+            id: string;
+            /**
+             * @description Estado de activación tras la operación (siempre false)
+             * @example false
+             */
+            activa: boolean;
+        };
+        PoliticaSimpleResponseDto: {
+            /** @example 1 */
+            id: string;
+            /** @example 2 */
+            id_cine: string;
+            /** @example Política Cine A 2026 */
+            nombre: string;
+            /** @example true */
+            activa: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-06-01T00:00:00.000Z
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            updated_at: string | null;
+        };
         ReglaPoliticaInputDto: {
             /**
              * @description Horas mínimas antes de la función para aplicar esta regla
@@ -2741,6 +4011,33 @@ export interface components {
              */
             activa: boolean;
         };
+        TipoAsientoResponseDto: {
+            /**
+             * @description ID del tipo de asiento
+             * @example 1
+             */
+            id: string;
+            /**
+             * @description Nombre del tipo de asiento
+             * @example VIP
+             */
+            nombre: string;
+            /**
+             * @description Color representativo del tipo de asiento
+             * @example #FFD700
+             */
+            color?: Record<string, never> | null;
+            /**
+             * @description Número de salas que utilizan este tipo de asiento
+             * @example 3
+             */
+            salas_usando?: number;
+            /**
+             * @description Total de asientos de este tipo en todas las salas
+             * @example 120
+             */
+            asientos_total?: number;
+        };
         CreateTipoAsientoDto: {
             /**
              * @description Nombre único del tipo de asiento
@@ -2752,6 +4049,29 @@ export interface components {
              * @example #FF8800
              */
             color?: string;
+        };
+        CineRefDto: {
+            /** @example 1 */
+            id: string;
+            /** @example Cine Metropolis */
+            nombre: string;
+        };
+        TipoAsientoRefDto: {
+            /** @example 1 */
+            id: string;
+            /** @example VIP */
+            nombre: string;
+        };
+        PrecioCineResponseDto: {
+            /** @example 1 */
+            id: string;
+            /**
+             * @description Precio formateado como decimal string
+             * @example 12.50
+             */
+            precio: string;
+            cine?: components["schemas"]["CineRefDto"] | null;
+            tipo_asiento: components["schemas"]["TipoAsientoRefDto"];
         };
         CreatePrecioCineDto: {
             /**
@@ -2776,6 +4096,46 @@ export interface components {
              * @example 120.00
              */
             precio: string;
+        };
+        TipoAsientoMatrizDto: {
+            /** @example 1 */
+            id: string;
+            /** @example VIP */
+            nombre: string;
+            /** @example #FFD700 */
+            color?: string | null;
+        };
+        CineMatrizDto: {
+            /** @example 1 */
+            id: string;
+            /** @example Cine Metropolis */
+            nombre: string;
+            /** @example Bogotá */
+            ciudad?: string | null;
+            /**
+             * @description Map of tipo_asiento id → precio
+             * @example {
+             *       "1": 12.5,
+             *       "2": 8
+             *     }
+             */
+            precios: {
+                [key: string]: number;
+            };
+        };
+        MatrizPreciosResponseDto: {
+            tipos_asiento: components["schemas"]["TipoAsientoMatrizDto"][];
+            /**
+             * @description Precios globales por defecto: map of tipo_asiento id → precio
+             * @example {
+             *       "1": 10,
+             *       "2": 7
+             *     }
+             */
+            defaults: {
+                [key: string]: number;
+            };
+            cines: components["schemas"]["CineMatrizDto"][];
         };
         CineMatrizItemDto: {
             /**
@@ -2837,6 +4197,32 @@ export interface components {
              *     ]
              */
             tipos_asiento?: unknown[];
+        };
+        TipoAsientoFullDto: {
+            /** @example 1 */
+            id: string;
+            /** @example VIP */
+            nombre: string;
+            /** @example #FFD700 */
+            color?: string | null;
+        };
+        PrecioCineByCineResponseDto: {
+            /** @example 5 */
+            id: string;
+            /** @example 2 */
+            id_cine: string;
+            /** @example 1 */
+            id_tipo_asiento: string;
+            /** @example 12.50 */
+            precio: string;
+            tipo_asiento: components["schemas"]["TipoAsientoFullDto"];
+            /**
+             * Format: date-time
+             * @example 2026-06-01T00:00:00.000Z
+             */
+            created_at: string;
+            /** Format: date-time */
+            updated_at?: string | null;
         };
         ReporteUsuarioDto: {
             /**
@@ -3070,6 +4456,61 @@ export interface components {
             /** @description Resumen agregado de montos para los pagos filtrados */
             resumen: components["schemas"]["ReportesPagosResumenDto"];
         };
+        CancelacionesPorPoliticaDto: {
+            /**
+             * @description Nombre de la política de cancelación
+             * @example Política estándar
+             */
+            nombre: string;
+            /**
+             * @description Número de cancelaciones con esta política
+             * @example 8
+             */
+            count: number;
+        };
+        CancelacionesPorCineDto: {
+            /**
+             * @description Nombre del cine
+             * @example Cineplex Central
+             */
+            nombre: string;
+            /**
+             * @description Número de cancelaciones en este cine
+             * @example 7
+             */
+            count: number;
+        };
+        CancelacionesTendenciaDto: {
+            /**
+             * Format: date
+             * @description Fecha (YYYY-MM-DD)
+             * @example 2026-06-01
+             */
+            fecha: string;
+            /**
+             * @description Número de cancelaciones en esa fecha
+             * @example 2
+             */
+            count: number;
+        };
+        CancelacionesResponseDto: {
+            /**
+             * @description Total de reservas canceladas
+             * @example 12
+             */
+            total_canceladas: number;
+            /**
+             * @description Tasa de cancelación (0–1)
+             * @example 0.15
+             */
+            tasa: number;
+            /** @description Distribución de cancelaciones por política de cancelación */
+            por_politica: components["schemas"]["CancelacionesPorPoliticaDto"][];
+            /** @description Distribución de cancelaciones por cine */
+            por_cine: components["schemas"]["CancelacionesPorCineDto"][];
+            /** @description Tendencia de cancelaciones de los últimos 30 días */
+            tendencia_30d: components["schemas"]["CancelacionesTendenciaDto"][];
+        };
         /**
          * @description Estado inicial de la función
          * @enum {string}
@@ -3098,7 +4539,97 @@ export interface components {
              */
             estado: components["schemas"]["EstadoFuncion"];
         };
-        UpdateFuncionDto: Record<string, never>;
+        FuncionResponseDto: {
+            /** @example 1 */
+            id: string;
+            /** @example 1 */
+            id_pelicula: string;
+            /** @example 1 */
+            id_sala: string;
+            /**
+             * Format: date-time
+             * @example 2026-12-01T19:00:00.000Z
+             */
+            fecha_hora: string;
+            /** @example programada */
+            estado: string;
+            /**
+             * Format: date-time
+             * @example 2026-01-01T00:00:00.000Z
+             */
+            created_at: string;
+        };
+        UpdateFuncionDto: {
+            /**
+             * @description ID de la película
+             * @example 1
+             */
+            id_pelicula?: string;
+            /**
+             * @description ID de la sala
+             * @example 1
+             */
+            id_sala?: string;
+            /**
+             * Format: date-time
+             * @description Fecha y hora de inicio de la función
+             * @example 2026-12-31T20:30:00.000Z
+             */
+            fecha_hora?: string;
+            /**
+             * @description Estado inicial de la función
+             * @example programada
+             */
+            estado?: components["schemas"]["EstadoFuncion"];
+        };
+        FuncionConflictDto: {
+            /** @example 1 */
+            id: string;
+            /**
+             * Format: date-time
+             * @example 2026-12-01T19:00:00.000Z
+             */
+            fecha_hora: string;
+            /**
+             * Format: date-time
+             * @example 2026-12-01T21:00:00.000Z
+             */
+            fecha_hora_fin: string;
+            pelicula: {
+                /** @example Inception */
+                titulo?: string;
+            };
+        };
+        CuponResponseDto: {
+            /** @example 1 */
+            id: string;
+            /** @example PROMO10 */
+            codigo: string;
+            /** @example porcentaje */
+            tipo: string;
+            /** @example 10 */
+            valor: number;
+            /**
+             * Format: date-time
+             * @example 2026-12-31T23:59:59.000Z
+             */
+            fecha_expiracion: string;
+            /** @example 100 */
+            usos_maximos?: Record<string, never> | null;
+            /** @example 0 */
+            usos_actuales: number;
+            /** @example Promo Verano */
+            titulo?: Record<string, never> | null;
+            /** @example Disfruta un 10 % de descuento en tu primera compra. */
+            descripcion?: Record<string, never> | null;
+            /** @example true */
+            activo: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-01-01T00:00:00.000Z
+             */
+            created_at: string;
+        };
         CreateCuponDto: {
             /**
              * @description Código único del cupón
@@ -3127,13 +4658,69 @@ export interface components {
              */
             usos_maximos?: number;
         };
-        UpdateCuponDto: Record<string, never>;
+        UpdateCuponDto: {
+            /**
+             * @description Código único del cupón
+             * @example PROMO10
+             */
+            codigo?: string;
+            /**
+             * @description Tipo de descuento (porcentaje o monto fijo)
+             * @example porcentaje
+             */
+            tipo?: string;
+            /**
+             * @description Valor del descuento
+             * @example 10
+             */
+            valor?: number;
+            /**
+             * Format: date-time
+             * @description Fecha de expiración del cupón (ISO date-time)
+             * @example 2026-12-31T23:59:59.000Z
+             */
+            fecha_expiracion?: string;
+            /**
+             * @description Cantidad máxima de usos permitidos
+             * @example 100
+             */
+            usos_maximos?: number;
+        };
+        ValidarCuponResponseDto: {
+            /** @example true */
+            valido: boolean;
+            /** @example PROMO10 */
+            codigo: string;
+            /** @example porcentaje */
+            tipo: string;
+            /** @example 10 */
+            valor: number;
+            /**
+             * Format: date-time
+             * @example 2026-12-31T23:59:59.000Z
+             */
+            fecha_expiracion: string;
+        };
         SetActivoCuponDto: {
             /**
              * @description Activar o desactivar el cupón
              * @example true
              */
             activo: boolean;
+        };
+        CuponActivoResponseDto: {
+            /** @example 1 */
+            id: string;
+            /** @example PROMO10 */
+            codigo: string;
+            /** @example true */
+            activo: boolean;
+        };
+        CuponEliminadoResponseDto: {
+            /** @example 1 */
+            id: string;
+            /** @example true */
+            eliminado: boolean;
         };
         /**
          * @description Marca de la tarjeta (null si no aplica)
@@ -3210,6 +4797,10 @@ export interface components {
              */
             titular?: string;
         };
+        CalificacionMiaResponseDto: {
+            /** @example 4 */
+            puntuacion: number;
+        };
         CalificarDto: {
             /**
              * @description ID de la película a calificar
@@ -3226,6 +4817,20 @@ export interface components {
              * @example Excelente película, muy recomendada
              */
             comentario?: string;
+        };
+        CalificarResponseDto: {
+            /** @example 4 */
+            puntuacion: number;
+            /** @example 4.3 */
+            rating_promedio: Record<string, never> | null;
+            /** @example 10 */
+            rating_count: number;
+        };
+        BorrarCalificacionResponseDto: {
+            /** @example 4.2 */
+            rating_promedio: Record<string, never> | null;
+            /** @example 9 */
+            rating_count: number;
         };
     };
     responses: never;
@@ -3391,7 +4996,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CreateCineDto"];
+                    "application/json": components["schemas"]["CineCreatedResponseDto"];
                 };
             };
             /** @description Ciudad inexistente o payload invalido */
@@ -3433,7 +5038,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CineCreatedResponseDto"];
+                    "application/json": components["schemas"]["CineListItemResponseDto"];
                 };
             };
             /** @description ID de cine inválido */
@@ -3461,7 +5066,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DeleteResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -3492,7 +5099,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CineListItemResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -3533,7 +5142,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CineListItemResponseDto"];
+                };
             };
             /** @description Payload inválido */
             400: {
@@ -3565,7 +5176,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CiudadResponseDto"][];
+                };
             };
         };
     };
@@ -3587,7 +5200,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CiudadResponseDto"];
+                };
             };
             /** @description Datos inválidos. */
             400: {
@@ -3622,7 +5237,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DeleteResponseDto"];
+                };
             };
             /** @description No autorizado. */
             401: {
@@ -3675,7 +5292,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CiudadResponseDto"];
+                };
             };
             /** @description ID inválido o datos inválidos. */
             400: {
@@ -3817,7 +5436,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PeliculasPageResponseDto"];
+                };
             };
         };
     };
@@ -3839,7 +5460,12 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        /** @example 1 */
+                        id: string;
+                    };
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -3873,7 +5499,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PeliculaResponseDto"];
+                };
             };
             /** @description Película no encontrada */
             404: {
@@ -3900,7 +5528,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DeleteResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -3945,7 +5575,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PeliculaResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -3993,7 +5625,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PosterUploadResponseDto"];
+                };
             };
             /** @description Archivo inválido o faltante */
             400: {
@@ -4027,7 +5661,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CineConFuncionesResponseDto"][];
+                };
             };
             /** @description Película no encontrada */
             404: {
@@ -4055,7 +5691,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FuncionesPorCineResponseDto"];
+                };
             };
             /** @description ID inválido */
             400: {
@@ -4093,7 +5731,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PeliculaResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -4127,7 +5767,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PeliculaResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -4272,7 +5914,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DeleteResponseDto"];
+                };
             };
             /** @description ID inválido */
             400: {
@@ -4439,7 +6083,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["MessageResponseDto"];
                 };
             };
         };
@@ -4463,7 +6107,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["MessageResponseDto"];
                 };
             };
             /** @description Token inválido, ya usado o expirado. */
@@ -4490,7 +6134,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["MessageResponseDto"];
                 };
             };
             /** @description No autorizado. */
@@ -4561,7 +6205,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["MessageResponseDto"];
                 };
             };
             /** @description Contraseña actual incorrecta o no autenticado. */
@@ -4608,7 +6252,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["MessageResponseDto"];
                 };
             };
             /** @description Estado inválido o igual al actual. */
@@ -4651,7 +6295,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ToggleNotificacionesResponseDto"];
                 };
             };
             /** @description No puedes modificar las notificaciones de otro usuario. */
@@ -4689,7 +6333,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["UpdatePerfilResponseDto"];
                 };
             };
             /** @description Datos inválidos. */
@@ -4743,7 +6387,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserListResponse"];
+                    "application/json": components["schemas"]["UserListResponseDto"];
                 };
             };
             /** @description No autorizado. */
@@ -4773,11 +6417,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Lista paginada de clientes. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ClientesPageResponseDto"];
+                };
             };
         };
     };
@@ -4790,11 +6437,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Estadísticas de clientes. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ClientesStatsResponseDto"];
+                };
             };
         };
     };
@@ -4809,7 +6459,17 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Detalle del cliente incluyendo sus últimas 10 reservas. */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClienteDetalleResponseDto"];
+                };
+            };
+            /** @description Cliente no encontrado. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4832,7 +6492,17 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Estado del cliente actualizado. Devuelve los datos del cliente. */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClienteListItemDto"];
+                };
+            };
+            /** @description Cliente no encontrado. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4858,11 +6528,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Lista paginada de staff. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["StaffPageResponseDto"];
+                };
             };
         };
     };
@@ -4879,7 +6552,17 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Staff creado exitosamente. */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CrearStaffResponseDto"];
+                };
+            };
+            /** @description Email ya existe. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4902,7 +6585,17 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Staff actualizado. */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffListItemDto"];
+                };
+            };
+            /** @description Staff no encontrado. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4925,7 +6618,17 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Estado del staff actualizado. */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffListItemDto"];
+                };
+            };
+            /** @description Staff no encontrado. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4944,7 +6647,17 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Contraseña temporal generada. */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResetPasswordResponseDto"];
+                };
+            };
+            /** @description Staff no encontrado. */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4967,7 +6680,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["PerfilResponseDto"];
                 };
             };
             /** @description No autenticado. */
@@ -4998,7 +6711,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["UpdatePerfilResponseDto"];
                 };
             };
             /** @description Datos inválidos. */
@@ -5041,7 +6754,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["GeneroResponseDto"][];
+                };
             };
         };
     };
@@ -5063,7 +6778,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["GeneroResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -5104,7 +6821,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["GeneroResponseDto"];
+                };
             };
             /** @description ID inválido */
             400: {
@@ -5138,7 +6857,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DeleteResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -5183,7 +6904,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["GeneroResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -5232,7 +6955,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["IdiomaResponseDto"][];
+                };
             };
         };
     };
@@ -5254,7 +6979,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["IdiomaResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -5295,7 +7022,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["IdiomaResponseDto"];
+                };
             };
             /** @description ID inválido */
             400: {
@@ -5329,7 +7058,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DeleteResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -5374,7 +7105,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["IdiomaResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -5423,7 +7156,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["RolResponseDto"][];
+                };
             };
         };
     };
@@ -5445,7 +7180,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["RolResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -5486,7 +7223,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["RolResponseDto"];
+                };
             };
             /** @description ID inválido */
             400: {
@@ -5520,7 +7259,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DeleteResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -5565,7 +7306,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["RolResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -5609,12 +7352,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Mapa de asientos de la función */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AsientoMapaResponseDto"];
+                };
             };
             /** @description ID inválido */
             400: {
@@ -5655,12 +7399,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Asientos bloqueados exitosamente */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BloquearAsientosResponseDto"];
+                };
             };
             /** @description Datos inválidos o uno o más asientos no pertenecen a la función */
             400: {
@@ -5710,7 +7455,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ReservaCreatedResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -5766,7 +7513,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CancelarReservaResponseDto"];
+                };
             };
             /** @description ID inválido */
             400: {
@@ -5822,7 +7571,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BoletoResponseDto"][];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -5850,7 +7601,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BoletoResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -5885,7 +7638,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CancelarPorClienteResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -5943,7 +7698,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminReservasPageResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -5978,7 +7735,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminReservaDetailResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -6020,7 +7779,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminCancelarReservaResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -6079,7 +7840,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminReembolsoPageResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -6111,7 +7874,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ReembolsosKpisResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -6146,7 +7911,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminReembolsoRowDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -6192,7 +7959,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ProcesarReembolsoResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -6245,7 +8014,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["RechazarReembolsoResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -6291,7 +8062,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MiReembolsoResponseDto"][];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -6320,7 +8093,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PagoCreatedResponseDto"];
+                };
             };
             /** @description Datos inválidos o cupón no válido */
             400: {
@@ -6377,7 +8152,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PagoCreatedResponseDto"];
+                };
             };
             /** @description Datos inválidos o cupón no válido */
             400: {
@@ -6449,7 +8226,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminPagoPageResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -6484,7 +8263,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminPagoRowDto"][];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -6526,7 +8307,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AdminPagoRowDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -6597,7 +8380,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PoliticasCancelacionListItemResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -6631,7 +8416,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PoliticasCancelacionListItemResponseDto"];
+                };
             };
             /** @description Política no encontrada */
             404: {
@@ -6662,7 +8449,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PoliticasCancelacionListItemResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -6703,7 +8492,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DesactivarPoliticaResponseDto"];
+                };
             };
             /** @description Política no encontrada o ya inactiva */
             404: {
@@ -6730,7 +8521,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PoliticaSimpleResponseDto"][];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -6757,7 +8550,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ReglaPoliticaResponseDto"][];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -6795,7 +8590,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ReglaPoliticaResponseDto"][];
+                };
             };
             /** @description Reglas inválidas (solapadas o min >= max) */
             400: {
@@ -6840,7 +8637,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PoliticaSimpleResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -6875,7 +8674,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TipoAsientoResponseDto"][];
+                };
             };
         };
     };
@@ -6897,7 +8698,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TipoAsientoResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -6938,7 +8741,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TipoAsientoResponseDto"];
+                };
             };
             /** @description ID inválido */
             400: {
@@ -6972,7 +8777,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DeleteResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -7017,7 +8824,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["TipoAsientoResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -7068,7 +8877,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PrecioCineResponseDto"][];
+                };
             };
         };
     };
@@ -7090,7 +8901,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PrecioCineResponseDto"];
+                };
             };
             /** @description Cine o tipo de asiento inexistente, o payload inválido */
             400: {
@@ -7131,7 +8944,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PrecioCineResponseDto"];
+                };
             };
             /** @description ID inválido */
             400: {
@@ -7165,7 +8980,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DeleteResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -7203,7 +9020,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PrecioCineResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -7242,7 +9061,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MatrizPreciosResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -7278,7 +9099,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MatrizPreciosResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -7312,7 +9135,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["PrecioCineByCineResponseDto"][];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -7405,12 +9230,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Archivo CSV de reservas */
+            /** @description CSV con reservas para descargar */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "text/csv": string;
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -7500,13 +9327,12 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Reporte de cancelaciones generado exitosamente. */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["CancelacionesResponseDto"];
                 };
             };
             /** @description Parámetros de fecha inválidos */
@@ -7546,7 +9372,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FuncionResponseDto"][];
+                };
             };
         };
     };
@@ -7568,7 +9396,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FuncionResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -7610,7 +9440,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FuncionResponseDto"];
+                };
             };
             /** @description ID inválido */
             400: {
@@ -7649,7 +9481,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FuncionResponseDto"];
+                };
             };
             /** @description ID inválido o datos inválidos */
             400: {
@@ -7698,7 +9532,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FuncionResponseDto"];
+                };
             };
             /** @description ID inválido */
             400: {
@@ -7750,11 +9586,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Lista de conflictos de horario */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["FuncionConflictDto"][];
+                };
             };
         };
     };
@@ -7772,7 +9611,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CuponResponseDto"][];
+                };
             };
         };
     };
@@ -7794,7 +9635,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CuponResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -7836,7 +9679,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CuponResponseDto"];
+                };
             };
             /** @description ID inválido */
             400: {
@@ -7871,7 +9716,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CuponEliminadoResponseDto"];
+                };
             };
             /** @description ID inválido */
             400: {
@@ -7924,7 +9771,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CuponResponseDto"];
+                };
             };
             /** @description ID inválido o datos inválidos */
             400: {
@@ -7970,7 +9819,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ValidarCuponResponseDto"];
+                };
             };
             /** @description Datos inválidos */
             400: {
@@ -8016,7 +9867,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CuponActivoResponseDto"];
+                };
             };
             /** @description ID inválido */
             400: {
@@ -8058,7 +9911,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CuponActivoResponseDto"];
+                };
             };
             /** @description ID inválido */
             400: {
@@ -8164,12 +10019,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Eliminado */
-            204: {
+            /** @description Método de pago eliminado */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["DeleteResponseDto"];
+                };
             };
             /** @description No autorizado */
             401: {
@@ -8316,7 +10173,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["CalificacionMiaResponseDto"];
                 };
             };
             /** @description No autorizado */
@@ -8353,7 +10210,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["BorrarCalificacionResponseDto"];
                 };
             };
             /** @description No autorizado */
@@ -8394,7 +10251,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["CalificarResponseDto"];
                 };
             };
             /** @description No autorizado */

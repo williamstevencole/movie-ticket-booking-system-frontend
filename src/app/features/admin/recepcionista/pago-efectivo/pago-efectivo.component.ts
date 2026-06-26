@@ -38,6 +38,7 @@ import {
 } from '../../../../shared/services/pagos.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 
 @Component({
   selector: 'app-recepcionista-pago-efectivo',
@@ -366,7 +367,8 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
                         min="0"
                         step="0.01"
                         placeholder="0.00"
-                        [(ngModel)]="clientePagaInput"
+                        [ngModel]="clientePagaInput()"
+                        (ngModelChange)="clientePagaInput.set($event)"
                         (keyup.enter)="confirmar()"
                         [disabled]="noCobrable() || procesando()"
                       />
@@ -443,7 +445,7 @@ export class RecepcionistaPagoEfectivoComponent {
   readonly cuponError = signal<string | null>(null);
   cuponInput = '';
 
-  clientePagaInput: number | null = null;
+  readonly clientePagaInput = signal<number | null>(null);
 
   readonly procesando = signal<boolean>(false);
   readonly exito = signal<boolean>(false);
@@ -471,7 +473,7 @@ export class RecepcionistaPagoEfectivoComponent {
     Math.max(0, +(this.subtotal() - this.descuento()).toFixed(2)),
   );
 
-  readonly clientePaga = computed(() => Number(this.clientePagaInput ?? 0));
+  readonly clientePaga = computed(() => Number(this.clientePagaInput() ?? 0));
 
   readonly vuelto = computed(() =>
     +(this.clientePaga() - this.totalFinal()).toFixed(2),
@@ -551,7 +553,7 @@ export class RecepcionistaPagoEfectivoComponent {
   }
 
   quickFill(amount: number): void {
-    this.clientePagaInput = amount;
+    this.clientePagaInput.set(amount);
   }
 
   confirmar(): void {
@@ -567,12 +569,8 @@ export class RecepcionistaPagoEfectivoComponent {
       })
       .subscribe({
         next: (pago) => {
-          // El mock devuelve montos fijos; sustituyo por los reales calculados aquí
           const pagoReal: Pago = {
             ...pago,
-            monto_original: this.subtotal(),
-            monto_descuento: this.descuento(),
-            monto_final: this.totalFinal(),
             id_cupon: this.cupon()?.id,
           };
           this.vueltoFinal.set(this.vuelto());
@@ -581,9 +579,7 @@ export class RecepcionistaPagoEfectivoComponent {
           this.procesando.set(false);
         },
         error: (err) => {
-          this.toast.show(
-            err?.error?.message ?? 'No se pudo registrar el pago',
-          );
+          this.toast.show(extractMessage(err));
           this.procesando.set(false);
         },
       });
