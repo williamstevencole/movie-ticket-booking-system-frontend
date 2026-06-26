@@ -2,6 +2,8 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LucideClipboardList } from '@lucide/angular';
+import { Subject, EMPTY, switchMap, catchError } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import {
   ReportesService,
@@ -17,6 +19,8 @@ import {
   ReportFiltrosComponent,
   ReportFiltrosValue,
 } from '../../../../shared/components/report-filtros.component';
+import { extractMessage } from '../../../../shared/utils/http-errors';
+import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-admin-reporte-reservas',
@@ -52,7 +56,9 @@ import {
                 Operación comercial en el período seleccionado. Cobrado, reembolsado y neto al pie.
               </p>
             </div>
-            <button class="btn" (click)="exportarCsv()">Exportar CSV</button>
+            <button class="btn" (click)="exportarCsv()" [disabled]="exportando()">
+              {{ exportando() ? 'Exportando…' : 'Exportar CSV' }}
+            </button>
           </div>
 
           <section class="kpi-grid">
@@ -96,15 +102,10 @@ import {
               </span>
             </div>
 
-            @if (loading()) {
-              <div class="empty"><p>Cargando…</p></div>
-            } @else if (reservas().length === 0) {
-              <div class="empty">
-                <span class="empty-mark">
-                  <svg lucideClipboardList [size]="22"></svg>
-                </span>
-                <h3>Sin reservas</h3>
-                <p>Ajusta el rango de fechas o los filtros.</p>
+            @if (reservasError(); as msg) {
+              <div class="error-banner">
+                <span>{{ msg }}</span>
+                <button type="button" class="btn" (click)="reload()">Reintentar</button>
               </div>
             } @else {
               <div class="table-scroll">
@@ -121,46 +122,70 @@ import {
                     </tr>
                   </thead>
                   <tbody>
-                    @for (r of reservas(); track r.id) {
+                    @if (reservasLoading() && reservas().length === 0) {
+                      @for (i of [1,2,3,4,5]; track i) {
+                        <tr class="skeleton-row">
+                          <td colspan="7"><div class="skeleton"></div></td>
+                        </tr>
+                      }
+                    } @else if (reservas().length === 0) {
                       <tr>
-                        <td><span class="cell-strong tnum">{{ r.numero_reserva }}</span></td>
-                        <td>
-                          <div class="cell-strong">{{ r.nombre_usuario }}</div>
-                          <div class="cell-sub">{{ r.email_usuario }}</div>
-                        </td>
-                        <td class="col-hide-sm">
-                          <div class="cell-strong">{{ r.titulo_pelicula }}</div>
-                          <div class="cell-sub">{{ r.nombre_cine }} · {{ r.nombre_sala }}</div>
-                        </td>
-                        <td class="tnum">
-                          <div>{{ r.fecha_hora_funcion | date: 'd MMM' }}</div>
-                          <div class="cell-sub">{{ r.fecha_hora_funcion | date: 'HH:mm' }}</div>
-                        </td>
-                        <td class="right tnum">{{ r.num_asientos }}</td>
-                        <td class="right tnum cell-strong">L {{ r.monto_total | number }}</td>
-                        <td>
-                          <span class="badge" [class]="'badge ' + r.estado">
-                            {{ estadoLabel(r.estado) }}
-                          </span>
+                        <td colspan="7">
+                          <div class="empty">
+                            <span class="empty-mark">
+                              <svg lucideClipboardList [size]="22"></svg>
+                            </span>
+                            <h3>Sin reservas</h3>
+                            <p>Ajusta el rango de fechas o los filtros.</p>
+                          </div>
                         </td>
                       </tr>
+                    } @else {
+                      @for (r of reservas(); track r.id) {
+                        <tr>
+                          <td><span class="cell-strong tnum">{{ r.numero_reserva }}</span></td>
+                          <td>
+                            <div class="cell-strong">{{ r.nombre_usuario }}</div>
+                            <div class="cell-sub">{{ r.email_usuario }}</div>
+                          </td>
+                          <td class="col-hide-sm">
+                            <div class="cell-strong">{{ r.titulo_pelicula }}</div>
+                            <div class="cell-sub">{{ r.nombre_cine }} · {{ r.nombre_sala }}</div>
+                          </td>
+                          <td class="tnum">
+                            <div>{{ r.fecha_hora_funcion | date: 'd MMM' }}</div>
+                            <div class="cell-sub">{{ r.fecha_hora_funcion | date: 'HH:mm' }}</div>
+                          </td>
+                          <td class="right tnum">{{ r.num_asientos }}</td>
+                          <td class="right tnum cell-strong">L {{ r.monto_total | number }}</td>
+                          <td>
+                            <span class="badge" [class]="'badge ' + r.estado">
+                              {{ estadoLabel(r.estado) }}
+                            </span>
+                          </td>
+                        </tr>
+                      }
                     }
                   </tbody>
-                  <tfoot>
-                    <tr>
-                      <td colspan="5" class="label">Totales</td>
-                      <td class="right tnum">L {{ totalsRow() | number }}</td>
-                      <td></td>
-                    </tr>
-                  </tfoot>
+                  @if (reservas().length > 0) {
+                    <tfoot>
+                      <tr>
+                        <td colspan="5" class="label">Totales</td>
+                        <td class="right tnum">L {{ totalsRow() | number }}</td>
+                        <td></td>
+                      </tr>
+                    </tfoot>
+                  }
                 </table>
               </div>
 
-              <app-pager
-                [value]="{ page: page(), pageSize: pageSize(), total: total() }"
-                (pageChange)="onPageChange($event)"
-                (pageSizeChange)="onPageSizeChange($event)"
-              />
+              @if (reservas().length > 0) {
+                <app-pager
+                  [value]="{ page: page(), pageSize: pageSize(), total: total() }"
+                  (pageChange)="onPageChange($event)"
+                  (pageSizeChange)="onPageSizeChange($event)"
+                />
+              }
             }
           </section>
         </div>
@@ -171,10 +196,13 @@ import {
 })
 export class AdminReporteReservasComponent {
   private reportesSvc = inject(ReportesService);
+  private readonly toast = inject(ToastService);
 
   readonly reservas = signal<ReporteReservaRow[]>([]);
   readonly total = signal(0);
-  readonly loading = signal(false);
+  readonly reservasLoading = signal(false);
+  readonly reservasError = signal<string | null>(null);
+  readonly exportando = signal(false);
 
   readonly filtros = signal<ReportFiltrosValue>({
     periodo: { preset: '30d', from: '', to: '' },
@@ -221,7 +249,30 @@ export class AdminReporteReservasComponent {
     this.reservas().reduce((sum, r) => sum + r.monto_total, 0),
   );
 
+  private readonly query$ = new Subject<Record<string, any>>();
+
   constructor() {
+    this.query$
+      .pipe(
+        switchMap((q) => {
+          this.reservasLoading.set(true);
+          this.reservasError.set(null);
+          return this.reportesSvc.reservas(q).pipe(
+            catchError((err) => {
+              this.reservasError.set(extractMessage(err));
+              this.reservasLoading.set(false);
+              return EMPTY;
+            }),
+          );
+        }),
+        takeUntilDestroyed(),
+      )
+      .subscribe((res) => {
+        this.reservas.set(res.data);
+        this.total.set(res.total);
+        this.reservasLoading.set(false);
+      });
+
     this.cargar();
   }
 
@@ -267,29 +318,35 @@ export class AdminReporteReservasComponent {
   }
 
   private cargar() {
-    this.loading.set(true);
-    this.reportesSvc.reservas(this.buildQuery()).subscribe({
-      next: (res) => {
-        this.reservas.set(res.data);
-        this.total.set(res.total);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+    this.query$.next(this.buildQuery());
+  }
+
+  reload(): void {
+    this.cargar();
   }
 
   exportarCsv() {
+    if (this.exportando()) return;
     const q = this.buildQuery();
-    // Remove pagination params for full export
     delete q['page'];
     delete q['limit'];
-    this.reportesSvc.reservasCsv(q).subscribe((blob) => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'reservas.csv';
-      a.click();
-      URL.revokeObjectURL(url);
+    this.exportando.set(true);
+    this.reportesSvc.reservasCsv(q).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `reservas-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        this.exportando.set(false);
+      },
+      error: (err) => {
+        this.toast.show(extractMessage(err));
+        this.exportando.set(false);
+      },
     });
   }
 
