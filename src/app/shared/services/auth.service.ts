@@ -107,6 +107,20 @@ export class AuthService {
     this._user.set(null);
   }
 
+  updateUser(user: Partial<AuthUser>): void {
+    const current = this._user();
+
+    if (!current) return;
+
+    const updated = {
+      ...current,
+      ...user,
+    };
+
+    localStorage.setItem(USER_KEY, JSON.stringify(updated));
+    this._user.set(updated);
+  }
+
   // ─── helpers privados ───────────────────────────────────────
   private persist(res: AuthResponse): void {
     if (typeof localStorage !== 'undefined') {

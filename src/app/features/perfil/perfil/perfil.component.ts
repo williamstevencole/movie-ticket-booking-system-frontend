@@ -19,21 +19,38 @@ import { UsuariosService } from '../../../shared/services/usuarios.service';
         </div>
         <div class="field">
           <label for="email">Correo electrónico</label>
-          <input id="email" class="input" type="email" formControlName="email" readonly />
+          <input
+            id="email"
+            class="input"
+            type="email"
+            formControlName="email"
+            readonly
+          />
           <span class="help">El correo no se puede cambiar desde aquí.</span>
         </div>
         <div class="field">
           <label for="telefono">Teléfono</label>
-          <input id="telefono" class="input" formControlName="telefono" placeholder="+504 0000-0000" />
+          <input
+            id="telefono"
+            class="input"
+            formControlName="telefono"
+            placeholder="+504 0000-0000"
+          />
         </div>
         <div class="field">
           <label for="notif">
-            <input id="notif" type="checkbox" [checked]="notificacionesActivas"
-                   (change)="toggleNotificaciones($any($event.target).checked)" />
+            <input
+              id="notif"
+              type="checkbox"
+              [checked]="notificacionesActivas"
+              (change)="toggleNotificaciones($any($event.target).checked)"
+            />
             Recibir notificaciones por email
           </label>
         </div>
-        <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Guardar cambios</button>
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid">
+          Guardar cambios
+        </button>
       </form>
     </div>
   `,
@@ -55,18 +72,42 @@ export class PerfilPageComponent {
 
   save(): void {
     if (this.form.invalid) return;
-    this.toast.show('Perfil actualizado (mock)');
+
+    const datos = this.form.getRawValue();
+
+    this.usuariosSvc
+      .actualizarMiPerfil({
+        nombre: datos.nombre,
+        telefono: datos.telefono,
+      })
+      .subscribe({
+        next: (usuarioActualizado) => {
+          this.auth.updateUser(usuarioActualizado);
+          this.toast.show('Perfil actualizado correctamente');
+        },
+        error: () => {
+          this.toast.show('No se pudo actualizar el perfil');
+        },
+      });
   }
 
   toggleNotificaciones(activa: boolean): void {
     const prev = this.notificacionesActivas;
     this.notificacionesActivas = activa;
-    this.usuariosSvc.actualizarMiPerfil({ notificaciones_activas: activa }).subscribe({
-      next: () => this.toast.show('Preferencia guardada'),
-      error: () => {
-        this.notificacionesActivas = prev;
-        this.toast.show('No se pudo guardar');
-      },
-    });
+
+    this.usuariosSvc
+      .actualizarMiPerfil({
+        notificaciones_activas: activa,
+      })
+      .subscribe({
+        next: (usuarioActualizado) => {
+          this.auth.updateUser(usuarioActualizado);
+          this.toast.show('Preferencia guardada');
+        },
+        error: () => {
+          this.notificacionesActivas = prev;
+          this.toast.show('No se pudo guardar');
+        },
+      });
   }
 }
