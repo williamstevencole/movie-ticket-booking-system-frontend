@@ -1,6 +1,9 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, of, map, catchError } from 'rxjs';
 import { delay } from 'rxjs/operators';
+import { API_URL } from '../../core/config/env';
+import { toNum, toStr } from '../../core/api/normalize';
 import { MOCK_RESERVAS } from '../../mocks/data/reservas.mock';
 
 export type AdminReservaRow = {
@@ -52,68 +55,99 @@ export type ReservaCobrarDetail = {
   monto_total: number;
 };
 
-const SALAS = ['Sala 1', 'Sala 2', 'Sala 3 IMAX', 'Sala 4 VIP', 'Sala 5'];
+type BackendReservaCobrar = {
+  id: string | number;
+  numero_reserva: string;
+  estado: string;
+  created_at: string;
+  expira_en: string | null;
+  cliente: {
+    id: string | number;
+    nombre: string;
+    email: string;
+    telefono: string | null;
+  };
+  pelicula: { id: string | number; titulo: string };
+  funcion: { id: string | number; fecha_hora: string };
+  sala: { id: string | number; nombre: string };
+  cine: { id: string | number; nombre: string };
+  asientos: Array<{
+    id: string | number;
+    codigo: string;
+    tipo: string;
+    precio: string | number;
+  }>;
+  num_asientos: number;
+  monto_total: string | number;
+};
 
-const USUARIOS = [
-  { id: 'u-1', nombre: 'Andrea López', email: 'andrea.lopez@gmail.com' },
-  { id: 'u-2', nombre: 'Marco Rodríguez', email: 'marco.rod@gmail.com' },
-  { id: 'u-3', nombre: 'Sofía García', email: 'sofia.garcia@outlook.com' },
-  { id: 'u-4', nombre: 'Daniel Méndez', email: 'dmendez@gmail.com' },
-  { id: 'u-5', nombre: 'Lucía Hernández', email: 'lucia.h@hotmail.com' },
-  { id: 'u-6', nombre: 'Pablo Castillo', email: 'pcastillo@gmail.com' },
-  { id: 'u-7', nombre: 'Camila Reyes', email: 'cami.reyes@gmail.com' },
-  { id: 'u-8', nombre: 'Javier Morales', email: 'j.morales@yahoo.com' },
-  { id: 'u-9', nombre: 'Isabella Cruz', email: 'isa.cruz@gmail.com' },
-  { id: 'u-10', nombre: 'Rodrigo Paz', email: 'rpaz@gmail.com' },
-  { id: 'u-11', nombre: 'Valeria Torres', email: 'valeria.t@gmail.com' },
-  { id: 'u-12', nombre: 'Mateo Aguilar', email: 'mateo.a@gmail.com' },
-];
-
-const CINES = [
-  { id: 'gua-1', nombre: 'Cinépolis Oakland Mall' },
-  { id: 'tgu-1', nombre: 'Multiplaza' },
-  { id: 'sps-1', nombre: 'Cinépolis City Mall' },
-  { id: 'ssv-1', nombre: 'Multiplaza San Salvador' },
-];
-
-const PELICULAS = [
-  { id: 'p-1', titulo: 'Tormenta sobre el Pacífico' },
-  { id: 'p-2', titulo: 'Cartas a mi yo de mañana' },
-  { id: 'p-3', titulo: 'El Reino de Niebla' },
-];
-
-const MOCK_ROWS: AdminReservaRow[] = MOCK_RESERVAS.map((r, i) => {
-  const usuario = USUARIOS.find((u) => u.id === r.id_usuario) ?? USUARIOS[i % USUARIOS.length]!;
+function mapBackendReservaCobrar(r: BackendReservaCobrar): ReservaCobrarDetail {
   return {
-    id: r.id,
+    id: toStr(r.id),
     numero_reserva: r.numero_reserva,
     estado: r.estado,
-    num_asientos: r.num_asientos,
-    monto_total: r.monto_total,
     created_at: r.created_at,
-    updated_at: r.updated_at,
-    usuario: { id: usuario.id, nombre: usuario.nombre, email: usuario.email },
-    funcion: { id: r.id_funcion, fecha_hora: new Date(Date.now() + (i + 1) * 86400000).toISOString() },
-    pelicula: PELICULAS[i % PELICULAS.length],
-    cine: CINES[i % CINES.length],
+    expira_en: r.expira_en,
+    cliente: {
+      id: toStr(r.cliente.id),
+      nombre: r.cliente.nombre,
+      email: r.cliente.email,
+      telefono: r.cliente.telefono,
+    },
+    pelicula: { id: toStr(r.pelicula.id), titulo: r.pelicula.titulo },
+    funcion: { id: toStr(r.funcion.id), fecha_hora: r.funcion.fecha_hora },
+    sala: { id: toStr(r.sala.id), nombre: r.sala.nombre },
+    cine: { id: toStr(r.cine.id), nombre: r.cine.nombre },
+    asientos: r.asientos.map((a) => ({
+      id: toStr(a.id),
+      codigo: a.codigo,
+      tipo: a.tipo,
+      precio: toNum(a.precio),
+    })),
+    num_asientos: r.num_asientos,
+    monto_total: toNum(r.monto_total),
   };
-});
+}
 
 @Injectable({ providedIn: 'root' })
 export class AdminReservasService {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${API_URL}/admin/reservas`;
+
   list(q: Record<string, any> = {}) {
-    let rows = [...MOCK_ROWS];
+    // Still mock — admin reservas listado migrates in a later branch.
+    let rows: AdminReservaRow[] = MOCK_RESERVAS.map((r) => ({
+      id: r.id,
+      numero_reserva: r.numero_reserva,
+      estado: r.estado,
+      num_asientos: r.num_asientos,
+      monto_total: r.monto_total,
+      created_at: r.created_at,
+      updated_at: r.updated_at,
+    }));
     if (q['estado']) rows = rows.filter((r) => r.estado === q['estado']);
     const page = Number(q['page'] ?? 1);
     const limit = Number(q['limit'] ?? 10);
     const start = (page - 1) * limit;
-    return of({ data: rows.slice(start, start + limit), total: rows.length, page, limit }).pipe(delay(120));
+    return of({
+      data: rows.slice(start, start + limit),
+      total: rows.length,
+      page,
+      limit,
+    }).pipe(delay(120));
   }
 
   getById(id: string | number) {
-    const row = MOCK_ROWS.find((r) => r.id === String(id)) ?? MOCK_ROWS[0]!;
+    const reserva =
+      MOCK_RESERVAS.find((r) => r.id === String(id)) ?? MOCK_RESERVAS[0]!;
     const detail: AdminReservaDetail = {
-      ...row,
+      id: reserva.id,
+      numero_reserva: reserva.numero_reserva,
+      estado: reserva.estado,
+      num_asientos: reserva.num_asientos,
+      monto_total: reserva.monto_total,
+      created_at: reserva.created_at,
+      updated_at: reserva.updated_at,
       asientos: [],
       notas_internas: null,
       expira_en: null,
@@ -123,163 +157,30 @@ export class AdminReservasService {
   }
 
   cancelar(id: string | number) {
-    const row = MOCK_ROWS.find((r) => r.id === String(id)) ?? MOCK_ROWS[0]!;
-    return of({ reserva: { ...row, estado: 'cancelada' }, reembolso: null }).pipe(delay(120));
+    const reserva =
+      MOCK_RESERVAS.find((r) => r.id === String(id)) ?? MOCK_RESERVAS[0]!;
+    return of({
+      reserva: { ...reserva, estado: 'cancelada' },
+      reembolso: null,
+    }).pipe(delay(120));
   }
 
   /**
-   * Devuelve la reserva completa lista para pasar a la pantalla de cobro
-   * (cliente, película, sala, cine, asientos con precios y total).
-   *
-   * Mock: si el numero coincide con una reserva mockeada, devuelve esa.
-   * Si no (p.ej. el numero viene del backend real), sintetiza una reserva
-   * determinística a partir del propio numero — así la pantalla demo
-   * funciona con cualquier numero hasta que se integre la card backend.
+   * GET /api/admin/reservas/by-numero/:numero/cobrar — admin only.
+   * Returns the reserva with precios per asiento resolved server-side
+   * (via precios_cine for the reserva's cine). 404 -> emits null so the
+   * consumer can show its existing notFound placeholder. Other errors
+   * propagate to the subscriber for the error banner.
    */
   getByNumero(numero: string): Observable<ReservaCobrarDetail | null> {
-    if (!numero) return of(null).pipe(delay(120));
-
-    const row = MOCK_ROWS.find((r) => r.numero_reserva === numero);
-    const reserva = MOCK_RESERVAS.find((r) => r.numero_reserva === numero);
-
-    if (row && reserva) {
-      return of(this.toCobrarDetail(reserva, row)).pipe(delay(140));
-    }
-
-    return of(synthCobrarDetail(numero)).pipe(delay(140));
-  }
-
-  private toCobrarDetail(
-    reserva: (typeof MOCK_RESERVAS)[number],
-    row: AdminReservaRow,
-  ): ReservaCobrarDetail {
-    const usuario =
-      USUARIOS.find((u) => u.id === reserva.id_usuario) ?? USUARIOS[0]!;
-
-    const asientos: AsientoCobrar[] = reserva.asientos.map((a) => ({
-      id: a.id,
-      codigo: a.codigo,
-      tipo: a.tipo_asiento,
-      precio: a.precio,
-    }));
-
-    const salaIdx = seedOf(reserva.id) % SALAS.length;
-
-    return {
-      id: reserva.id,
-      numero_reserva: reserva.numero_reserva,
-      estado: reserva.estado,
-      created_at: reserva.created_at,
-      expira_en: reserva.expira_en ?? null,
-      cliente: {
-        id: usuario.id,
-        nombre: usuario.nombre,
-        email: usuario.email,
-        telefono: telefonoFor(usuario.id),
-      },
-      pelicula: row.pelicula!,
-      funcion: row.funcion!,
-      sala: { id: `s-${reserva.id_funcion}`, nombre: SALAS[salaIdx]! },
-      cine: row.cine!,
-      asientos,
-      num_asientos: reserva.num_asientos,
-      monto_total: reserva.monto_total,
-    };
+    if (!numero) return of(null);
+    const url = `${this.base}/by-numero/${encodeURIComponent(numero)}/cobrar`;
+    return this.http.get<BackendReservaCobrar>(url).pipe(
+      map((r) => mapBackendReservaCobrar(r)),
+      catchError((err) => {
+        if (err?.status === 404) return of(null);
+        throw err;
+      }),
+    );
   }
 }
-
-function telefonoFor(idUsuario: string): string {
-  // Mock determinista: número hondureño realista a partir del id
-  const seed = seedOf(idUsuario);
-  const block1 = 3000 + (seed % 7000);
-  const block2 = 1000 + ((seed >> 4) % 9000);
-  return `+504 ${block1}-${block2}`;
-}
-
-function seedOf(s: string): number {
-  let h = 17;
-  for (let i = 0; i < s.length; i++) {
-    h = ((h * 31) >>> 0) + s.charCodeAt(i);
-    h = h >>> 0;
-  }
-  return h;
-}
-
-/**
- * Sintetiza un detalle de reserva pagable a partir del numero_reserva.
- * Se usa cuando la pantalla de cobro recibe un numero que viene del backend
- * real y no existe en los mocks locales — así la demo siempre tiene algo
- * razonable que mostrar y se ejercita el flujo completo.
- */
-function synthCobrarDetail(numero: string): ReservaCobrarDetail {
-  const seed = seedOf(numero);
-  const usuario = USUARIOS[seed % USUARIOS.length]!;
-  const pelicula = PELICULAS_SYNTH[(seed >> 2) % PELICULAS_SYNTH.length]!;
-  const cine = CINES_SYNTH[(seed >> 4) % CINES_SYNTH.length]!;
-  const sala = SALAS[(seed >> 6) % SALAS.length]!;
-
-  const nAsientos = 1 + ((seed >> 8) % 4); // 1..4
-  const tipos = ['Estandar', 'Estandar', 'Estandar', 'Premium', 'VIP'];
-  const tipoFor = (i: number) => tipos[(seed + i * 7) % tipos.length]!;
-  const precioFor = (tipo: string) =>
-    tipo === 'VIP' ? 110 : tipo === 'Premium' ? 90 : 70;
-  const filas = 'CDEFGHIJ';
-  const filaIdx = (seed >> 10) % filas.length;
-  const fila = filas[filaIdx]!;
-  const startCol = 4 + ((seed >> 12) % 8);
-
-  const asientos: AsientoCobrar[] = Array.from({ length: nAsientos }, (_, i) => {
-    const tipo = tipoFor(i);
-    const col = startCol + i;
-    return {
-      id: `a-${numero}-${i}`,
-      codigo: `${fila}${col}`,
-      tipo,
-      precio: precioFor(tipo),
-    };
-  });
-
-  const monto = asientos.reduce((s, a) => s + a.precio, 0);
-
-  const now = new Date();
-  const created = new Date(now.getTime() - 12 * 60_000).toISOString();
-  const expira = new Date(now.getTime() + 8 * 60_000).toISOString();
-  // funcion algunas horas adelante hoy
-  const funcionHora = new Date(now);
-  funcionHora.setHours(14 + ((seed >> 14) % 8), 30, 0, 0);
-
-  return {
-    id: `synth-${numero}`,
-    numero_reserva: numero,
-    estado: 'pendiente_pago',
-    created_at: created,
-    expira_en: expira,
-    cliente: {
-      id: usuario.id,
-      nombre: usuario.nombre,
-      email: usuario.email,
-      telefono: telefonoFor(usuario.id),
-    },
-    pelicula,
-    funcion: { id: `f-synth-${numero}`, fecha_hora: funcionHora.toISOString() },
-    sala: { id: `s-synth-${numero}`, nombre: sala },
-    cine,
-    asientos,
-    num_asientos: nAsientos,
-    monto_total: monto,
-  };
-}
-
-const PELICULAS_SYNTH = [
-  { id: 'p-1', titulo: 'Tormenta sobre el Pacífico' },
-  { id: 'p-2', titulo: 'Cartas a mi yo de mañana' },
-  { id: 'p-3', titulo: 'El Reino de Niebla' },
-  { id: 'p-4', titulo: 'La última carretera al norte' },
-  { id: 'p-5', titulo: 'Memorias del bosque azul' },
-];
-
-const CINES_SYNTH = [
-  { id: 'gua-1', nombre: 'Cinépolis Oakland Mall' },
-  { id: 'tgu-1', nombre: 'Multiplaza Tegucigalpa' },
-  { id: 'sps-1', nombre: 'Cinépolis City Mall' },
-];
