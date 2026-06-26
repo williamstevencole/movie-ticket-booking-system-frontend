@@ -1,6 +1,10 @@
-import { Injectable } from '@angular/core';
-import { of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, of, map } from 'rxjs';
 import { delay } from 'rxjs/operators';
+import { API_URL } from '../../core/config/env';
+import type { components } from '../../core/types/api.generated';
+import { toStr } from '../../core/api/normalize';
 import { MOCK_PAGOS } from '../../mocks/data/pagos.mock';
 
 export type MetodoPago = 'tarjeta' | 'efectivo';
@@ -25,8 +29,46 @@ export type Pago = {
 export type PagoRow = Pago;
 export type PagoDetail = Pago;
 
+type BackendPagoEfectivoResponse = {
+  id_pago: string | number;
+  estado: string;
+  monto_original: string | number;
+  monto_descuento: string | number;
+  monto_final: string | number;
+  numero_reserva: string;
+};
+
+function mapBackendPagoEfectivo(
+  r: BackendPagoEfectivoResponse,
+  idReserva: string,
+): Pago {
+  return {
+    id: toStr(r.id_pago),
+    id_reserva: idReserva,
+    monto_original:
+      typeof r.monto_original === 'number'
+        ? r.monto_original
+        : Number(r.monto_original),
+    monto_descuento:
+      typeof r.monto_descuento === 'number'
+        ? r.monto_descuento
+        : Number(r.monto_descuento),
+    monto_final:
+      typeof r.monto_final === 'number'
+        ? r.monto_final
+        : Number(r.monto_final),
+    metodo: 'efectivo',
+    estado: r.estado as EstadoPago,
+    referencia_externa: null,
+    created_at: new Date().toISOString(),
+  };
+}
+
 @Injectable({ providedIn: 'root' })
 export class PagosService {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${API_URL}/pagos`;
+
   list(q: Record<string, any> = {}) {
     let rows = [...MOCK_PAGOS];
     if (q['estado']) rows = rows.filter((p) => p.estado === q['estado']);
@@ -71,18 +113,13 @@ export class PagosService {
   }
 
   /** POST /api/pagos/efectivo — admin only; not available for cliente self-service */
-  crearEfectivo(input: { id_reserva: string; codigo_cupon?: string }) {
-    const mock: Pago = {
-      id: `pg-eff-${Date.now()}`,
+  crearEfectivo(input: { id_reserva: string; codigo_cupon?: string }): Observable<Pago> {
+    const body: components['schemas']['CrearPagoEfectivoDto'] = {
       id_reserva: input.id_reserva,
-      monto_original: 170,
-      monto_descuento: 0,
-      monto_final: 170,
-      metodo: 'efectivo',
-      estado: 'exitoso',
-      referencia_externa: null,
-      created_at: new Date().toISOString(),
+      ...(input.codigo_cupon ? { codigo_cupon: input.codigo_cupon } : {}),
     };
-    return of(mock).pipe(delay(120));
+    return this.http
+      .post<BackendPagoEfectivoResponse>(`${this.base}/efectivo`, body)
+      .pipe(map((r) => mapBackendPagoEfectivo(r, input.id_reserva)));
   }
 }
