@@ -1,7 +1,9 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { MOCK_USUARIOS } from '../../mocks/data/usuarios.mock';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+
+import { API_URL } from '../../core/config/env';
+import { toStr } from '../../core/api/normalize';
 
 export type RolStaff = 'admin' | 'cliente';
 
@@ -11,7 +13,7 @@ export type UsuarioStaff = {
   email: string;
   rol: RolStaff;
   notificaciones_activas: boolean;
-  ultimoAcceso: string | null;
+  ultimo_acceso: string | null;
   activo: boolean;
   created_at: string;
 };
@@ -23,7 +25,9 @@ export type CrearUsuarioInput = {
   password?: string;
 };
 
-export type EditarUsuarioInput = Partial<Pick<CrearUsuarioInput, 'nombre' | 'email' | 'rol'>>;
+export type EditarUsuarioInput = Partial<
+  Pick<CrearUsuarioInput, 'nombre' | 'email' | 'rol'>
+>;
 
 export type ActualizarMiPerfilInput = {
   nombre?: string;
@@ -31,47 +35,74 @@ export type ActualizarMiPerfilInput = {
   notificaciones_activas?: boolean;
 };
 
-/** Staff / admin user management service — maps to /api/admin/staff/* */
-@Injectable({ providedIn: 'root' })
+type BackendUsuario = {
+  id: string | number;
+  nombre: string;
+  email: string;
+  rol: RolStaff;
+  notificaciones_activas: boolean;
+  ultimo_acceso: string | null;
+  activo: boolean;
+  created_at: string;
+};
+
+function mapBackendUsuario(u: BackendUsuario): UsuarioStaff {
+  return {
+    id: toStr(u.id),
+    nombre: u.nombre,
+    email: u.email,
+    rol: u.rol,
+    notificaciones_activas: u.notificaciones_activas,
+    ultimo_acceso: u.ultimo_acceso,
+    activo: u.activo,
+    created_at: u.created_at,
+  };
+}
+
+@Injectable({
+  providedIn: 'root',
+})
 export class UsuariosService {
+  private readonly http = inject(HttpClient);
+
+  private readonly base = `${API_URL}/admin/staff`;
+
   list(): Observable<UsuarioStaff[]> {
-    return of([...MOCK_USUARIOS]).pipe(delay(120));
+    return this.http
+      .get<BackendUsuario[]>(this.base)
+      .pipe(map((users) => users.map(mapBackendUsuario)));
   }
 
   create(input: CrearUsuarioInput): Observable<UsuarioStaff> {
-    const nuevo: UsuarioStaff = {
-      id: `usr-${Date.now()}`,
-      nombre: input.nombre,
-      email: input.email,
-      rol: input.rol,
-      notificaciones_activas: false,
-      ultimoAcceso: null,
-      activo: true,
-      created_at: new Date().toISOString(),
-    };
-    return of({ ...nuevo }).pipe(delay(120));
+    return this.http
+      .post<BackendUsuario>(this.base, input)
+      .pipe(map(mapBackendUsuario));
   }
 
   update(id: string, input: EditarUsuarioInput): Observable<UsuarioStaff> {
-    const found = MOCK_USUARIOS.find((u) => u.id === id) ?? MOCK_USUARIOS[0]!;
-    return of({ ...found, ...input }).pipe(delay(120));
+    return this.http
+      .patch<BackendUsuario>(`${this.base}/${id}`, input)
+      .pipe(map(mapBackendUsuario));
   }
 
   setActivo(id: string, activo: boolean): Observable<UsuarioStaff> {
-    const found = MOCK_USUARIOS.find((u) => u.id === id) ?? MOCK_USUARIOS[0]!;
-    return of({ ...found, activo }).pipe(delay(120));
+    return this.http
+      .patch<BackendUsuario>(`${this.base}/${id}/estado`, {
+        activo,
+      })
+      .pipe(map(mapBackendUsuario));
   }
 
   resetPassword(id: string): Observable<{ tempPassword: string }> {
-    return of({ tempPassword: 'Temp@1234' }).pipe(delay(120));
+    return this.http.post<{ tempPassword: string }>(
+      `${this.base}/${id}/reset-password`,
+      {},
+    );
   }
 
-  /**
-   * @deprecated Use PerfilService.actualizarMiPerfil() instead.
-   * Kept as shim for backward compatibility with perfil.component.ts.
-   */
   actualizarMiPerfil(input: ActualizarMiPerfilInput): Observable<UsuarioStaff> {
-    const base = MOCK_USUARIOS[0]!;
-    return of({ ...base, ...input } as UsuarioStaff).pipe(delay(120));
+    return this.http
+      .patch<BackendUsuario>(`${API_URL}/me/perfil`, input)
+      .pipe(map(mapBackendUsuario));
   }
 }

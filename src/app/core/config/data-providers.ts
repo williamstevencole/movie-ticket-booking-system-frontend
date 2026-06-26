@@ -18,7 +18,7 @@ import { MockReservasService } from '../../mocks/services/reservas.mock.service'
 // MockPoliticasCancelacionService no longer registered (PoliticasCancelacionService is concrete HTTP)
 import { MockTiposAsientoService } from '../../mocks/services/tipos-asiento.mock.service';
 import { MockPreciosService } from '../../mocks/services/precios.mock.service';
-import { MockUsuariosService } from '../../mocks/services/usuarios.mock.service';
+// MockUsuariosService no longer regsitered (services are now concrete HTTP classes)
 // MockMetodosPagoService and MockCalificacionesService no longer registered (services are now concrete HTTP classes)
 
 export const dataProviders: Provider[] = [
@@ -30,6 +30,6 @@ export const dataProviders: Provider[] = [
   // PoliticasCancelacionService: concrete HTTP service, no mock override
   { provide: TiposAsientoService, useClass: MockTiposAsientoService },
   { provide: PreciosService, useClass: MockPreciosService },
-  { provide: UsuariosService, useClass: MockUsuariosService },
+  // UsuariosService: concrete HTTP services, no mock override
   // MetodosPagoService and CalificacionesService: concrete HTTP services, no mock override
 ];

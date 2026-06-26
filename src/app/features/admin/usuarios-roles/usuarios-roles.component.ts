@@ -168,7 +168,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                               {{ rolLabel(u.rol) }}
                             </span>
                           </td>
-                          <td class="muted tnum">{{ fmtAcceso(u.ultimoAcceso) }}</td>
+                          <td class="muted tnum">{{ fmtAcceso(u.ultimo_acceso) }}</td>
                           <td>
                             <span
                               class="estado-badge"
