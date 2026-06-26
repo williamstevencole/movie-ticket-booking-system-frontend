@@ -8,7 +8,7 @@ import { ReservasService } from '../../shared/services/reservas.service';
 // PoliticasCancelacionService is now concrete HTTP — no mock override needed
 import { TiposAsientoService } from '../../shared/services/tipos-asiento.service';
 import { PreciosService } from '../../shared/services/precios.service';
-import { UsuariosService } from '../../shared/services/usuarios.service';
+// UsuariosService are now concrete @Injectable - no mock override needed
 // MetodosPagoService and CalificacionesService are now concrete @Injectable — no mock override needed
 
 // MockCuponesService no longer registered (CuponesService is concrete HTTP)
