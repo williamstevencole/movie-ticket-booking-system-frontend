@@ -1,11 +1,9 @@
-import { Cine, Sala } from '../../shared/services/cines.service';
+import { Cine, CineSalaSummary } from '../../shared/services/cines.service';
 
-function salas(n: number): Sala[] {
+function salas(n: number): CineSalaSummary[] {
   return Array.from({ length: n }, (_, i) => ({
     id: String(i + 1),
     nombre: `Sala ${i + 1}`,
-    filas: 10,
-    columnas: 12,
   }));
 }
 

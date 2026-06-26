@@ -26,6 +26,19 @@ type ModalMode =
 type DeleteState = { kind: 'idle' } | { kind: 'confirm'; tipo: TipoAsiento };
 
 const DEFAULT_COLOR = '#a8a29e';
+const HEX6_RE = /^[0-9a-fA-F]{6}$/;
+const HEX3_RE = /^[0-9a-fA-F]{3}$/;
+
+function expandHex3(s: string): string {
+  return s.split('').map((c) => c + c).join('');
+}
+
+function normalizeHex(input: string): string | null {
+  const trimmed = input.trim().replace(/^#/, '');
+  if (HEX6_RE.test(trimmed)) return '#' + trimmed.toLowerCase();
+  if (HEX3_RE.test(trimmed)) return '#' + expandHex3(trimmed).toLowerCase();
+  return null;
+}
 
 @Component({
   selector: 'app-admin-tipos-asiento',
@@ -122,10 +135,10 @@ const DEFAULT_COLOR = '#a8a29e';
                           </div>
                         </td>
                         <td class="col-num">
-                          <span class="tnum muted">{{ t.salas_usando }}</span>
+                          <span class="tnum muted">{{ t.salas_usando ?? 0 }}</span>
                         </td>
                         <td class="col-num">
-                          <span class="tnum muted">{{ t.asientos_total }}</span>
+                          <span class="tnum muted">{{ t.asientos_total ?? 0 }}</span>
                         </td>
                         <td class="col-acc">
                           <div class="row-acc">
@@ -184,17 +197,50 @@ const DEFAULT_COLOR = '#a8a29e';
             </div>
 
             <div class="field mt">
-              <label for="tipo-color">Color en el mapa</label>
+              <label for="tipo-color-hex">Color en el mapa</label>
               <div class="color-row">
                 <input
-                  id="tipo-color"
-                  class="color-input"
+                  class="color-swatch-input"
                   type="color"
+                  aria-label="Selector visual de color"
                   [ngModel]="formColor()"
-                  (ngModelChange)="formColor.set($event)"
+                  (ngModelChange)="onColorPicker($event)"
                 />
-                <span class="color-hex">{{ formColor() }}</span>
+                <span class="color-hash" aria-hidden="true">#</span>
+                <input
+                  id="tipo-color-hex"
+                  class="color-hex-input"
+                  type="text"
+                  inputmode="text"
+                  spellcheck="false"
+                  autocomplete="off"
+                  maxlength="6"
+                  placeholder="A8A29E"
+                  aria-describedby="color-hex-hint"
+                  [ngModel]="hexInput()"
+                  (ngModelChange)="onHexInput($event)"
+                  (blur)="commitHexInput()"
+                />
               </div>
+              <div id="color-hex-hint" class="color-hint">
+                Tipeá el código hex (3 o 6 caracteres) o usá el selector.
+              </div>
+              @if (presetColors().length > 0) {
+                <div class="color-presets" role="listbox" aria-label="Colores recientes del catálogo">
+                  @for (preset of presetColors(); track preset) {
+                    <button
+                      type="button"
+                      role="option"
+                      class="preset"
+                      [class.active]="formColor().toLowerCase() === preset.toLowerCase()"
+                      [attr.aria-selected]="formColor().toLowerCase() === preset.toLowerCase()"
+                      [style.background]="preset"
+                      [title]="preset.toUpperCase()"
+                      (click)="applyPreset(preset)"
+                    ></button>
+                  }
+                </div>
+              }
             </div>
 
             <div class="preview-row mt">
@@ -237,13 +283,13 @@ const DEFAULT_COLOR = '#a8a29e';
             <p class="confirm-text">
               ¿Eliminar <strong>{{ target.nombre }}</strong>? Esta acción no se puede deshacer.
             </p>
-            @if (target.asientos_total > 0) {
+            @if ((target.asientos_total ?? 0) > 0) {
               <div class="alert">
                 <svg lucideTriangleAlert [size]="14"></svg>
                 <span>
-                  Está asignado a {{ target.asientos_total }} asientos en
-                  {{ target.salas_usando }}
-                  {{ target.salas_usando === 1 ? 'sala' : 'salas' }}.
+                  Está asignado a {{ target.asientos_total ?? 0 }} asientos en
+                  {{ target.salas_usando ?? 0 }}
+                  {{ (target.salas_usando ?? 0) === 1 ? 'sala' : 'salas' }}.
                   Reasígnalos primero.
                 </span>
               </div>
@@ -253,7 +299,7 @@ const DEFAULT_COLOR = '#a8a29e';
             <button class="btn" (click)="cancelDelete()">Cancelar</button>
             <button
               class="btn btn-danger"
-              [disabled]="target.asientos_total > 0"
+              [disabled]="(target.asientos_total ?? 0) > 0"
               (click)="confirmDelete()"
             >
               Eliminar
@@ -279,6 +325,7 @@ export class AdminTiposAsientoComponent {
 
   readonly formNombre = signal('');
   readonly formColor = signal(DEFAULT_COLOR);
+  readonly hexInput = signal(DEFAULT_COLOR.replace(/^#/, '').toUpperCase());
 
   readonly modal = signal<ModalMode>({ kind: 'closed' });
   readonly deleteState = signal<DeleteState>({ kind: 'idle' });
@@ -296,13 +343,28 @@ export class AdminTiposAsientoComponent {
     return s.kind === 'confirm' ? s.tipo : null;
   });
 
+  readonly presetColors = computed<string[]>(() => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const t of this.tipos()) {
+      const c = t.color?.toLowerCase();
+      if (c && !seen.has(c)) {
+        seen.add(c);
+        out.push(c);
+      }
+    }
+    return out.slice(0, 8);
+  });
+
   readonly canSubmit = computed(() => {
     const name = this.formNombre().trim();
     if (!name) return false;
     const mode = this.modal();
     if (mode.kind === 'edit') {
       const t = mode.tipo;
-      const unchanged = name === t.nombre && this.formColor() === t.color;
+      const sameColor =
+        (t.color ?? '').toLowerCase() === this.formColor().toLowerCase();
+      const unchanged = name === t.nombre && sameColor;
       if (unchanged) return false;
     }
     return true;
@@ -314,14 +376,14 @@ export class AdminTiposAsientoComponent {
 
   openCreate() {
     this.formNombre.set('');
-    this.formColor.set(DEFAULT_COLOR);
+    this.setColor(DEFAULT_COLOR);
     this.modalError.set(null);
     this.modal.set({ kind: 'create' });
   }
 
   openEdit(t: TipoAsiento) {
     this.formNombre.set(t.nombre);
-    this.formColor.set(t.color ?? DEFAULT_COLOR);
+    this.setColor(t.color ?? DEFAULT_COLOR);
     this.modalError.set(null);
     this.modal.set({ kind: 'edit', tipo: t });
   }
@@ -329,6 +391,38 @@ export class AdminTiposAsientoComponent {
   closeModal() {
     this.modal.set({ kind: 'closed' });
     this.modalError.set(null);
+  }
+
+  onColorPicker(value: string) {
+    this.setColor(value);
+  }
+
+  onHexInput(raw: string) {
+    const cleaned = (raw ?? '').replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
+    this.hexInput.set(cleaned.toUpperCase());
+    const normalized = normalizeHex(cleaned);
+    if (normalized) {
+      this.formColor.set(normalized);
+    }
+  }
+
+  commitHexInput() {
+    const normalized = normalizeHex(this.hexInput());
+    if (normalized) {
+      this.setColor(normalized);
+    } else {
+      this.hexInput.set(this.formColor().replace(/^#/, '').toUpperCase());
+    }
+  }
+
+  applyPreset(hex: string) {
+    this.setColor(hex);
+  }
+
+  private setColor(hex: string) {
+    const normalized = normalizeHex(hex) ?? DEFAULT_COLOR;
+    this.formColor.set(normalized);
+    this.hexInput.set(normalized.replace(/^#/, '').toUpperCase());
   }
 
   submitModal() {
