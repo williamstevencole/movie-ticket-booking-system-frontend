@@ -7,10 +7,12 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { LucideTriangleAlert, LucideArmchair } from '@lucide/angular';
+import { LucideTriangleAlert, LucideArmchair, LucideX } from '@lucide/angular';
 
 import { Cine, CinesService } from '../../../../shared/services/cines.service';
+import { SalasService, EditarSalaInput } from '../../../../shared/services/salas.service';
 import { ToastService } from '../../../../shared/services/toast.service';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 
 const MAX_DIM = 30;
@@ -25,6 +27,7 @@ const MAX_DIM = 30;
     AdminSidebarComponent,
     LucideTriangleAlert,
     LucideArmchair,
+    LucideX,
   ],
   template: `
     <div class="admin-body">
@@ -177,14 +180,48 @@ const MAX_DIM = 30;
         </div>
       </main>
     </div>
+
+    @if (confirmDialog(); as d) {
+      <div class="overlay" (click)="cancelConfirm()">
+        <div class="dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+          <header class="dlg-head">
+            <h2 id="confirm-title">Confirmar cambio de dimensiones</h2>
+            <button class="icon-btn" (click)="cancelConfirm()" aria-label="Cerrar">
+              <svg lucideX [size]="16"></svg>
+            </button>
+          </header>
+          <div class="dlg-body">
+            <div class="confirm-alert">
+              <svg lucideTriangleAlert [size]="18"></svg>
+              <div>
+                <p class="confirm-lead">
+                  Esta sala tiene <strong>{{ d.funcionesActivas }}</strong>
+                  función{{ d.funcionesActivas === 1 ? '' : 'es' }} activa{{ d.funcionesActivas === 1 ? '' : 's' }}.
+                </p>
+                <p class="confirm-note">
+                  Cambiar las dimensiones puede invalidar reservas existentes. El catálogo de asientos se regenerará y los tipos se preservarán donde la celda sobreviva.
+                </p>
+              </div>
+            </div>
+          </div>
+          <footer class="dlg-foot">
+            <button class="btn" (click)="cancelConfirm()" [disabled]="saving()">Cancelar</button>
+            <button class="btn btn-danger" (click)="confirmForce()" [disabled]="saving()">
+              {{ saving() ? 'Guardando…' : 'Sí, cambiar dimensiones' }}
+            </button>
+          </footer>
+        </div>
+      </div>
+    }
   `,
-  styleUrl: '../crear/sala-form.component.scss',
+  styleUrls: ['../crear/sala-form.component.scss', './sala-editar.component.scss'],
 })
 export class AdminSalaEditarComponent {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private cinesSvc = inject(CinesService);
+  private salasSvc = inject(SalasService);
   private toast = inject(ToastService);
 
   readonly MAX_DIM = MAX_DIM;
@@ -193,6 +230,10 @@ export class AdminSalaEditarComponent {
   readonly saving = signal(false);
   readonly formError = signal<string | null>(null);
   readonly loadError = signal<string | null>(null);
+  readonly confirmDialog = signal<{
+    funcionesActivas: number;
+    pendingInput: EditarSalaInput;
+  } | null>(null);
 
   readonly filasN = signal(0);
   readonly colsN = signal(0);
@@ -227,7 +268,7 @@ export class AdminSalaEditarComponent {
       error: () => this.cineNombre.set('—'),
     });
 
-    this.cinesSvc.getSala(this.idCine, this.idSala).subscribe({
+    this.salasSvc.getById(this.idSala).subscribe({
       next: (sala) => {
         this.form.patchValue({
           nombre: sala.nombre,
@@ -237,8 +278,8 @@ export class AdminSalaEditarComponent {
         this.form.markAsPristine();
         this.syncDims(this.form.value);
       },
-      error: (e) =>
-        this.loadError.set(e?.message ?? 'No se pudo cargar la sala'),
+      error: (err) =>
+        this.loadError.set(extractMessage(err)),
     });
 
     this.form.valueChanges.subscribe((v) => this.syncDims(v));
@@ -255,22 +296,55 @@ export class AdminSalaEditarComponent {
     if (this.form.invalid || this.form.pristine) return;
 
     const v = this.form.value;
+    const input: EditarSalaInput = {
+      nombre: v.nombre!,
+      filas: Number(v.filas),
+      columnas: Number(v.columnas),
+    };
+    this.persist(input, false);
+  }
+
+  confirmForce() {
+    const d = this.confirmDialog();
+    if (!d) return;
+    this.persist(d.pendingInput, true);
+  }
+
+  cancelConfirm() {
+    if (this.saving()) return;
+    this.confirmDialog.set(null);
+  }
+
+  private persist(input: EditarSalaInput, force: boolean) {
     this.saving.set(true);
-    this.cinesSvc
-      .updateSala(this.idCine, this.idSala, {
-        nombre: v.nombre!,
-        filas: Number(v.filas),
-        columnas: Number(v.columnas),
-      })
+    this.salasSvc
+      .update(this.idSala, input, force ? { force: true } : undefined)
       .subscribe({
         next: (sala) => {
           this.saving.set(false);
-          this.toast.show(`Sala ${sala.nombre} actualizada`);
+          this.confirmDialog.set(null);
+          if (sala.warning) {
+            this.toast.show(sala.warning);
+          } else {
+            this.toast.show(`${sala.nombre} actualizada`);
+          }
           this.router.navigate(['/admin/salas']);
         },
-        error: (e) => {
+        error: (err) => {
           this.saving.set(false);
-          this.formError.set(e?.message ?? 'No se pudo guardar la sala');
+          if (
+            err?.status === 409 &&
+            err?.error?.code === 'REQUIRES_DIMENSION_CHANGE_CONFIRMATION'
+          ) {
+            this.confirmDialog.set({
+              funcionesActivas: Number(err.error.funcionesActivas) || 0,
+              pendingInput: input,
+            });
+            return;
+          }
+          this.confirmDialog.set(null);
+          this.formError.set(extractMessage(err));
+          this.toast.show(`Error al actualizar: ${extractMessage(err)}`);
         },
       });
   }
