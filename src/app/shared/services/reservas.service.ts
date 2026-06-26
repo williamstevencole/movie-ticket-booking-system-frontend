@@ -112,10 +112,10 @@ export class ReservasService {
   }
 
   listUsuarios(): Observable<ReservaUsuario[]> {
-  return this.http.get<ReservaUsuario[]>(`${API_URL}/admin/usuarios`);
+  return this.http.get<ReservaUsuario[]>(`${API_URL}/admin/users`);
   }
 
   getUsuario(id: string): Observable<ReservaUsuario | undefined> {
-    return this.http.get<ReservaUsuario>(`${API_URL}/admin/usuarios/${id}`);
+  return this.http.get<ReservaUsuario>(`${API_URL}/admin/clientes/${id}`);
   }
 }
