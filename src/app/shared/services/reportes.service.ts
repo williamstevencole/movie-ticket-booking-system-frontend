@@ -1,8 +1,11 @@
-import { Injectable } from '@angular/core';
-import { of } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, of, map } from 'rxjs';
 import { delay } from 'rxjs/operators';
-import { MOCK_RESERVAS } from '../../mocks/data/reservas.mock';
+import { API_URL } from '../../core/config/env';
+import { toNum, toStr } from '../../core/api/normalize';
 import { MOCK_PAGOS } from '../../mocks/data/pagos.mock';
+import { MOCK_RESERVAS } from '../../mocks/data/reservas.mock';
 
 // --- Generic page wrapper ---
 export type Page<T> = {
@@ -56,6 +59,55 @@ export type CancelacionesReporte = {
   tendencia_30d: Array<{ fecha: string; count: number }>;
 };
 
+type BackendReporteReservaItem = {
+  id: string | number;
+  numeroReserva: string;
+  estado: string;
+  usuario: { id: string | number; nombre: string; email: string };
+  funcion: {
+    id: string | number;
+    fechaHora: string;
+    pelicula: { id: string | number; titulo: string };
+    sala: {
+      id: string | number;
+      nombre: string;
+      cine: { id: string | number; nombre: string };
+    };
+  };
+  numAsientos: number;
+  montoTotal: number | string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type BackendReporteReservasPage = {
+  data: BackendReporteReservaItem[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+function mapBackendReporteReserva(
+  r: BackendReporteReservaItem,
+): ReporteReservaRow {
+  return {
+    id: toStr(r.id),
+    numero_reserva: r.numeroReserva,
+    id_usuario: toStr(r.usuario.id),
+    nombre_usuario: r.usuario.nombre,
+    email_usuario: r.usuario.email,
+    id_funcion: toStr(r.funcion.id),
+    fecha_hora_funcion: r.funcion.fechaHora,
+    titulo_pelicula: r.funcion.pelicula.titulo,
+    nombre_cine: r.funcion.sala.cine.nombre,
+    nombre_sala: r.funcion.sala.nombre,
+    num_asientos: r.numAsientos,
+    monto_total: toNum(r.montoTotal),
+    estado: r.estado as ReporteReservaRow['estado'],
+    created_at: r.createdAt,
+  };
+}
+
 const USUARIOS_MAP: Record<string, { nombre: string; email: string }> = {
   'u-1': { nombre: 'Andrea López', email: 'andrea.lopez@gmail.com' },
   'u-2': { nombre: 'Marco Rodríguez', email: 'marco.rod@gmail.com' },
@@ -71,28 +123,7 @@ const USUARIOS_MAP: Record<string, { nombre: string; email: string }> = {
   'u-12': { nombre: 'Mateo Aguilar', email: 'mateo.a@gmail.com' },
 };
 
-const PELICULAS_LIST = ['Tormenta sobre el Pacífico', 'Cartas a mi yo de mañana', 'El Reino de Niebla'];
 const CINES_LIST = ['Cinépolis Oakland Mall', 'Multiplaza', 'Cinépolis City Mall', 'Multiplaza San Salvador'];
-
-const MOCK_REPORTE_RESERVAS: ReporteReservaRow[] = MOCK_RESERVAS.map((r, i) => {
-  const u = USUARIOS_MAP[r.id_usuario] ?? { nombre: 'Usuario Desconocido', email: 'unknown@example.com' };
-  return {
-    id: r.id,
-    numero_reserva: r.numero_reserva,
-    id_usuario: r.id_usuario,
-    nombre_usuario: u.nombre,
-    email_usuario: u.email,
-    id_funcion: r.id_funcion,
-    fecha_hora_funcion: new Date(Date.now() + (i % 7) * 86400000).toISOString(),
-    titulo_pelicula: PELICULAS_LIST[i % PELICULAS_LIST.length]!,
-    nombre_cine: CINES_LIST[i % CINES_LIST.length]!,
-    nombre_sala: `Sala ${(i % 5) + 1}`,
-    num_asientos: r.num_asientos,
-    monto_total: r.monto_total,
-    estado: r.estado as ReporteReservaRow['estado'],
-    created_at: r.created_at,
-  };
-});
 
 const MOCK_REPORTE_PAGOS: ReportePagoRow[] = MOCK_PAGOS.map((p, i) => {
   const reserva = MOCK_RESERVAS.find((r) => r.id === p.id_reserva);
@@ -116,22 +147,29 @@ const MOCK_REPORTE_PAGOS: ReportePagoRow[] = MOCK_PAGOS.map((p, i) => {
 
 @Injectable({ providedIn: 'root' })
 export class ReportesService {
-  reservas(q: Record<string, any> = {}) {
-    let rows = [...MOCK_REPORTE_RESERVAS];
-    if (q['estado']) rows = rows.filter((r) => r.estado === q['estado']);
-    const page = Number(q['page'] ?? 1);
-    const limit = Number(q['limit'] ?? 10);
-    const start = (page - 1) * limit;
-    return of({ data: rows.slice(start, start + limit), total: rows.length, page, limit } as Page<ReporteReservaRow>).pipe(delay(120));
+  private readonly http = inject(HttpClient);
+  private readonly reservasBase = `${API_URL}/admin/reportes/reservas`;
+
+  reservas(q: Record<string, any> = {}): Observable<Page<ReporteReservaRow>> {
+    const params = this.buildReservasParams(q);
+    return this.http
+      .get<BackendReporteReservasPage>(this.reservasBase, { params })
+      .pipe(
+        map((res) => ({
+          data: res.data.map(mapBackendReporteReserva),
+          total: res.total,
+          page: res.page,
+          limit: res.limit,
+        })),
+      );
   }
 
-  reservasCsv(q: Record<string, any> = {}) {
-    const header = 'id,numero_reserva,nombre_usuario,titulo_pelicula,monto_total,estado,created_at\n';
-    const rows = MOCK_REPORTE_RESERVAS
-      .map((r) => `${r.id},${r.numero_reserva},${r.nombre_usuario},${r.titulo_pelicula},${r.monto_total},${r.estado},${r.created_at}`)
-      .join('\n');
-    const blob = new Blob([header + rows], { type: 'text/csv' });
-    return of(blob).pipe(delay(120));
+  reservasCsv(q: Record<string, any> = {}): Observable<Blob> {
+    const params = this.buildReservasParams(q);
+    return this.http.get(`${this.reservasBase}/export`, {
+      params,
+      responseType: 'blob',
+    });
   }
 
   pagos(q: Record<string, any> = {}) {
@@ -162,5 +200,28 @@ export class ReportesService {
       })),
     };
     return of(result).pipe(delay(120));
+  }
+
+  private buildReservasParams(q: Record<string, any>): HttpParams {
+    let params = new HttpParams();
+    const map: Array<[string, string]> = [
+      // [frontend key, backend key]
+      ['search', 'search'],
+      ['id_cine', 'idCine'],
+      ['id_ciudad', 'idCiudad'],
+      ['id_pelicula', 'idPelicula'],
+      ['estado', 'estado'],
+      ['desde', 'desde'],
+      ['hasta', 'hasta'],
+      ['page', 'page'],
+      ['limit', 'limit'],
+    ];
+    for (const [feKey, beKey] of map) {
+      const v = q[feKey];
+      if (v !== undefined && v !== null && v !== '') {
+        params = params.set(beKey, String(v));
+      }
+    }
+    return params;
   }
 }
