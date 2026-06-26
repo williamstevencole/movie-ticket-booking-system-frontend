@@ -40,6 +40,10 @@ export type ActualizarPasswordInput = {
   newPassword: string;
 };
 
+export type ToggleNotificacionesResponse = {
+  notificaciones_activas: boolean;
+};
+
 type BackendUsuario = {
   id: string | number;
   nombre: string;
@@ -118,6 +122,15 @@ export class UsuariosService {
     return this.http.patch<{ message: string }>(
       `${API_URL}/admin/users/${id}/password`,
       input,
+    );
+  }
+
+  toggleNotificaciones(
+    id: string,
+  ): Observable<ToggleNotificacionesResponse> {
+    return this.http.patch<ToggleNotificacionesResponse>(
+      `${API_URL}/admin/users/${id}/notificaciones`,
+      {},
     );
   }
 }

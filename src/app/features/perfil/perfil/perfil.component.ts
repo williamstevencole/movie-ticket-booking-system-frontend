@@ -102,11 +102,14 @@ export class PerfilPageComponent {
       .subscribe({
         next: (usuarioActualizado) => {
           this.auth.updateUser(usuarioActualizado);
-          this.toast.show('Preferencia guardada');
+
+          this.toast.show(
+            activa ? 'Notificaciones activadas' : 'Notificaciones desactivadas',
+          );
         },
         error: () => {
           this.notificacionesActivas = prev;
-          this.toast.show('No se pudo guardar');
+          this.toast.show('No se pudo guardar la preferencia');
         },
       });
   }
