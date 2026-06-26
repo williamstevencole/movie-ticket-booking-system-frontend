@@ -1,4 +1,7 @@
-import { Observable } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { API_URL } from '../../core/config/env';
 
 export type EstadoReserva =
   | 'pendiente_pago'
@@ -10,10 +13,10 @@ export type EstadoReserva =
 export type ReservaAsiento = {
   id: string;
   id_asiento_funcion: string;
-  codigo: string;       // e.g. 'A5'
-  fila: string;         // e.g. 'A'
-  columna: number;      // e.g. 5
-  tipo_asiento: string; // 'Estandar' | 'VIP' | ...
+  codigo: string;       
+  fila: string;         
+  columna: number;      
+  tipo_asiento: string; 
   precio: number;
 };
 
@@ -27,30 +30,52 @@ export type Reserva = {
   monto_total: number;
   created_at: string;
   updated_at: string;
-  asientos: ReservaAsiento[];  // replaces asientos_codigos
-  expira_en?: string;          // ISO — present for pendiente_pago
+  asientos: ReservaAsiento[];  
+  expira_en?: string;          
   cupon_codigo?: string;
   notas_internas?: string;
 };
 
-export type ConfirmarReservaInput = {
+export type CrearReservaInput = {
   id_funcion: string;
-  asientos: Array<{
-    id_asiento_funcion: string;
-    version: number;
-  }>;
+  ids_asiento_funcion: string[];
 };
 
-export type ReservaUsuario = {
-  id: string;
-  nombre: string;
-  email: string;
+export type CrearReservaResponse = {
+  id_reserva: string;
+  numero_reserva: string;
+  estado: EstadoReserva;
+  asientos: { codigo: string; tipo: string }[];
+  total_estimado: string;
 };
 
-export abstract class ReservasService {
-  abstract list(): Observable<Reserva[]>;
-  abstract listUsuarios(): Observable<ReservaUsuario[]>;
-  abstract getById(id: string): Observable<Reserva | undefined>;
-  abstract getUsuario(id: string): Observable<ReservaUsuario | undefined>;
-  abstract confirmar(input: ConfirmarReservaInput): Observable<Reserva>;
+export type CancelarReservaResponse = {
+  reserva: {
+    id: string;
+    numero_reserva: string;
+    estado: EstadoReserva;
+    fecha_cancelacion: string;
+  };
+  reembolso: {
+    id: string;
+    estado: string;
+    monto: string;
+  } | null;
+};
+
+@Injectable({ providedIn: 'root' })
+export class ReservasService {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${API_URL}/reservas`;
+
+  crear(input: CrearReservaInput): Observable<CrearReservaResponse> {
+    return this.http.post<CrearReservaResponse>(this.base, input);
+  }
+
+  cancelar(id: string): Observable<CancelarReservaResponse> {
+    return this.http.patch<CancelarReservaResponse>(
+      `${this.base}/${id}/cancelar`,
+      {}
+    );
+  }
 }
