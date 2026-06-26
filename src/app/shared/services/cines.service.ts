@@ -5,12 +5,9 @@ import { API_URL } from '../../core/config/env';
 import type { components } from '../../core/types/api.generated';
 import { toStr } from '../../core/api/normalize';
 
-export type Sala = {
+export type CineSalaSummary = {
   id: string;
   nombre: string;
-  filas?: number;
-  columnas?: number;
-  id_cine?: string;
 };
 
 export type Cine = {
@@ -20,7 +17,7 @@ export type Cine = {
   id_ciudad: string;
   ciudad_nombre?: string;
   activo: boolean;
-  salas: Sala[];
+  salas: CineSalaSummary[];
   created_at: string;
 };
 
@@ -40,15 +37,6 @@ export type ListCinesQuery = {
 
 export type CrearCineInput = components['schemas']['CreateCineDto'];
 export type EditarCineInput = components['schemas']['UpdateCineDto'];
-
-export type CrearSalaInput = {
-  nombre: string;
-  filas: number;
-  columnas: number;
-  id_cine?: string;
-};
-
-export type EditarSalaInput = Partial<CrearSalaInput>;
 
 type BackendCineListItem = {
   id: string | number;
@@ -160,18 +148,4 @@ export class CinesService {
       .pipe(map(mapRaw));
   }
 
-  /** @deprecated Unit 4 will replace this stub with a real HTTP call */
-  addSala(_idCine: string, _input: CrearSalaInput): Observable<Sala> {
-    throw new Error('addSala: not yet wired — use Unit 4 plan');
-  }
-
-  /** @deprecated Unit 4 will replace this stub */
-  getSala(_idCine: string, _idSala: string): Observable<Sala> {
-    throw new Error('getSala: not yet wired — use Unit 4 plan');
-  }
-
-  /** @deprecated Unit 4 will replace this stub */
-  updateSala(_idCine: string, _idSala: string, _input: EditarSalaInput): Observable<Sala> {
-    throw new Error('updateSala: not yet wired — use Unit 4 plan');
-  }
 }
