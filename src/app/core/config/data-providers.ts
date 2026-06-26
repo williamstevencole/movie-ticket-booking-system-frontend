@@ -11,9 +11,6 @@ import { PreciosService } from '../../shared/services/precios.service';
 import { UsuariosService } from '../../shared/services/usuarios.service';
 // MetodosPagoService and CalificacionesService are now concrete @Injectable — no mock override needed
 
-// MockCuponesService no longer registered (CuponesService is concrete HTTP)
-// MockGenerosService and MockIdiomasService no longer registered (services are now concrete HTTP classes)
-import { MockReservasService } from '../../mocks/services/reservas.mock.service';
 // MockPagosService and MockReembolsosService no longer registered (services are now concrete HTTP classes)
 // MockPoliticasCancelacionService no longer registered (PoliticasCancelacionService is concrete HTTP)
 import { MockTiposAsientoService } from '../../mocks/services/tipos-asiento.mock.service';
@@ -25,7 +22,7 @@ export const dataProviders: Provider[] = [
   // CuponesService: concrete HTTP service, no mock override
   // GenerosService and IdiomasService: concrete HTTP services, no mock override
   // FuncionesService is now concrete HTTP — no mock override needed
-  { provide: ReservasService, useClass: MockReservasService },
+  { provide: ReservasService, useClass: ReservasService },
   // PagosService and ReembolsosService: concrete HTTP services, no mock override
   // PoliticasCancelacionService: concrete HTTP service, no mock override
   { provide: TiposAsientoService, useClass: MockTiposAsientoService },

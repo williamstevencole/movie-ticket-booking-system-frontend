@@ -36,6 +36,12 @@ export type Reserva = {
   notas_internas?: string;
 };
 
+export type ReservaUsuario = {
+  id: string;
+  nombre: string;
+  email: string;
+};
+
 export type CrearReservaInput = {
   id_funcion: string;
   ids_asiento_funcion: string[];
@@ -67,6 +73,24 @@ export type CancelarReservaResponse = {
 export class ReservasService {
   private readonly http = inject(HttpClient);
   private readonly base = `${API_URL}/reservas`;
+  private readonly meBase = `${API_URL}/me/reservas`;
+  private readonly adminBase = `${API_URL}/admin/reservas`;
+
+  list(estado?: string): Observable<Reserva[]> {
+    const params = estado ? { params: { estado } } : {};
+    return this.http.get<Reserva[]>(this.meBase, params);
+  }
+
+  getById(numero: string): Observable<Reserva | undefined> {
+    return this.http.get<Reserva>(`${this.meBase}/${numero}`);
+  }
+
+  cancelarMe(numero: string): Observable<CancelarReservaResponse> {
+    return this.http.patch<CancelarReservaResponse>(
+      `${this.meBase}/${numero}/cancelar`,
+      {}
+    );
+  }
 
   crear(input: CrearReservaInput): Observable<CrearReservaResponse> {
     return this.http.post<CrearReservaResponse>(this.base, input);
@@ -74,8 +98,24 @@ export class ReservasService {
 
   cancelar(id: string): Observable<CancelarReservaResponse> {
     return this.http.patch<CancelarReservaResponse>(
-      `${this.base}/${id}/cancelar`,
+      `${this.adminBase}/${id}/cancelar`,
       {}
     );
+  }
+
+  listAll(): Observable<Reserva[]> {
+    return this.http.get<Reserva[]>(this.adminBase);
+  }
+
+  getByIdAdmin(id: string): Observable<Reserva | undefined> {
+    return this.http.get<Reserva>(`${this.adminBase}/${id}`);
+  }
+
+  listUsuarios(): Observable<ReservaUsuario[]> {
+  return this.http.get<ReservaUsuario[]>(`${API_URL}/admin/usuarios`);
+  }
+
+  getUsuario(id: string): Observable<ReservaUsuario | undefined> {
+    return this.http.get<ReservaUsuario>(`${API_URL}/admin/usuarios/${id}`);
   }
 }

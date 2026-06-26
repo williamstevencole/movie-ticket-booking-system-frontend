@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Asiento } from '../asientos/mapa/asiento.model';
-import { ReservasService, ConfirmarReservaInput } from '../../shared/services/reservas.service';
+import { ReservasService, CrearReservaInput } from '../../shared/services/reservas.service';
 import { ToastService } from '../../shared/services/toast.service';
 
 export type CheckoutResultado = {
@@ -39,19 +39,18 @@ export class CheckoutStateService {
    * Confirms a reservation with seat version information.
    * Handles 409 Conflict by showing toast and returning error for caller to refresh.
    */
+
+  
   confirmarReserva(
     funcionId: string,
     asientosSeleccionados: Asiento[],
   ): Observable<any> {
-    const payload: ConfirmarReservaInput = {
-      id_funcion: funcionId,
-      asientos: asientosSeleccionados.map((a) => ({
-        id_asiento_funcion: a.id,
-        version: a.version,
-      })),
+    const payload: CrearReservaInput = {
+    id_funcion: funcionId,
+    ids_asiento_funcion: asientosSeleccionados.map((a) => a.id),
     };
 
-    return this.reservasSvc.confirmar(payload).pipe(
+    return this.reservasSvc.crear(payload).pipe(
       catchError((error) => {
         if (error.status === 409) {
           this.toastSvc.show(
