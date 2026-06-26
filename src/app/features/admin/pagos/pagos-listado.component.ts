@@ -24,10 +24,6 @@ import {
   ReservasService,
 } from '../../../shared/services/reservas.service';
 import {
-  AdminReembolsosService,
-  AdminReembolsoRow as Reembolso,
-} from '../../../shared/services/admin-reembolsos.service';
-import {
   Funcion,
   FuncionesService,
 } from '../../../shared/services/funciones.service';
@@ -68,7 +64,6 @@ import {
 export class AdminPagosListadoComponent {
   private pagosSvc = inject(PagosService);
   private reservasSvc = inject(ReservasService);
-  private reembolsosSvc = inject(AdminReembolsosService);
   private funcionesSvc = inject(FuncionesService);
   private cinesSvc = inject(CinesService);
   private router = inject(Router);
@@ -76,7 +71,6 @@ export class AdminPagosListadoComponent {
   readonly pagos = signal<Pago[]>([]);
   readonly reservas = signal<Reserva[]>([]);
   readonly usuarios = signal<ReservaUsuario[]>([]);
-  readonly reembolsos = signal<Reembolso[]>([]);
   readonly funciones = signal<Funcion[]>([]);
   readonly cines = signal<Cine[]>([]);
 
@@ -207,10 +201,9 @@ export class AdminPagosListadoComponent {
     return all.slice(start, start + this.pageSize());
   });
 
-  readonly filteredReembolsos = computed(() => {
-    const pagoIds = new Set(this.filtered().map((p) => p.id));
-    return this.reembolsos().filter((r) => r.id_pago != null && pagoIds.has(r.id_pago));
-  });
+  readonly filteredReembolsos = computed(() =>
+    this.filtered().filter((p) => p.estado === 'reembolsado'),
+  );
 
   readonly kpis = computed(() => {
     let cobrado = 0;
@@ -235,7 +228,6 @@ export class AdminPagosListadoComponent {
     this.pagosSvc.list().subscribe((d) => this.pagos.set(d.data));
     this.reservasSvc.list().subscribe((d) => this.reservas.set(d));
     this.reservasSvc.listUsuarios().subscribe((d) => this.usuarios.set(d));
-    this.reembolsosSvc.list().subscribe((res) => this.reembolsos.set(res.data));
     this.funcionesSvc.list().subscribe((d) => this.funciones.set(d));
     this.cinesSvc.list().subscribe((d) => this.cines.set(d.data));
 
