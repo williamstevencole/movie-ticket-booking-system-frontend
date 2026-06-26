@@ -22,8 +22,9 @@ import {
 import {
   Cine,
   CinesService,
-  Sala,
+  CineSalaSummary,
 } from '../../../../shared/services/cines.service';
+import { SalasService } from '../../../../shared/services/salas.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 
 @Component({
@@ -116,7 +117,7 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
                     <option value="" disabled>Selecciona…</option>
                     @for (s of salasDelCine(); track s.id) {
                       <option [value]="s.id">
-                        Sala {{ s.nombre }} · {{ (s.filas ?? 0) * (s.columnas ?? 0) }} asientos
+                        Sala {{ s.nombre }}
                       </option>
                     }
                   </select>
@@ -239,6 +240,7 @@ export class AdminFuncionFormComponent {
   private funcionesSvc = inject(FuncionesService);
   private peliculasSvc = inject(PeliculasService);
   private cinesSvc = inject(CinesService);
+  private salasSvc = inject(SalasService);
 
   readonly peliculas = signal<Pelicula[]>([]);
   readonly cines = signal<Cine[]>([]);
@@ -267,11 +269,12 @@ export class AdminFuncionFormComponent {
 
   readonly peliculaSeleccionada = signal<Pelicula | null>(null);
   readonly cineSeleccionado = signal<Cine | null>(null);
-  readonly salaSeleccionada = signal<Sala | null>(null);
+  readonly salaSeleccionada = signal<CineSalaSummary | null>(null);
+  readonly salaSeleccionadaDetalle = signal<{ filas: number; columnas: number } | null>(null);
 
   readonly capacidadSala = computed(() => {
-    const s = this.salaSeleccionada();
-    return s ? (s.filas ?? 0) * (s.columnas ?? 0) : 0;
+    const d = this.salaSeleccionadaDetalle();
+    return d ? d.filas * d.columnas : 0;
   });
 
   readonly fechaInicioValid = signal(false);
@@ -303,7 +306,7 @@ export class AdminFuncionFormComponent {
     return !!ctrl && ctrl.invalid && (ctrl.touched || ctrl.dirty);
   }
 
-  salasDelCine(): Sala[] {
+  salasDelCine(): CineSalaSummary[] {
     return this.cineSeleccionado()?.salas ?? [];
   }
 
@@ -371,6 +374,14 @@ export class AdminFuncionFormComponent {
 
     const sala = cine?.salas.find((s) => s.id === v.id_sala) ?? null;
     this.salaSeleccionada.set(sala);
+
+    if (sala) {
+      this.salasSvc.getById(sala.id).subscribe((d) => {
+        this.salaSeleccionadaDetalle.set({ filas: d.filas, columnas: d.columnas });
+      });
+    } else {
+      this.salaSeleccionadaDetalle.set(null);
+    }
 
     if (v.fecha_hora) {
       const start = new Date(v.fecha_hora);
