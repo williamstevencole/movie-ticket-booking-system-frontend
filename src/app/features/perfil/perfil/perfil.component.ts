@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../shared/services/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
-import { UsuariosService } from '../../../shared/services/usuarios.service';
+import { PerfilService } from '../../../shared/services/perfil.service';
 
 @Component({
   selector: 'app-perfil-page',
@@ -60,7 +60,7 @@ export class PerfilPageComponent implements OnInit {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private toast = inject(ToastService);
-  private usuariosSvc = inject(UsuariosService);
+  private perfilSvc = inject(PerfilService);
 
   readonly form = this.fb.nonNullable.group({
     nombre: [this.auth.user()?.nombre ?? '', Validators.required],
@@ -71,7 +71,7 @@ export class PerfilPageComponent implements OnInit {
   notificacionesActivas = this.auth.user()?.notificaciones_activas ?? false;
 
   ngOnInit(): void {
-    this.usuariosSvc.getMiPerfil().subscribe({
+    this.perfilSvc.obtenerMiPerfil().subscribe({
       next: (perfil) => {
         this.form.patchValue({
           nombre: perfil.nombre,
@@ -93,14 +93,19 @@ export class PerfilPageComponent implements OnInit {
 
     const datos = this.form.getRawValue();
 
-    this.usuariosSvc
+    this.perfilSvc
       .actualizarMiPerfil({
         nombre: datos.nombre,
         telefono: datos.telefono,
       })
       .subscribe({
-        next: (usuarioActualizado) => {
-          this.auth.updateUser(usuarioActualizado);
+        next: (perfilActualizado) => {
+          this.auth.updateUser({
+            nombre: perfilActualizado.nombre,
+            email: perfilActualizado.email,
+            telefono: perfilActualizado.telefono,
+            notificaciones_activas: perfilActualizado.notificaciones_activas,
+          });
           this.toast.show('Perfil actualizado correctamente');
         },
         error: () => {
@@ -113,14 +118,13 @@ export class PerfilPageComponent implements OnInit {
     const prev = this.notificacionesActivas;
     this.notificacionesActivas = activa;
 
-    this.usuariosSvc
-      .actualizarMiPerfil({
-        notificaciones_activas: activa,
-      })
+    this.perfilSvc
+      .actualizarMiPerfil({ notificaciones_activas: activa })
       .subscribe({
-        next: (usuarioActualizado) => {
-          this.auth.updateUser(usuarioActualizado);
-
+        next: (perfilActualizado) => {
+          this.auth.updateUser({
+            notificaciones_activas: perfilActualizado.notificaciones_activas,
+          });
           this.toast.show(
             activa ? 'Notificaciones activadas' : 'Notificaciones desactivadas',
           );

@@ -63,33 +63,6 @@
   .lead { margin: 6px 0 0; color: var(--text-2); font-size: 14px; }
 }
 
-/* ───── tabs ───── */
-.tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: var(--s5);
-  border-bottom: 1px solid var(--border);
-}
-.tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 10px 14px;
-  border: 0;
-  background: transparent;
-  color: var(--text-2);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  transition: color 140ms var(--ease), border-color 140ms var(--ease);
-  svg { color: var(--text-3); }
-  &:hover { color: var(--text); }
-  &.on { color: var(--red); border-bottom-color: var(--red); svg { color: var(--red); } }
-}
-
 /* ───── toolbar ───── */
 .toolbar {
   display: flex;
@@ -213,18 +186,6 @@
 .user-cell .nombre { font-weight: 600; color: var(--text); }
 .user-cell .email { font-size: 12px; color: var(--text-3); }
 
-.rol-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  background: var(--surface);
-  color: var(--text-2);
-  &.admin { background: var(--red-soft); color: var(--red); }
-}
-
 .estado-badge {
   display: inline-flex;
   align-items: center;
@@ -271,56 +232,6 @@
   }
   h3 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
   p { color: var(--text-2); font-size: 14px; }
-}
-
-/* ───── roles tab ───── */
-.roles-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--s5);
-}
-@media (max-width: 720px) { .roles-grid { grid-template-columns: 1fr; } }
-.role-card {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  box-shadow: var(--shadow-sm);
-  padding: var(--s6);
-  header {
-    display: flex;
-    align-items: center;
-    gap: var(--s4);
-    margin-bottom: var(--s5);
-  }
-  h3 { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
-  .role-count { font-size: 13px; color: var(--text-3); }
-}
-.role-mark {
-  width: 44px;
-  height: 44px;
-  flex-shrink: 0;
-  border-radius: var(--r);
-  background: var(--surface);
-  color: var(--text-2);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  &.admin { background: var(--red-soft); color: var(--red); }
-}
-.perms {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  li {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    color: var(--text);
-    svg { color: oklch(0.55 0.13 145); flex-shrink: 0; }
-  }
-  li.off { color: var(--text-3); padding-left: 22px; }
 }
 
 /* ───── overlay + dialog ───── */
@@ -487,6 +398,50 @@
 @keyframes toast-in {
   from { opacity: 0; transform: translate(-50%, 8px); }
   to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ───── skeleton shimmer ───── */
+@keyframes skel-pulse {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  padding: var(--s4) var(--s5);
+  gap: var(--s3);
+}
+
+.skeleton-row {
+  height: 52px;
+  border-radius: var(--r-sm);
+  background: linear-gradient(90deg, var(--surface) 25%, var(--bg-soft) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: skel-pulse 1.2s ease-in-out infinite;
+}
+
+/* ───── error banner ───── */
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s4) var(--s5);
+  background: var(--red-soft);
+  border-left: 3px solid var(--red);
+  border-radius: var(--r-sm);
+  margin: var(--s4) var(--s5);
+  color: var(--red);
+  font-size: 14px;
+  font-weight: 600;
+
+  span { flex: 1; }
+
+  .btn {
+    margin-left: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
 }
 
 @media (max-width: 760px) {

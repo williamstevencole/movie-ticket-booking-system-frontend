@@ -15,19 +15,9 @@ import {
 
 import {
   EstadoPago,
-  Pago,
+  PagoAdminRow,
   PagosService,
 } from '../../../shared/services/pagos.service';
-import {
-  Reserva,
-  ReservaUsuario,
-  ReservasService,
-} from '../../../shared/services/reservas.service';
-import {
-  Funcion,
-  FuncionesService,
-} from '../../../shared/services/funciones.service';
-import { Cine, CinesService } from '../../../shared/services/cines.service';
 import { AdminSidebarComponent } from '../../../shared/components/admin-sidebar.component';
 import { PagerComponent } from '../../../shared/components/pager.component';
 import {
@@ -38,6 +28,7 @@ import {
   ReportFiltrosComponent,
   ReportFiltrosValue,
 } from '../../../shared/components/report-filtros.component';
+import { extractMessage } from '../../../shared/utils/http-errors';
 
 @Component({
   selector: 'app-admin-pagos-listado',
@@ -63,16 +54,11 @@ import {
 })
 export class AdminPagosListadoComponent {
   private pagosSvc = inject(PagosService);
-  private reservasSvc = inject(ReservasService);
-  private funcionesSvc = inject(FuncionesService);
-  private cinesSvc = inject(CinesService);
   private router = inject(Router);
 
-  readonly pagos = signal<Pago[]>([]);
-  readonly reservas = signal<Reserva[]>([]);
-  readonly usuarios = signal<ReservaUsuario[]>([]);
-  readonly funciones = signal<Funcion[]>([]);
-  readonly cines = signal<Cine[]>([]);
+  readonly pagos = signal<PagoAdminRow[]>([]);
+  readonly pagosLoading = signal(true);
+  readonly pagosError = signal<string | null>(null);
 
   readonly filtros = signal<ReportFiltrosValue>({
     periodo: { preset: '30d', from: '', to: '' },
@@ -83,12 +69,12 @@ export class AdminPagosListadoComponent {
   readonly page = signal(1);
   readonly pageSize = signal(15);
 
-  readonly exportColumns: ExportColumn<Pago>[] = [
+  readonly exportColumns: ExportColumn<PagoAdminRow>[] = [
     { key: 'referencia', label: 'Referencia', value: (p) => p.referencia_externa ?? `EFEC-${p.id}` },
-    { key: 'reserva', label: 'Reserva', value: (p) => this.reservaNumero(p.id_reserva) },
-    { key: 'cliente', label: 'Cliente', value: (p) => this.clienteNombre(p.id_reserva) },
-    { key: 'email', label: 'Email', value: (p) => this.clienteEmail(p.id_reserva) },
-    { key: 'cine', label: 'Cine', value: (p) => this.cineNombrePorPago(p) },
+    { key: 'reserva', label: 'Reserva', value: (p) => p.numero_reserva ?? '—' },
+    { key: 'cliente', label: 'Cliente', value: (p) => p.cliente?.nombre ?? '—' },
+    { key: 'email', label: 'Email', value: (p) => p.cliente?.email ?? '' },
+    { key: 'cine', label: 'Cine', value: (p) => p.cine?.nombre ?? '—' },
     { key: 'metodo', label: 'Método', value: (p) => p.metodo },
     { key: 'original', label: 'Original', value: (p) => p.monto_original },
     { key: 'descuento', label: 'Descuento', value: (p) => p.monto_descuento },
@@ -96,45 +82,6 @@ export class AdminPagosListadoComponent {
     { key: 'estado', label: 'Estado', value: (p) => p.estado },
     { key: 'created_at', label: 'Fecha', value: (p) => p.created_at },
   ];
-
-  readonly reservasById = computed(() => {
-    const m = new Map<string, Reserva>();
-    for (const r of this.reservas()) m.set(r.id, r);
-    return m;
-  });
-  readonly usuariosById = computed(() => {
-    const m = new Map<string, ReservaUsuario>();
-    for (const u of this.usuarios()) m.set(u.id, u);
-    return m;
-  });
-  readonly funcionesById = computed(() => {
-    const m = new Map<string, Funcion>();
-    for (const f of this.funciones()) m.set(f.id, f);
-    return m;
-  });
-  readonly cinesById = computed(() => {
-    const m = new Map<string, Cine>();
-    for (const c of this.cines()) m.set(c.id, c);
-    return m;
-  });
-  readonly pagosById = computed(() => {
-    const m = new Map<string, Pago>();
-    for (const p of this.pagos()) m.set(p.id, p);
-    return m;
-  });
-
-  private cineIdDe(p: Pago): string | null {
-    const r = this.reservasById().get(p.id_reserva);
-    if (!r) return null;
-    const f = this.funcionesById().get(r.id_funcion);
-    return f?.id_cine ?? null;
-  }
-
-  cineNombrePorPago(p: Pago): string {
-    const id = this.cineIdDe(p);
-    if (!id) return '—';
-    return this.cinesById().get(id)?.nombre ?? '—';
-  }
 
   readonly filtered = computed(() => {
     const f = this.filtros();
@@ -166,7 +113,7 @@ export class AdminPagosListadoComponent {
     }
 
     const term = (f.search || '').toLowerCase().trim();
-    const cine = f.selects['cine'] ?? null;
+    const cineFilter = f.selects['cine'] ?? null;
     const estado = (f.selects['estado-pago'] ?? null) as EstadoPago | null;
     const metodo = f.selects['metodo-pago'] ?? null;
 
@@ -175,20 +122,17 @@ export class AdminPagosListadoComponent {
       if (ts < fromTs || ts > toTs) return false;
       if (estado && p.estado !== estado) return false;
       if (metodo && p.metodo !== metodo) return false;
-      if (cine) {
-        const cineId = this.cineIdDe(p);
-        if (!cineId || cineId !== cine) return false;
+      if (cineFilter) {
+        if (!p.cine || p.cine.id !== cineFilter) return false;
       }
       if (term) {
-        const r = this.reservasById().get(p.id_reserva);
-        const u = r ? this.usuariosById().get(r.id_usuario) : undefined;
         const hit =
           (p.referencia_externa?.toLowerCase().includes(term) ?? false) ||
           p.id.toLowerCase().includes(term) ||
           p.id_reserva.toLowerCase().includes(term) ||
-          (r?.numero_reserva.toLowerCase().includes(term) ?? false) ||
-          (u?.nombre.toLowerCase().includes(term) ?? false) ||
-          (u?.email.toLowerCase().includes(term) ?? false);
+          (p.numero_reserva?.toLowerCase().includes(term) ?? false) ||
+          (p.cliente?.nombre.toLowerCase().includes(term) ?? false) ||
+          (p.cliente?.email.toLowerCase().includes(term) ?? false);
         if (!hit) return false;
       }
       return true;
@@ -225,17 +169,32 @@ export class AdminPagosListadoComponent {
   readonly totals = this.kpis;
 
   constructor() {
-    this.pagosSvc.list().subscribe((d) => this.pagos.set(d.data));
-    this.reservasSvc.list().subscribe((d) => this.reservas.set(d));
-    this.reservasSvc.listUsuarios().subscribe((d) => this.usuarios.set(d));
-    this.funcionesSvc.list().subscribe((d) => this.funciones.set(d));
-    this.cinesSvc.list().subscribe((d) => this.cines.set(d.data));
+    this.cargarPagos();
 
     effect(() => {
       const total = this.filtered().length;
       const max = Math.max(1, Math.ceil(total / this.pageSize()));
       if (this.page() > max) this.page.set(max);
     });
+  }
+
+  cargarPagos(): void {
+    this.pagosLoading.set(true);
+    this.pagosError.set(null);
+    this.pagosSvc.list({ limit: 500 }).subscribe({
+      next: (res) => {
+        this.pagos.set(res.data);
+        this.pagosLoading.set(false);
+      },
+      error: (err) => {
+        this.pagosError.set(extractMessage(err));
+        this.pagosLoading.set(false);
+      },
+    });
+  }
+
+  reloadPagos(): void {
+    this.cargarPagos();
   }
 
   onFiltrosChange(v: ReportFiltrosValue) {
@@ -252,35 +211,23 @@ export class AdminPagosListadoComponent {
     this.router.navigate(['/admin/reservas', id]);
   }
 
-  reservaNumero(idReserva: string): string {
-    return this.reservasById().get(idReserva)?.numero_reserva ?? '—';
-  }
-  clienteNombre(idReserva: string): string {
-    const r = this.reservasById().get(idReserva);
-    if (!r) return '—';
-    return this.usuariosById().get(r.id_usuario)?.nombre ?? '—';
-  }
-  clienteEmail(idReserva: string): string {
-    const r = this.reservasById().get(idReserva);
-    if (!r) return '';
-    return this.usuariosById().get(r.id_usuario)?.email ?? '';
+  reservaNumero(p: PagoAdminRow): string {
+    return p.numero_reserva ?? '—';
   }
 
-  reservaPorPago(idPago: string): string {
-    const p = this.pagosById().get(idPago);
-    if (!p) return '—';
-    return this.reservaNumero(p.id_reserva);
-  }
-  clientePorPago(idPago: string): string {
-    const p = this.pagosById().get(idPago);
-    if (!p) return '—';
-    return this.clienteNombre(p.id_reserva);
-  }
-  reservaIdPorPago(idPago: string): string | null {
-    return this.pagosById().get(idPago)?.id_reserva ?? null;
+  clienteNombre(p: PagoAdminRow): string {
+    return p.cliente?.nombre ?? '—';
   }
 
-  brandLabel(b: Pago['marca_snapshot']): string {
+  clienteEmail(p: PagoAdminRow): string {
+    return p.cliente?.email ?? '';
+  }
+
+  cineNombrePorPago(p: PagoAdminRow): string {
+    return p.cine?.nombre ?? '—';
+  }
+
+  brandLabel(b: PagoAdminRow['marca_snapshot']): string {
     switch (b) {
       case 'visa': return 'Visa';
       case 'master': return 'MC';

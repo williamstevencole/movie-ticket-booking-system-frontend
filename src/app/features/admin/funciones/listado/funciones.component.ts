@@ -292,7 +292,7 @@ export class AdminFuncionesComponent {
   readonly toast = signal<Toast>(null);
   readonly loading = signal<boolean>(true);
   readonly error = signal<string | null>(null);
-  readonly skeletonRows = Array.from({ length: 6 });
+  readonly skeletonRows = Array.from({ length: 6 }, (_, i) => i);
 
   readonly peliculasById = computed(() => {
     const map = new Map<string, Pelicula>();

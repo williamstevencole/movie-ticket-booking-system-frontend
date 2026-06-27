@@ -363,3 +363,47 @@ select.input {
   .tbl .col-fecha .col-sub { display: none; }
   .tbl th, .tbl td { padding: 12px var(--s4); }
 }
+
+/* ───── skeleton shimmer ───── */
+@keyframes skel-pulse {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  padding: var(--s4) var(--s5);
+  gap: var(--s3);
+}
+
+.skeleton-row {
+  height: 52px;
+  border-radius: var(--r-sm);
+  background: linear-gradient(90deg, var(--surface, #f0f0f0) 25%, var(--bg-soft, #f7f7f8) 50%, var(--surface, #f0f0f0) 75%);
+  background-size: 200% 100%;
+  animation: skel-pulse 1.2s ease-in-out infinite;
+}
+
+/* ───── error banner ───── */
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s4) var(--s5);
+  background: var(--red-soft);
+  border-left: 3px solid var(--red);
+  border-radius: var(--r-sm);
+  margin-bottom: var(--s5);
+  color: var(--red);
+  font-size: 14px;
+  font-weight: 600;
+
+  span { flex: 1; }
+
+  .btn {
+    margin-left: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}

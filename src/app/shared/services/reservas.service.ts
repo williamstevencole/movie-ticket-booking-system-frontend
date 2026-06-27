@@ -1,4 +1,16 @@
-import { Observable } from 'rxjs';
+/**
+ * @file reservas.service.ts
+ *
+ * RETIRED: The abstract ReservasService class and its DI override (MockReservasService)
+ * have been removed in the admin-residual migration (Task 1).
+ *
+ * Type aliases are kept here for backward-compat import resolution during the
+ * multi-task migration. Tasks 2/3/7/9 will clean up the remaining imports.
+ *
+ * Admin consumers → AdminReservasService
+ * Client consumers → MisReservasService
+ * Checkout → HttpClient.post('/reservas', ...) via CheckoutStateService
+ */
 
 export type EstadoReserva =
   | 'pendiente_pago'
@@ -10,10 +22,10 @@ export type EstadoReserva =
 export type ReservaAsiento = {
   id: string;
   id_asiento_funcion: string;
-  codigo: string;       // e.g. 'A5'
-  fila: string;         // e.g. 'A'
-  columna: number;      // e.g. 5
-  tipo_asiento: string; // 'Estandar' | 'VIP' | ...
+  codigo: string;
+  fila: string;
+  columna: number;
+  tipo_asiento: string;
   precio: number;
 };
 
@@ -27,8 +39,8 @@ export type Reserva = {
   monto_total: number;
   created_at: string;
   updated_at: string;
-  asientos: ReservaAsiento[];  // replaces asientos_codigos
-  expira_en?: string;          // ISO — present for pendiente_pago
+  asientos: ReservaAsiento[];
+  expira_en?: string;
   cupon_codigo?: string;
   notas_internas?: string;
 };
@@ -46,11 +58,3 @@ export type ReservaUsuario = {
   nombre: string;
   email: string;
 };
-
-export abstract class ReservasService {
-  abstract list(): Observable<Reserva[]>;
-  abstract listUsuarios(): Observable<ReservaUsuario[]>;
-  abstract getById(id: string): Observable<Reserva | undefined>;
-  abstract getUsuario(id: string): Observable<ReservaUsuario | undefined>;
-  abstract confirmar(input: ConfirmarReservaInput): Observable<Reserva>;
-}

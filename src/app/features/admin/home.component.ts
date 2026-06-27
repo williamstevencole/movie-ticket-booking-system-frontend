@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import {
   LucideDynamicIcon,
   LucidePlus,
@@ -8,15 +9,16 @@ import {
   LucideTrendingDown,
   LucideDollarSign,
   LucideFileText,
+  LucideAlertCircle,
+  LucideRefreshCw,
   type LucideIconInput,
 } from '@lucide/angular';
 import { AuthService } from '../../shared/services/auth.service';
 import { AdminSidebarComponent } from '../../shared/components/admin-sidebar.component';
 import { PeriodPickerComponent, PeriodValue } from '../../shared/components/period-picker.component';
-import { ReservasService, Reserva } from '../../shared/services/reservas.service';
-import { PagosService, Pago } from '../../shared/services/pagos.service';
-import { FuncionesService, Funcion } from '../../shared/services/funciones.service';
-import { PeliculasService, Pelicula } from '../../shared/services/peliculas.service';
+import { AdminReservasService, AdminReservaRow } from '../../shared/services/admin-reservas.service';
+import { PagosService, PagoAdminRow } from '../../shared/services/pagos.service';
+import { extractMessage } from '../../shared/utils/http-errors';
 
 interface Stat {
   label: string;
@@ -32,12 +34,12 @@ interface TopFilm {
   meta: string;
   amount: string;
   tickets: string;
-  poster: string;
 }
 
 interface QuickAction {
   icon: LucideIconInput;
   label: string;
+  routerLink: string;
 }
 
 @Component({
@@ -45,6 +47,7 @@ interface QuickAction {
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     AdminSidebarComponent,
     PeriodPickerComponent,
     LucideDynamicIcon,
@@ -52,12 +55,26 @@ interface QuickAction {
     LucideDownload,
     LucideTrendingUp,
     LucideTrendingDown,
+    LucideAlertCircle,
+    LucideRefreshCw,
   ],
   template: `
     <div class="admin-body">
       <app-admin-sidebar />
 
       <main class="admin-main">
+
+        @if (error()) {
+          <div class="error-banner" role="alert">
+            <svg lucideAlertCircle [size]="18"></svg>
+            <span>{{ error() }}</span>
+            <button class="btn btn-sm" (click)="reload()">
+              <svg lucideRefreshCw [size]="14"></svg>
+              Reintentar
+            </button>
+          </div>
+        }
+
         <div class="admin-topbar">
           <div>
             <div class="breadcrumb">
@@ -140,7 +157,6 @@ interface QuickAction {
                 @for (f of topFilmsComputed(); track f.rank) {
                   <div class="row" [class.first]="f.rank === 1" [class.second]="f.rank === 2">
                     <span class="rank">{{ f.rank }}</span>
-                    <div class="mp" [class]="f.poster"></div>
                     <div>
                       <div class="nm">{{ f.title }}</div>
                       <div class="mt">{{ f.meta }}</div>
@@ -160,7 +176,7 @@ interface QuickAction {
             <div class="panel quick">
               <div class="panel-head"><h3>Atajos rápidos</h3></div>
               @for (q of quickActions; track q.label) {
-                <a>
+                <a [routerLink]="q.routerLink">
                   <span class="ic">
                     <svg [lucideIcon]="q.icon" [size]="16"></svg>
                   </span>
@@ -178,32 +194,53 @@ interface QuickAction {
 })
 export class AdminHomeComponent implements OnInit {
   private auth = inject(AuthService);
-  private reservasSvc = inject(ReservasService);
+  private reservasSvc = inject(AdminReservasService);
   private pagosSvc = inject(PagosService);
-  private funcionesSvc = inject(FuncionesService);
-  private peliculasSvc = inject(PeliculasService);
 
   readonly user = this.auth.user;
 
   periodo = signal<PeriodValue>({ preset: '30d', from: '', to: '' });
   loading = signal(true);
-  reservas = signal<Reserva[]>([]);
-  pagos = signal<Pago[]>([]);
-  funciones = signal<Funcion[]>([]);
-  peliculas = signal<Pelicula[]>([]);
+  error = signal<string | null>(null);
+  reservas = signal<AdminReservaRow[]>([]);
+  pagos = signal<PagoAdminRow[]>([]);
+
+  private pendingCalls = 0;
 
   ngOnInit() {
-    this.reservasSvc.list().subscribe((rs) => this.reservas.set(rs));
-    this.pagosSvc.list().subscribe((res) => this.pagos.set(res.data));
-    this.funcionesSvc.list().subscribe((fs) => this.funciones.set(fs));
-    this.peliculasSvc.list().subscribe((ps) => this.peliculas.set(ps.data));
-    setTimeout(() => this.loading.set(false), 300);
+    this.loadAll();
+  }
+
+  private loadAll() {
+    this.loading.set(true);
+    this.error.set(null);
+    this.pendingCalls = 2;
+
+    const done = () => {
+      this.pendingCalls--;
+      if (this.pendingCalls <= 0) this.loading.set(false);
+    };
+    const fail = (err: unknown) => {
+      this.error.set(extractMessage(err));
+      done();
+    };
+
+    this.reservasSvc.list({ limit: 200 }).subscribe({
+      next: (res) => { this.reservas.set(res.data); done(); },
+      error: fail,
+    });
+    this.pagosSvc.list({ limit: 200 }).subscribe({
+      next: (res) => { this.pagos.set(res.data); done(); },
+      error: fail,
+    });
+  }
+
+  reload() {
+    this.loadAll();
   }
 
   onPeriodoChange(p: PeriodValue) {
     this.periodo.set(p);
-    this.loading.set(true);
-    setTimeout(() => this.loading.set(false), 200);
   }
 
   firstName(): string {
@@ -283,19 +320,18 @@ export class AdminHomeComponent implements OnInit {
   topFilmsComputed = computed<TopFilm[]>(() => {
     const { from, to } = this.rangeDates();
     const reservasInRange = this.reservas().filter((r) => this.inRange(r.created_at, from, to));
-    const funcionesMap = new Map(this.funciones().map((f) => [f.id, f]));
-    const peliculasMap = new Map(this.peliculas().map((p) => [p.id, p]));
+    // Cross-join pagos by reserva id for monto lookup
     const pagosByReserva = new Map(this.pagos().map((p) => [p.id_reserva, p]));
 
-    // aggregate by pelicula
-    const agg = new Map<string, { reservas: number; tickets: number; monto: number }>();
+    // Aggregate by pelicula id using the embedded pelicula object on each AdminReservaRow.
+    // This avoids a separate FuncionesService + PeliculasService HTTP call.
+    const agg = new Map<string, { titulo: string; reservas: number; tickets: number; monto: number }>();
     for (const r of reservasInRange) {
-      const fn = funcionesMap.get(r.id_funcion);
-      if (!fn) continue;
-      const pid = fn.id_pelicula;
+      const pid = r.pelicula?.id;
+      if (!pid) continue;  // skip if backend didn't embed pelicula
       const pago = pagosByReserva.get(r.id);
       const monto = pago && pago.estado === 'exitoso' ? pago.monto_final : 0;
-      const cur = agg.get(pid) ?? { reservas: 0, tickets: 0, monto: 0 };
+      const cur = agg.get(pid) ?? { titulo: r.pelicula!.titulo, reservas: 0, tickets: 0, monto: 0 };
       cur.reservas += 1;
       cur.tickets += r.num_asientos;
       cur.monto += monto;
@@ -307,26 +343,20 @@ export class AdminHomeComponent implements OnInit {
       .sort((a, b) => b.monto - a.monto)
       .slice(0, 5);
 
-    const posters = ['p-2', 'p-4', 'p-5', 'p-1', 'p-3', 'p-6'];
-
-    return ranked.map((row, idx) => {
-      const peli = peliculasMap.get(row.pid);
-      return {
-        rank: idx + 1,
-        title: peli?.titulo ?? '—',
-        meta: `${row.reservas} reservas`,
-        amount: this.fmtQ(row.monto),
-        tickets: `${row.tickets} boletos`,
-        poster: posters[idx % posters.length],
-      };
-    });
+    return ranked.map((row, idx) => ({
+      rank: idx + 1,
+      title: row.titulo ?? '—',
+      meta: `${row.reservas} reservas`,
+      amount: this.fmtQ(row.monto),
+      tickets: `${row.tickets} boletos`,
+    }));
   });
 
   readonly quickActions: QuickAction[] = [
-    { icon: LucidePlus, label: 'Cargar nueva película' },
-    { icon: LucidePlus, label: 'Programar función' },
-    { icon: LucideDollarSign, label: 'Editar precios' },
-    { icon: LucideFileText, label: 'Política de cancelación' },
-    { icon: LucideDownload, label: 'Reportes y CSV' },
+    { icon: LucidePlus, label: 'Cargar nueva película', routerLink: '/admin/peliculas/crear' },
+    { icon: LucidePlus, label: 'Programar función', routerLink: '/admin/funciones/crear' },
+    { icon: LucideDollarSign, label: 'Editar precios', routerLink: '/admin/precios' },
+    { icon: LucideFileText, label: 'Política de cancelación', routerLink: '/admin/politicas' },
+    { icon: LucideDownload, label: 'Reportes y CSV', routerLink: '/admin/reportes' },
   ];
 }

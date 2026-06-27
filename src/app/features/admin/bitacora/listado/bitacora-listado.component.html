@@ -84,8 +84,21 @@
         </div>
       </section>
 
+      @if (listError()) {
+        <div class="error-banner" role="alert">
+          <span>{{ listError() }}</span>
+          <button type="button" class="btn ghost" (click)="retryList()">Reintentar</button>
+        </div>
+      }
+
       <section class="card">
-        @if (total() === 0 && !loading()) {
+        @if (loading() && !data()) {
+          <div class="skeleton-list">
+            @for (_ of [1,2,3,4,5,6,7]; track $index) {
+              <div class="skeleton-row"></div>
+            }
+          </div>
+        } @else if (total() === 0 && !loading()) {
           <div class="empty">
             <span class="empty-mark">
               <svg lucideNotebookText [size]="22"></svg>

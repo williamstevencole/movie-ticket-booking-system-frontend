@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../shared/services/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
-import { UsuariosService } from '../../../shared/services/usuarios.service';
+import { PerfilService } from '../../../shared/services/perfil.service';
 
 @Component({
   selector: 'app-seguridad-page',
@@ -107,7 +107,7 @@ export class SeguridadPageComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private toast = inject(ToastService);
-  private usuariosSvc = inject(UsuariosService);
+  private perfilSvc = inject(PerfilService);
   private router = inject(Router);
 
   readonly confirmDelete = signal(false);
@@ -139,7 +139,7 @@ export class SeguridadPageComponent {
       return;
     }
 
-    this.usuariosSvc
+    this.perfilSvc
       .actualizarPassword(this.userId, {
         currentPassword: actual,
         newPassword: nueva,
@@ -162,7 +162,7 @@ export class SeguridadPageComponent {
       return;
     }
 
-    this.usuariosSvc.eliminarMiCuenta().subscribe({
+    this.perfilSvc.eliminarMiCuenta().subscribe({
       next: () => {
         this.toast.show('Cuenta eliminada');
         this.auth.clearSession();

@@ -80,8 +80,8 @@
             }
           </div>
           <p class="seats-count">
-            {{ reserva()!.num_asientos }}
-            {{ reserva()!.num_asientos === 1 ? 'asiento' : 'asientos' }}
+            {{ numAsientos() }}
+            {{ numAsientos() === 1 ? 'asiento' : 'asientos' }}
           </p>
         </div>
       </section>
@@ -98,8 +98,8 @@
             <dt>Total pagado</dt>
             <dd class="hl">L {{ pago()!.monto_final | number:'1.2-2' }}</dd>
           </div>
-          @if (reserva()!.cupon_codigo) {
-            <div><dt>Cupón aplicado</dt><dd>{{ reserva()!.cupon_codigo }}</dd></div>
+          @if ($any(reserva())?.cupon_codigo) {
+            <div><dt>Cupón aplicado</dt><dd>{{ $any(reserva())?.cupon_codigo }}</dd></div>
           }
         </dl>
       </section>

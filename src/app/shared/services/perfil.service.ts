@@ -1,14 +1,15 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
+import { API_URL } from '../../core/config/env';
 
 export type MiPerfil = {
   id: string;
   nombre: string;
   email: string;
-  telefono?: string | null;
+  telefono: string | null;
   notificaciones_activas: boolean;
-  rol: string;
+  estado: string;
   created_at: string;
 };
 
@@ -18,23 +19,34 @@ export type ActualizarMiPerfilInput = {
   notificaciones_activas?: boolean;
 };
 
-const MOCK_PERFIL: MiPerfil = {
-  id: 'me-1',
-  nombre: 'Juan Cliente',
-  email: 'juan.cliente@gmail.com',
-  telefono: '+504 9911-0000',
-  notificaciones_activas: true,
-  rol: 'cliente',
-  created_at: '2025-01-01T00:00:00Z',
+export type ActualizarPasswordInput = {
+  currentPassword: string;
+  newPassword: string;
 };
 
 @Injectable({ providedIn: 'root' })
 export class PerfilService {
+  private readonly http = inject(HttpClient);
+
   obtenerMiPerfil(): Observable<MiPerfil> {
-    return of({ ...MOCK_PERFIL }).pipe(delay(120));
+    return this.http.get<MiPerfil>(`${API_URL}/me/perfil`);
   }
 
   actualizarMiPerfil(input: ActualizarMiPerfilInput): Observable<MiPerfil> {
-    return of({ ...MOCK_PERFIL, ...input }).pipe(delay(120));
+    return this.http.patch<MiPerfil>(`${API_URL}/me/perfil`, input);
+  }
+
+  actualizarPassword(
+    id: string,
+    input: ActualizarPasswordInput,
+  ): Observable<{ message: string }> {
+    return this.http.patch<{ message: string }>(
+      `${API_URL}/admin/users/${id}/password`,
+      input,
+    );
+  }
+
+  eliminarMiCuenta(): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${API_URL}/me/cuenta`);
   }
 }
