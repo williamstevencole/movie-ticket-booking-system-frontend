@@ -27,9 +27,10 @@ export class MockUsuariosService extends UsuariosService {
       id: `usr-${Date.now().toString(36)}`,
       nombre: input.nombre.trim(),
       email: input.email.trim().toLowerCase(),
+      telefono: null,
       rol: input.rol,
       notificaciones_activas: false,
-      ultimoAcceso: null,
+      ultimo_acceso: null,
       activo: true,
       created_at: new Date().toISOString(),
     };

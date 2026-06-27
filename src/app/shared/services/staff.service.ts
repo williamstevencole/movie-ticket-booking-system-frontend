@@ -11,7 +11,7 @@ export type UsuarioStaff = {
   email: string;
   rol: RolStaff;
   notificaciones_activas: boolean;
-  ultimoAcceso: string | null;
+  ultimo_acceso: string | null;
   activo: boolean;
   created_at: string;
 };
@@ -66,7 +66,7 @@ export class StaffService {
       email: input.email,
       rol: 'admin',
       notificaciones_activas: false,
-      ultimoAcceso: null,
+      ultimo_acceso: null,
       activo: true,
       created_at: new Date().toISOString(),
     };
