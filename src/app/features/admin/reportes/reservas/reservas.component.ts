@@ -11,7 +11,6 @@ import {
 } from '../../../../shared/services/reportes.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 import { PagerComponent } from '../../../../shared/components/pager.component';
-import { ExportColumn } from '../../../../shared/components/export-button.component';
 import {
   ReportFiltrosComponent,
   ReportFiltrosValue,
@@ -208,19 +207,6 @@ export class AdminReporteReservasComponent {
 
   readonly page = signal(1);
   readonly pageSize = signal(20);
-
-  readonly exportColumns: ExportColumn<ReporteReservaRow>[] = [
-    { key: 'numero_reserva', label: '# Reserva', value: (r) => r.numero_reserva },
-    { key: 'cliente', label: 'Cliente', value: (r) => r.nombre_usuario },
-    { key: 'email', label: 'Email', value: (r) => r.email_usuario },
-    { key: 'pelicula', label: 'Película', value: (r) => r.titulo_pelicula },
-    { key: 'cine', label: 'Cine / sala', value: (r) => `${r.nombre_cine} · ${r.nombre_sala}` },
-    { key: 'fecha_funcion', label: 'Fecha función', value: (r) => r.fecha_hora_funcion },
-    { key: 'num_asientos', label: 'Asientos', value: (r) => r.num_asientos },
-    { key: 'monto_total', label: 'Total', value: (r) => r.monto_total },
-    { key: 'estado', label: 'Estado', value: (r) => r.estado },
-    { key: 'created_at', label: 'Creada', value: (r) => r.created_at },
-  ];
 
   readonly kpis = computed(() => {
     const rows = this.reservas();
