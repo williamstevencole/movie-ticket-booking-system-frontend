@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../shared/services/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
-import { UsuariosService } from '../../../shared/services/usuarios.service';
+import { PerfilService } from '../../../shared/services/perfil.service';
 
 @Component({
   selector: 'app-perfil-page',
@@ -43,7 +43,7 @@ export class PerfilPageComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private toast = inject(ToastService);
-  private usuariosSvc = inject(UsuariosService);
+  private perfilSvc = inject(PerfilService);
 
   readonly form = this.fb.nonNullable.group({
     nombre: [this.auth.user()?.nombre ?? '', Validators.required],
@@ -61,7 +61,7 @@ export class PerfilPageComponent {
   toggleNotificaciones(activa: boolean): void {
     const prev = this.notificacionesActivas;
     this.notificacionesActivas = activa;
-    this.usuariosSvc.actualizarMiPerfil({ notificaciones_activas: activa }).subscribe({
+    this.perfilSvc.actualizarMiPerfil({ notificaciones_activas: activa }).subscribe({
       next: () => this.toast.show('Preferencia guardada'),
       error: () => {
         this.notificacionesActivas = prev;

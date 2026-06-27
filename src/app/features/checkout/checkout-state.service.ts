@@ -1,9 +1,11 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Asiento } from '../asientos/mapa/asiento.model';
-import { ReservasService, ConfirmarReservaInput } from '../../shared/services/reservas.service';
+import { ConfirmarReservaInput } from '../../shared/services/reservas.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { API_URL } from '../../core/config/env';
 
 export type CheckoutResultado = {
   resultado: 'exito' | 'error';
@@ -17,10 +19,18 @@ export type CheckoutResultado = {
   mensajeError?: string | null;
 };
 
+type ConfirmarReservaResponse = {
+  id: string;
+  numero_reserva: string;
+  expira_en: string;
+};
+
 @Injectable({ providedIn: 'root' })
 export class CheckoutStateService {
-  private readonly reservasSvc = inject(ReservasService);
+  private readonly http = inject(HttpClient);
   private readonly toastSvc = inject(ToastService);
+
+  private readonly reservasUrl = `${API_URL}/reservas`;
 
   private resultado: CheckoutResultado | null = null;
 
@@ -37,12 +47,13 @@ export class CheckoutStateService {
 
   /**
    * Confirms a reservation with seat version information.
+   * POSTs to POST /reservas (authenticated client endpoint).
    * Handles 409 Conflict by showing toast and returning error for caller to refresh.
    */
   confirmarReserva(
     funcionId: string,
     asientosSeleccionados: Asiento[],
-  ): Observable<any> {
+  ): Observable<ConfirmarReservaResponse> {
     const payload: ConfirmarReservaInput = {
       id_funcion: funcionId,
       asientos: asientosSeleccionados.map((a) => ({
@@ -51,7 +62,7 @@ export class CheckoutStateService {
       })),
     };
 
-    return this.reservasSvc.confirmar(payload).pipe(
+    return this.http.post<ConfirmarReservaResponse>(this.reservasUrl, payload).pipe(
       catchError((error) => {
         if (error.status === 409) {
           this.toastSvc.show(
