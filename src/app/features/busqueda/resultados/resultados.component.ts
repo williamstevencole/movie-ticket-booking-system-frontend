@@ -7,6 +7,7 @@ import { FooterComponent } from '../../../shared/components/footer/footer.compon
 import { PosterBadgeComponent } from '../../../shared/components/poster-badge/poster-badge.component';
 import { BusquedaFiltrosComponent, FiltrosBusqueda } from '../filtros/filtros.component';
 import { CarteleraService } from '../../../shared/services/cartelera.service';
+import { LocationService } from '../../../shared/services/location.service';
 import { CarteleraPelicula } from '../../../mocks/data/cartelera-display.mock';
 
 @Component({
@@ -26,6 +27,7 @@ import { CarteleraPelicula } from '../../../mocks/data/cartelera-display.mock';
 export class BusquedaResultadosComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private cartelera = inject(CarteleraService);
+  private location = inject(LocationService);
   private destroyRef = inject(DestroyRef);
 
   readonly nav = [
@@ -36,10 +38,9 @@ export class BusquedaResultadosComponent implements OnInit {
   ];
 
   readonly query = signal('');
-  readonly filtros = signal<FiltrosBusqueda>({ genero: '', idioma: '', clasificacion: '' });
+  readonly filtros = signal<FiltrosBusqueda>({ genero: '', idioma: '' });
   readonly cargando = signal(false);
   readonly error = signal(false);
-  private readonly fetched = signal<CarteleraPelicula[]>([]);
   readonly resultados = signal<CarteleraPelicula[]>([]);
 
   ngOnInit(): void {
@@ -51,36 +52,33 @@ export class BusquedaResultadosComponent implements OnInit {
 
   onFiltros(f: FiltrosBusqueda): void {
     this.filtros.set(f);
-    this.apply();
+    this.fetch();
   }
 
+  /** Consulta el backend aplicando título + filtros + ciudad seleccionada. */
   private fetch(): void {
+    const f = this.filtros();
+    const ciudadId = this.location.selection()?.cityId;
     this.cargando.set(true);
     this.error.set(false);
     this.cartelera
-      .buscar(this.query().trim())
+      .listar({
+        titulo: this.query().trim() || undefined,
+        genero: f.genero || undefined,
+        idioma: f.idioma || undefined,
+        ciudad_id: ciudadId || undefined,
+      })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (list) => {
-          this.fetched.set(list);
+          this.resultados.set(list);
           this.cargando.set(false);
-          this.apply();
         },
         error: () => {
-          this.fetched.set([]);
+          this.resultados.set([]);
           this.cargando.set(false);
           this.error.set(true);
-          this.apply();
         },
       });
-  }
-
-  private apply(): void {
-    const f = this.filtros();
-    let list = this.fetched();
-    if (f.genero) list = list.filter((p) => p.genero === f.genero);
-    if (f.idioma) list = list.filter((p) => p.idioma === f.idioma);
-    if (f.clasificacion) list = list.filter((p) => p.clasificacion === f.clasificacion);
-    this.resultados.set(list);
   }
 }
