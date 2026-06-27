@@ -19,25 +19,13 @@ import {
 } from '@lucide/angular';
 
 import {
-  EstadoReserva,
-  Reserva,
-  ReservaUsuario,
-  ReservasService,
-} from '../../../../shared/services/reservas.service';
-import {
-  Funcion,
-  FuncionesService,
-} from '../../../../shared/services/funciones.service';
-import {
-  Pelicula,
-  PeliculasService,
-} from '../../../../shared/services/peliculas.service';
-import {
-  Cine,
-  CinesService,
-} from '../../../../shared/services/cines.service';
+  AdminReservasService,
+  AdminReservaRow,
+} from '../../../../shared/services/admin-reservas.service';
+import { EstadoReserva } from '../../../../shared/services/reservas.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 import { PagerComponent } from '../../../../shared/components/pager.component';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 
 type FilterState = 'all' | EstadoReserva;
 
@@ -80,7 +68,7 @@ interface Toast {
           <div class="head-row">
             <h1>Reservas</h1>
             <span class="counters">
-              <span>{{ rows().length }} reservas</span>
+              <span>{{ totalRows() }} reservas</span>
               @if (pendientesCount() > 0) {
                 <span class="dot" aria-hidden="true"></span>
                 <button
@@ -94,7 +82,6 @@ interface Toast {
                 </button>
               }
             </span>
-
           </div>
 
           <div class="toolbar">
@@ -126,7 +113,18 @@ interface Toast {
           </div>
 
           <section class="card">
-            @if (paged().length === 0) {
+            @if (listError()) {
+              <div class="error-banner" role="alert">
+                <span>{{ listError() }}</span>
+                <button type="button" class="btn btn-sm" (click)="reload()">Reintentar</button>
+              </div>
+            } @else if (loading() && rows().length === 0) {
+              <div class="skeleton-list">
+                @for (i of [1,2,3,4,5]; track i) {
+                  <div class="skeleton-row"></div>
+                }
+              </div>
+            } @else if (paged().length === 0) {
               <div class="empty">
                 <span class="empty-mark">
                   <svg lucideTicketX [size]="22"></svg>
@@ -160,12 +158,12 @@ interface Toast {
                       >
                         <td><span class="col-num">{{ r.numero_reserva }}</span></td>
                         <td>
-                          <div class="col-strong">{{ usuarioNombre(r.id_usuario) }}</div>
-                          <div class="col-sub">{{ usuarioEmail(r.id_usuario) }}</div>
+                          <div class="col-strong">{{ r.usuario?.nombre ?? '—' }}</div>
+                          <div class="col-sub">{{ r.usuario?.email ?? '' }}</div>
                         </td>
                         <td class="col-hide-sm">
-                          <div class="col-strong">{{ peliculaTitulo(r.id_funcion) }}</div>
-                          <div class="col-sub">{{ cineSala(r.id_funcion) }}</div>
+                          <div class="col-strong">{{ r.pelicula?.titulo ?? '—' }}</div>
+                          <div class="col-sub">{{ r.cine?.nombre ?? '—' }}</div>
                         </td>
                         <td class="right tnum">{{ r.num_asientos }}</td>
                         <td class="right col-num">L {{ r.monto_total | number }}</td>
@@ -231,8 +229,8 @@ interface Toast {
 
               <div class="card-foot">
                 <app-pager
-                  [value]="{ page: page(), pageSize: pageSize(), total: filtered().length }"
-                  (pageChange)="page.set($event)"
+                  [value]="{ page: page(), pageSize: pageSize(), total: totalRows() }"
+                  (pageChange)="onPageChange($event)"
                   (pageSizeChange)="onPageSizeChange($event)"
                 />
               </div>
@@ -254,23 +252,21 @@ interface Toast {
   styleUrl: '../operaciones.shared.scss',
 })
 export class AdminReservasListadoComponent {
-  private reservasSvc = inject(ReservasService);
-  private funcionesSvc = inject(FuncionesService);
-  private peliculasSvc = inject(PeliculasService);
-  private cinesSvc = inject(CinesService);
+  private reservasSvc = inject(AdminReservasService);
   private router = inject(Router);
 
-  readonly rows = signal<Reserva[]>([]);
-  readonly funciones = signal<Funcion[]>([]);
-  readonly peliculas = signal<Pelicula[]>([]);
-  readonly cines = signal<Cine[]>([]);
-  readonly usuarios = signal<ReservaUsuario[]>([]);
+  readonly rows = signal<AdminReservaRow[]>([]);
+  readonly loading = signal(false);
+  readonly listError = signal<string | null>(null);
 
   readonly searchTerm = signal('');
   readonly filter = signal<FilterState>('all');
   readonly page = signal(1);
   readonly pageSize = signal(15);
   readonly toasts = signal<Toast[]>([]);
+
+  /** Server-reported total (used for pagination). */
+  readonly serverTotal = signal(0);
 
   private toastSeq = 0;
 
@@ -283,27 +279,6 @@ export class AdminReservasListadoComponent {
     { id: 'reembolsada', label: 'Reembolsadas', count: 0 },
   ];
 
-  readonly funcionesById = computed(() => {
-    const m = new Map<string, Funcion>();
-    for (const f of this.funciones()) m.set(f.id, f);
-    return m;
-  });
-  readonly peliculasById = computed(() => {
-    const m = new Map<string, Pelicula>();
-    for (const p of this.peliculas()) m.set(p.id, p);
-    return m;
-  });
-  readonly cinesById = computed(() => {
-    const m = new Map<string, Cine>();
-    for (const c of this.cines()) m.set(c.id, c);
-    return m;
-  });
-  readonly usuariosById = computed(() => {
-    const m = new Map<string, ReservaUsuario>();
-    for (const u of this.usuarios()) m.set(u.id, u);
-    return m;
-  });
-
   readonly pendientesCount = computed(
     () => this.rows().filter((r) => r.estado === 'pendiente_pago').length,
   );
@@ -314,11 +289,10 @@ export class AdminReservasListadoComponent {
     return this.rows().filter((r) => {
       if (f !== 'all' && r.estado !== f) return false;
       if (term) {
-        const u = this.usuariosById().get(r.id_usuario);
         const hit =
           r.numero_reserva.toLowerCase().includes(term) ||
-          (u?.nombre.toLowerCase().includes(term) ?? false) ||
-          (u?.email.toLowerCase().includes(term) ?? false);
+          (r.usuario?.nombre.toLowerCase().includes(term) ?? false) ||
+          (r.usuario?.email.toLowerCase().includes(term) ?? false);
         if (!hit) return false;
       }
       return true;
@@ -331,15 +305,15 @@ export class AdminReservasListadoComponent {
     return all.slice(start, start + this.pageSize());
   });
 
+  /** Total for pagination: use server total when no local filter is active, else local count. */
+  readonly totalRows = computed(() =>
+    this.searchTerm() || this.filter() !== 'all'
+      ? this.filtered().length
+      : this.serverTotal(),
+  );
+
   constructor() {
-    this.reservasSvc.list().subscribe((d) => {
-      this.rows.set(d);
-      this.refreshFilterCounts();
-    });
-    this.reservasSvc.listUsuarios().subscribe((d) => this.usuarios.set(d));
-    this.funcionesSvc.list().subscribe((d) => this.funciones.set(d));
-    this.peliculasSvc.list().subscribe((d) => this.peliculas.set(d.data));
-    this.cinesSvc.list().subscribe((d) => this.cines.set(d.data));
+    this.cargar();
 
     effect(() => {
       const total = this.filtered().length;
@@ -347,6 +321,26 @@ export class AdminReservasListadoComponent {
       if (this.page() > max) this.page.set(max);
     });
   }
+
+  private cargar() {
+    this.loading.set(true);
+    this.listError.set(null);
+    this.rows.set([]);
+    this.reservasSvc.list({ limit: 200 }).subscribe({
+      next: (res) => {
+        this.rows.set(res.data);
+        this.serverTotal.set(res.total);
+        this.refreshFilterCounts();
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.listError.set(extractMessage(err));
+        this.loading.set(false);
+      },
+    });
+  }
+
+  reload(): void { this.cargar(); }
 
   private refreshFilterCounts() {
     const counts: Record<string, number> = {};
@@ -367,6 +361,10 @@ export class AdminReservasListadoComponent {
     this.page.set(1);
   }
 
+  onPageChange(p: number) {
+    this.page.set(p);
+  }
+
   onPageSizeChange(s: number) {
     this.pageSize.set(s);
     this.page.set(1);
@@ -378,45 +376,27 @@ export class AdminReservasListadoComponent {
     });
   }
 
-  canCancel(r: Reserva): boolean {
+  canCancel(r: AdminReservaRow): boolean {
     return r.estado === 'pagada' || r.estado === 'pendiente_pago';
   }
 
-  estadoLabel(e: Reserva['estado']): string {
+  estadoLabel(e: string): string {
     switch (e) {
       case 'pagada': return 'Pagada';
       case 'pendiente_pago': return 'Pendiente';
       case 'cancelada': return 'Cancelada';
       case 'reembolsada': return 'Reembolsada';
       case 'expirada': return 'Expirada';
+      default: return e;
     }
   }
 
-  usuarioNombre(id: string): string {
-    return this.usuariosById().get(id)?.nombre ?? '—';
-  }
-  usuarioEmail(id: string): string {
-    return this.usuariosById().get(id)?.email ?? '';
-  }
-  peliculaTitulo(idFuncion: string): string {
-    const f = this.funcionesById().get(idFuncion);
-    return f ? this.peliculasById().get(f.id_pelicula)?.titulo ?? '—' : '—';
-  }
-  cineSala(idFuncion: string): string {
-    const f = this.funcionesById().get(idFuncion);
-    if (!f) return '—';
-    const cine = this.cinesById().get(f.id_cine);
-    if (!cine) return '—';
-    const sala = cine.salas.find((s) => s.id === f.id_sala);
-    return sala ? `${cine.nombre} · Sala ${sala.nombre}` : cine.nombre;
-  }
-
-  reenviar(r: Reserva) {
-    const email = this.usuarioEmail(r.id_usuario);
+  reenviar(r: AdminReservaRow) {
+    const email = r.usuario?.email ?? '';
     this.pushToast(`Boleto reenviado a ${email}`);
   }
 
-  marcarAsistencia(r: Reserva) {
+  marcarAsistencia(r: AdminReservaRow) {
     this.pushToast(`Asistencia marcada · ${r.numero_reserva}`);
   }
 
@@ -427,5 +407,4 @@ export class AdminReservasListadoComponent {
       this.toasts.update((arr) => arr.filter((t) => t.id !== id));
     }, 2600);
   }
-
 }

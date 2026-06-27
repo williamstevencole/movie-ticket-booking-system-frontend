@@ -5,7 +5,6 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   LucideArrowLeft,
@@ -23,10 +22,10 @@ import {
 } from '@lucide/angular';
 
 import {
-  Reserva,
-  ReservaUsuario,
-  ReservasService,
-} from '../../../../shared/services/reservas.service';
+  AdminReservasService,
+  AdminReservaDetail,
+  UsuarioReserva,
+} from '../../../../shared/services/admin-reservas.service';
 import {
   Pago,
   PagosService,
@@ -44,6 +43,7 @@ import {
   CinesService,
 } from '../../../../shared/services/cines.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 
 type TimelineKind = 'created' | 'blocked' | 'paid' | 'cancelled' | 'refunded' | 'expired';
 
@@ -54,14 +54,11 @@ interface TimelineEvent {
   at: string;
 }
 
-type Motivo = 'cliente' | 'pago_rechazado' | 'duplicada' | 'sala_cerrada' | 'otro';
-
 @Component({
   selector: 'app-admin-reserva-detalle',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     RouterLink,
     DatePipe,
     DecimalPipe,
@@ -83,7 +80,7 @@ type Motivo = 'cliente' | 'pago_rechazado' | 'duplicada' | 'sala_cerrada' | 'otr
   styleUrls: ['../operaciones.shared.scss', './reserva-detalle.component.scss'],
 })
 export class AdminReservaDetalleComponent {
-  private reservasSvc = inject(ReservasService);
+  private reservasSvc = inject(AdminReservasService);
   private pagosSvc = inject(PagosService);
   private funcionesSvc = inject(FuncionesService);
   private peliculasSvc = inject(PeliculasService);
@@ -91,16 +88,16 @@ export class AdminReservaDetalleComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  readonly reserva = signal<Reserva | null>(null);
+  readonly loading = signal(false);
+  readonly detalleError = signal<string | null>(null);
+  readonly reserva = signal<AdminReservaDetail | null>(null);
   readonly notFound = signal(false);
-  readonly cliente = signal<ReservaUsuario | null>(null);
+  readonly cliente = signal<UsuarioReserva | null>(null);
   readonly pago = signal<Pago | null>(null);
   readonly funcion = signal<Funcion | null>(null);
   readonly pelicula = signal<Pelicula | null>(null);
   readonly cine = signal<Cine | null>(null);
 
-  readonly cancelOpen = signal(false);
-  readonly motivo = signal<Motivo>('cliente');
   readonly toastMsg = signal<string | null>(null);
 
   readonly timeline = computed<TimelineEvent[]>(() => {
@@ -178,34 +175,17 @@ export class AdminReservaDetalleComponent {
     return all.filter((x) => !present.has(x.kind));
   });
 
-  readonly cancelPercent = computed(() => {
-    const r = this.reserva();
-    if (!r) return 0;
-    const m = this.motivo();
-    if (m === 'pago_rechazado' || m === 'sala_cerrada') return 100;
-    if (m === 'duplicada') return 100;
-    if (m === 'cliente') return 80;
-    return 70;
-  });
-  readonly cancelMonto = computed(() =>
-    Math.round(((this.reserva()?.monto_total ?? 0) * this.cancelPercent()) / 100),
-  );
-
-  readonly motivos: { id: Motivo; label: string }[] = [
-    { id: 'cliente', label: 'Solicitud del cliente' },
-    { id: 'pago_rechazado', label: 'Pago rechazado por banco' },
-    { id: 'duplicada', label: 'Reserva duplicada' },
-    { id: 'sala_cerrada', label: 'Sala cerrada / función no realizada' },
-    { id: 'otro', label: 'Otro' },
-  ];
+  private currentId: string | null = null;
 
   constructor() {
-    this.route.paramMap.subscribe((p) => this.load(p.get('id')));
-    this.route.fragment.subscribe((frag) => {
-      if (frag === 'cancel') {
-        setTimeout(() => this.cancelOpen.set(true), 60);
-      }
+    this.route.paramMap.subscribe((p) => {
+      this.currentId = p.get('id');
+      this.load(this.currentId);
     });
+  }
+
+  reload() {
+    this.load(this.currentId);
   }
 
   private load(id: string | null) {
@@ -213,27 +193,47 @@ export class AdminReservaDetalleComponent {
       this.notFound.set(true);
       return;
     }
-    this.reservasSvc.getById(id).subscribe((r) => {
-      if (!r) {
-        this.notFound.set(true);
-        return;
-      }
-      this.reserva.set(r);
-      this.reservasSvc.getUsuario(r.id_usuario).subscribe((u) => this.cliente.set(u ?? null));
-      this.pagosSvc.getByReserva(r.id).subscribe((ps) =>
-        this.pago.set(ps.find((p) => p.estado === 'exitoso' || p.estado === 'reembolsado') ?? ps[0] ?? null)
-      );
-      this.funcionesSvc.list().subscribe((funcs) => {
-        const f = funcs.find((x) => x.id === r.id_funcion);
-        if (!f) return;
-        this.funcion.set(f);
-        this.peliculasSvc.list().subscribe((res) =>
-          this.pelicula.set(res.data.find((p) => p.id === f.id_pelicula) ?? null),
+    this.loading.set(true);
+    this.detalleError.set(null);
+    this.notFound.set(false);
+    this.reserva.set(null);
+
+    this.reservasSvc.getById(id).subscribe({
+      next: (r) => {
+        this.loading.set(false);
+        if (!r) {
+          this.notFound.set(true);
+          return;
+        }
+        this.reserva.set(r);
+        // Set cliente directly from embedded usuario (no extra HTTP call)
+        this.cliente.set(r.usuario ?? null);
+        // Load full Pago (with payment method details not in the detail response)
+        this.pagosSvc.getByReserva(r.id).subscribe((ps) =>
+          this.pago.set(ps.find((p) => p.estado === 'exitoso' || p.estado === 'reembolsado') ?? ps[0] ?? null)
         );
-        this.cinesSvc.list().subscribe((cines) =>
-          this.cine.set(cines.data.find((c) => c.id === f.id_cine) ?? null),
-        );
-      });
+        // Load Funcion by id (for salaNombre() which needs id_sala/id_cine/id_pelicula)
+        if (r.id_funcion) {
+          this.funcionesSvc.getById(r.id_funcion).subscribe({
+            next: (f) => {
+              this.funcion.set(f);
+              this.peliculasSvc.getById(f.id_pelicula).subscribe({
+                next: (pel) => this.pelicula.set(pel),
+                error: () => {},
+              });
+              this.cinesSvc.getById(f.id_cine).subscribe({
+                next: (cine) => this.cine.set(cine),
+                error: () => {},
+              });
+            },
+            error: () => {},
+          });
+        }
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.detalleError.set(extractMessage(err));
+      },
     });
   }
 
@@ -247,13 +247,14 @@ export class AdminReservaDetalleComponent {
     }
   }
 
-  estadoLabel(e: Reserva['estado']): string {
+  estadoLabel(e: string): string {
     switch (e) {
       case 'pagada': return 'Pagada';
       case 'pendiente_pago': return 'Pendiente de pago';
       case 'cancelada': return 'Cancelada';
       case 'reembolsada': return 'Reembolsada';
       case 'expirada': return 'Expirada';
+      default: return e;
     }
   }
 
@@ -293,40 +294,7 @@ export class AdminReservaDetalleComponent {
     if (r) this.reserva.set({ ...r, updated_at: new Date().toISOString() });
   }
 
-  openCancel() {
-    this.cancelOpen.set(true);
-    setTimeout(() => {
-      document
-        .querySelector('.cancel-panel')
-        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 80);
-  }
-  closeCancel() {
-    this.cancelOpen.set(false);
-  }
-  confirmCancel() {
-    const r = this.reserva();
-    if (!r) return;
-    const monto = this.cancelMonto();
-    const isRefund = monto > 0 && r.estado === 'pagada';
-    const next = isRefund ? 'reembolsada' : 'cancelada';
-    this.reserva.set({
-      ...r,
-      estado: next as Reserva['estado'],
-      updated_at: new Date().toISOString(),
-      notas_internas: `${this.motivos.find((m) => m.id === this.motivo())?.label}${
-        isRefund ? ` · reembolso ${this.cancelPercent()}% (L ${monto})` : ''
-      }`,
-    });
-    this.cancelOpen.set(false);
-    this.showToast(
-      isRefund
-        ? `Reserva cancelada · L ${monto} reembolsados`
-        : `Reserva cancelada`,
-    );
-  }
-
-  onNotasChange(r: Reserva, event: Event) {
+  onNotasChange(r: AdminReservaDetail, event: Event) {
     const value = (event.target as HTMLTextAreaElement).value;
     this.reserva.set({ ...r, notas_internas: value });
   }
