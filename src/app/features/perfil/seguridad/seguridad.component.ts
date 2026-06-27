@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../shared/services/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { UsuariosService } from '../../../shared/services/usuarios.service';
@@ -107,6 +108,7 @@ export class SeguridadPageComponent {
   private auth = inject(AuthService);
   private toast = inject(ToastService);
   private usuariosSvc = inject(UsuariosService);
+  private router = inject(Router);
 
   readonly confirmDelete = signal(false);
   readonly userEmail = this.auth.user()?.email ?? '';
@@ -124,6 +126,11 @@ export class SeguridadPageComponent {
 
   changePassword(): void {
     if (this.pwForm.invalid) return;
+
+    if (!this.userId) {
+      this.toast.show('Sesión no encontrada');
+      return;
+    }
 
     const { actual, nueva, confirm } = this.pwForm.getRawValue();
 
@@ -154,7 +161,16 @@ export class SeguridadPageComponent {
       this.toast.show('El correo no coincide');
       return;
     }
-    this.toast.show('Cuenta eliminada (mock)');
-    this.confirmDelete.set(false);
+
+    this.usuariosSvc.eliminarMiCuenta().subscribe({
+      next: () => {
+        this.toast.show('Cuenta eliminada');
+        this.auth.clearSession();
+        this.router.navigate(['/']);
+      },
+      error: () => {
+        this.toast.show('No se pudo eliminar la cuenta');
+      },
+    });
   }
 }
