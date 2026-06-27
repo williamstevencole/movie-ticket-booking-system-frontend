@@ -204,12 +204,6 @@ export class MapaComponent implements OnInit {
       next: (res) => {
         this.asientosRaw.set(res.asientos);
         if (res.expira_en) this.expiraEn.set(res.expira_en);
-        // Al cargar por primera vez, restaura los asientos que el usuario ya tenía
-        // bloqueados en el servidor (estado 'seleccionado' = es_mio).
-        if (initial) {
-          const mios = res.asientos.filter((a) => a.estado === 'seleccionado');
-          if (mios.length > 0) this.asientosSeleccionados.set(mios);
-        }
       },
       error: (err) => {
         if (!initial) return;
