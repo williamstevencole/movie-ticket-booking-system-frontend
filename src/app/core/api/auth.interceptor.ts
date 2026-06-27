@@ -27,7 +27,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         error.status === 401 &&
         !req.url.endsWith('/auth/login') &&
         !req.url.endsWith('/auth/register') &&
-        !req.url.includes('/password')
+        !req.url.endsWith('/password')
       ) {
         auth.clearSession();
         router.navigate(['/login']);
