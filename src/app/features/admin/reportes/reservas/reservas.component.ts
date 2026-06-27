@@ -11,10 +11,7 @@ import {
 } from '../../../../shared/services/reportes.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 import { PagerComponent } from '../../../../shared/components/pager.component';
-import {
-  ExportButtonComponent,
-  ExportColumn,
-} from '../../../../shared/components/export-button.component';
+import { ExportColumn } from '../../../../shared/components/export-button.component';
 import {
   ReportFiltrosComponent,
   ReportFiltrosValue,
@@ -32,7 +29,6 @@ import { ToastService } from '../../../../shared/services/toast.service';
     DecimalPipe,
     AdminSidebarComponent,
     PagerComponent,
-    ExportButtonComponent,
     ReportFiltrosComponent,
     LucideClipboardList,
   ],
