@@ -209,33 +209,36 @@ export class AdminReservaDetalleComponent {
   }
 
   private load(id: string | null) {
-    if (!id) {
+  if (!id) {
+    this.notFound.set(true);
+    return;
+  }
+  this.reservasSvc.getById(id).subscribe((r) => {
+    if (!r) {
       this.notFound.set(true);
       return;
     }
-    this.reservasSvc.getById(id).subscribe((r) => {
-      if (!r) {
-        this.notFound.set(true);
-        return;
-      }
-      this.reserva.set(r);
-      this.reservasSvc.getUsuario(r.id_usuario).subscribe((u) => this.cliente.set(u ?? null));
-      this.pagosSvc.getByReserva(r.id).subscribe((ps) =>
-        this.pago.set(ps.find((p) => p.estado === 'exitoso' || p.estado === 'reembolsado') ?? ps[0] ?? null)
-      );
-      this.funcionesSvc.list().subscribe((funcs) => {
-        const f = funcs.find((x) => x.id === r.id_funcion);
-        if (!f) return;
-        this.funcion.set(f);
-        this.peliculasSvc.list().subscribe((res) =>
-          this.pelicula.set(res.data.find((p) => p.id === f.id_pelicula) ?? null),
-        );
-        this.cinesSvc.list().subscribe((cines) =>
-          this.cine.set(cines.data.find((c) => c.id === f.id_cine) ?? null),
-        );
-      });
-    });
-  }
+    this.reserva.set(r);
+
+    if (r.cliente) this.cliente.set(r.cliente);
+
+    if (r.funcion) {
+      this.funcion.set({
+        id: r.funcion.id,
+        id_pelicula: r.funcion.pelicula?.id ?? '',
+        id_cine: r.funcion.cine?.id ?? '',
+        id_sala: r.funcion.sala?.id ?? '',
+        fecha_hora: r.funcion.fecha_hora,
+      } as any);
+      if (r.funcion.pelicula) this.pelicula.set(r.funcion.pelicula as any);
+      if (r.funcion.cine) this.cine.set({ ...r.funcion.cine, salas: [] } as any);
+    }
+
+    this.pagosSvc.getByReserva(r.id).subscribe((ps) =>
+      this.pago.set(ps.find((p) => p.estado === 'exitoso' || p.estado === 'reembolsado') ?? ps[0] ?? null)
+    );
+  });
+}
 
   brandLabel(b: Pago['marca_snapshot']): string {
     switch (b) {
@@ -258,10 +261,8 @@ export class AdminReservaDetalleComponent {
   }
 
   salaNombre(): string {
-    const c = this.cine();
-    const f = this.funcion();
-    if (!c || !f) return '';
-    return c.salas.find((s) => s.id === f.id_sala)?.nombre ?? '';
+    const r = this.reserva();
+    return r?.funcion?.sala?.nombre ?? '—';
   }
 
   canCancel(): boolean {
@@ -307,23 +308,31 @@ export class AdminReservaDetalleComponent {
   confirmCancel() {
     const r = this.reserva();
     if (!r) return;
-    const monto = this.cancelMonto();
-    const isRefund = monto > 0 && r.estado === 'pagada';
-    const next = isRefund ? 'reembolsada' : 'cancelada';
-    this.reserva.set({
-      ...r,
-      estado: next as Reserva['estado'],
-      updated_at: new Date().toISOString(),
-      notas_internas: `${this.motivos.find((m) => m.id === this.motivo())?.label}${
-        isRefund ? ` · reembolso ${this.cancelPercent()}% (L ${monto})` : ''
-      }`,
+
+    this.reservasSvc.cancelar(r.id).subscribe({
+      next: (res) => {
+        this.reserva.set({
+          ...r,
+          estado: res.reserva.estado,
+          updated_at: res.reserva.fecha_cancelacion,
+        });
+        this.cancelOpen.set(false);
+        const monto = res.reembolso?.monto;
+        this.showToast(
+          monto
+            ? `Reserva cancelada · L ${monto} reembolsados`
+            : `Reserva cancelada`,
+        );
+      },
+      error: (err) => {
+        this.cancelOpen.set(false);
+        if (err.status === 409) {
+          this.showToast('La reserva ya fue cancelada o cambió de estado');
+        } else {
+          this.showToast('No se pudo cancelar. Intenta de nuevo.');
+        }
+      },
     });
-    this.cancelOpen.set(false);
-    this.showToast(
-      isRefund
-        ? `Reserva cancelada · L ${monto} reembolsados`
-        : `Reserva cancelada`,
-    );
   }
 
   onNotasChange(r: Reserva, event: Event) {

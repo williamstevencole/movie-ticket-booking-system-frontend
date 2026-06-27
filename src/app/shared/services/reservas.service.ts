@@ -30,10 +30,25 @@ export type Reserva = {
   monto_total: number;
   created_at: string;
   updated_at: string;
-  asientos: ReservaAsiento[];  
-  expira_en?: string;          
+  asientos: ReservaAsiento[];
+  expira_en?: string;
   cupon_codigo?: string;
   notas_internas?: string;
+  cliente?: { id: string; nombre: string; email: string; };
+  funcion?: {
+    id: string;
+    fecha_hora: string;
+    pelicula?: { id: string; titulo: string; poster_url: string | null; };
+    sala?: { id: string; nombre: string; };
+    cine?: { id: string; nombre: string; };
+  };
+  pago?: {
+    id: string;
+    monto_final: string;
+    metodo: string;
+    estado: string;
+    created_at: string;
+  };
 };
 
 export type ReservaUsuario = {
