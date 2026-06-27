@@ -273,7 +273,7 @@ export class AdminSalasComponent {
   readonly loading = signal<boolean>(true);
   readonly error = signal<string | null>(null);
   readonly salasData = signal<Sala[]>([]);
-  readonly skeletonRows = Array.from({ length: 6 });
+  readonly skeletonRows = Array.from({ length: 6 }, (_, i) => i);
 
   readonly busqueda = signal<string>('');
   readonly idCine = signal<string>('');

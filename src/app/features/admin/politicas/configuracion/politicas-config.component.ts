@@ -272,7 +272,7 @@ export class AdminPoliticasConfigComponent {
 
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | null>(null);
-  readonly skeletonRows = Array.from({ length: 5 });
+  readonly skeletonRows = Array.from({ length: 5 }, (_, i) => i);
 
   constructor() {
     this.cinesSvc.list().subscribe((p) => this.cines.set(p.data));

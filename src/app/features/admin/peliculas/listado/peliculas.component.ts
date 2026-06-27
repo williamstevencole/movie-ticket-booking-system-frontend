@@ -307,7 +307,7 @@ export class AdminPeliculasComponent {
   readonly page = signal(1);
   readonly pageSize = signal(10);
   readonly togglingId = signal<string | null>(null);
-  readonly skeletonRows = Array.from({ length: 6 });
+  readonly skeletonRows = Array.from({ length: 6 }, (_, i) => i);
 
   private busquedaDebounce: ReturnType<typeof setTimeout> | null = null;
 
