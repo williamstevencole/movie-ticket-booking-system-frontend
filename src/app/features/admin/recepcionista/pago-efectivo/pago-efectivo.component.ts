@@ -90,6 +90,11 @@ import { extractMessage } from '../../../../shared/utils/http-errors';
                 <div class="skel-block"></div>
               </div>
             </section>
+          } @else if (loadError()) {
+            <div class="error-banner" role="alert">
+              <span>{{ loadError() }}</span>
+              <button type="button" class="btn btn-sm" (click)="retryLoad()">Reintentar</button>
+            </div>
           } @else if (notFound()) {
             <section class="empty-state">
               <span class="empty-mark"><svg lucideBan [size]="28"></svg></span>
@@ -439,6 +444,7 @@ export class RecepcionistaPagoEfectivoComponent {
   readonly reserva = signal<ReservaCobrarDetail | null>(null);
   readonly loading = signal<boolean>(true);
   readonly notFound = signal<boolean>(false);
+  readonly loadError = signal<string | null>(null);
 
   readonly cupon = signal<Cupon | null>(null);
   readonly cuponLoading = signal<boolean>(false);
@@ -502,24 +508,33 @@ export class RecepcionistaPagoEfectivoComponent {
       const numero =
         this.route.snapshot.paramMap.get('numero') ?? '';
       this.numero.set(numero);
-      this.loading.set(true);
-      this.notFound.set(false);
-
-      this.adminReservasSvc.getByNumero(numero).subscribe({
-        next: (r) => {
-          if (!r) {
-            this.notFound.set(true);
-          } else {
-            this.reserva.set(r);
-          }
-          this.loading.set(false);
-        },
-        error: () => {
-          this.notFound.set(true);
-          this.loading.set(false);
-        },
-      });
+      this.doLoad(numero);
     });
+  }
+
+  private doLoad(numero: string) {
+    this.loading.set(true);
+    this.notFound.set(false);
+    this.loadError.set(null);
+
+    this.adminReservasSvc.getByNumero(numero).subscribe({
+      next: (r) => {
+        if (!r) {
+          this.notFound.set(true);
+        } else {
+          this.reserva.set(r);
+        }
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.loadError.set(extractMessage(err));
+        this.loading.set(false);
+      },
+    });
+  }
+
+  retryLoad() {
+    this.doLoad(this.numero());
   }
 
   // ── Acciones ────────────────────────────────────────────────────────────

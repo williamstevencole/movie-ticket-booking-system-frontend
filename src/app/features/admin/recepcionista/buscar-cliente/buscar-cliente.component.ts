@@ -22,10 +22,10 @@ import {
   ClientesStats,
 } from '../../../../shared/services/clientes.service';
 import {
-  EstadoReserva,
-  Reserva,
-  ReservasService,
-} from '../../../../shared/services/reservas.service';
+  AdminReservasService,
+  AdminReservaRow,
+} from '../../../../shared/services/admin-reservas.service';
+import { EstadoReserva } from '../../../../shared/services/reservas.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 import { PagerComponent } from '../../../../shared/components/pager.component';
 import { extractMessage } from '../../../../shared/utils/http-errors';
@@ -254,44 +254,57 @@ import { extractMessage } from '../../../../shared/utils/http-errors';
                         }
                       </div>
 
-                      @if (selectedReservas().length === 0) {
-                        <p class="no-res">Este cliente no tiene reservas registradas.</p>
-                      } @else {
-                        <ul class="reservas">
-                          @for (r of selectedReservas(); track r.id) {
-                            <li class="reserva" [class.pendiente]="r.estado === 'pendiente_pago'">
-                              <div class="r-top">
-                                <span class="r-num">{{ r.numero_reserva }}</span>
-                                <span class="estado-badge" [class]="'st-' + r.estado">
-                                  {{ estadoLabel(r.estado) }}
-                                </span>
-                              </div>
-                              <div class="r-meta">
-                                <span>{{ r.num_asientos }} {{ r.num_asientos === 1 ? 'asiento' : 'asientos' }}</span>
-                                @if (r.asientos?.length) {
-                                  <span class="r-seats">
-                                    @for (a of (r.asientos ?? []); track a.id) {
-                                      <span class="seat-chip">{{ a.codigo }}</span>
-                                    }
-                                  </span>
-                                }
-                                <span class="r-monto">{{ money(r.monto_total) }}</span>
-                              </div>
-                              <div class="r-foot">
-                                <span class="r-date">{{ fmtDate(r.created_at) }}</span>
-                                @if (r.estado === 'pendiente_pago') {
-                                  <a
-                                    class="btn btn-sm primary"
-                                    [routerLink]="['/admin/recepcionista/pago-efectivo', r.numero_reserva]"
-                                  >
-                                    <svg lucideWallet [size]="13"></svg>
-                                    Cobrar en taquilla
-                                  </a>
-                                }
-                              </div>
-                            </li>
+                      @if (reservasError(); as msg) {
+                        <div class="error-banner" role="alert">
+                          <span>{{ msg }}</span>
+                          <button type="button" class="btn btn-sm" (click)="reloadReservas()">Reintentar</button>
+                        </div>
+                      } @else if (reservasLoading()) {
+                        <div class="skeleton-list">
+                          @for (i of [1,2,3]; track i) {
+                            <div class="skeleton-row"></div>
                           }
-                        </ul>
+                        </div>
+                      } @else {
+                        @if (selectedReservas().length === 0) {
+                          <p class="no-res">Este cliente no tiene reservas registradas.</p>
+                        } @else {
+                          <ul class="reservas">
+                            @for (r of selectedReservas(); track r.id) {
+                              <li class="reserva" [class.pendiente]="r.estado === 'pendiente_pago'">
+                                <div class="r-top">
+                                  <span class="r-num">{{ r.numero_reserva }}</span>
+                                  <span class="estado-badge" [class]="'st-' + r.estado">
+                                    {{ estadoLabel(r.estado) }}
+                                  </span>
+                                </div>
+                                <div class="r-meta">
+                                  <span>{{ r.num_asientos }} {{ r.num_asientos === 1 ? 'asiento' : 'asientos' }}</span>
+                                  @if (r.asientos?.length) {
+                                    <span class="r-seats">
+                                      @for (a of (r.asientos ?? []); track a.id) {
+                                        <span class="seat-chip">{{ a.codigo }}</span>
+                                      }
+                                    </span>
+                                  }
+                                  <span class="r-monto">{{ money(r.monto_total) }}</span>
+                                </div>
+                                <div class="r-foot">
+                                  <span class="r-date">{{ fmtDate(r.created_at) }}</span>
+                                  @if (r.estado === 'pendiente_pago') {
+                                    <a
+                                      class="btn btn-sm primary"
+                                      [routerLink]="['/admin/recepcionista/pago-efectivo', r.numero_reserva]"
+                                    >
+                                      <svg lucideWallet [size]="13"></svg>
+                                      Cobrar en taquilla
+                                    </a>
+                                  }
+                                </div>
+                              </li>
+                            }
+                          </ul>
+                        }
                       }
                     </div>
                   </div>
@@ -312,12 +325,15 @@ import { extractMessage } from '../../../../shared/utils/http-errors';
 })
 export class RecepcionistaBuscarClienteComponent {
   private clientesSvc = inject(ClientesService);
-  private reservasSvc = inject(ReservasService);
+  private reservasSvc = inject(AdminReservasService);
 
   readonly query = signal('');
   readonly clientes = signal<Cliente[]>([]);
-  readonly reservas = signal<Reserva[]>([]);
+  readonly reservas = signal<AdminReservaRow[]>([]);
   readonly selectedId = signal<string | null>(null);
+
+  readonly reservasLoading = signal(false);
+  readonly reservasError = signal<string | null>(null);
 
   readonly page = signal(1);
   readonly pageSize = signal(10);
@@ -353,7 +369,8 @@ export class RecepcionistaBuscarClienteComponent {
     const usuariosPorReserva = new Set(
       this.reservas()
         .filter((r) => r.numero_reserva.toLowerCase().includes(reservaQuery))
-        .map((r) => r.id_usuario),
+        .map((r) => r.id_usuario)
+        .filter((id): id is string => !!id),
     );
 
     if (!usuariosPorReserva.size) return all;
@@ -365,7 +382,7 @@ export class RecepcionistaBuscarClienteComponent {
     return [...all, ...extras];
   });
 
-  readonly matchedReserva = computed<Reserva | null>(() => {
+  readonly matchedReserva = computed<AdminReservaRow | null>(() => {
     if (!this.hasQuery()) return null;
     const q = this.query().trim().toLowerCase().replace(/^#/, '');
     if (!q) return null;
@@ -397,7 +414,7 @@ export class RecepcionistaBuscarClienteComponent {
   private queryDebounce: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
-    this.reservasSvc.list().subscribe((data) => this.reservas.set(data));
+    this.cargarReservas();
     this.reloadStats();
     effect(() => {
       const busqueda = this.query().trim();
@@ -444,6 +461,23 @@ export class RecepcionistaBuscarClienteComponent {
     });
   }
 
+  private cargarReservas(): void {
+    this.reservasLoading.set(true);
+    this.reservasError.set(null);
+    this.reservasSvc.list({ limit: 200 }).subscribe({
+      next: (res) => {
+        this.reservas.set(res.data);
+        this.reservasLoading.set(false);
+      },
+      error: (err) => {
+        this.reservasError.set(extractMessage(err));
+        this.reservasLoading.set(false);
+      },
+    });
+  }
+
+  reloadReservas(): void { this.cargarReservas(); }
+
   private reloadStats(): void {
     this.statsLoading.set(true);
     this.statsError.set(null);
@@ -465,7 +499,7 @@ export class RecepcionistaBuscarClienteComponent {
       this.query.set(value);
       this.page.set(1);
       const matched = this.matchedReserva();
-      if (matched) {
+      if (matched?.id_usuario) {
         this.selectedId.set(matched.id_usuario);
         return;
       }
