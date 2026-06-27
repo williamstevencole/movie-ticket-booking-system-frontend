@@ -2,8 +2,6 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { Asiento } from '../asientos/mapa/asiento.model';
-import { ConfirmarReservaInput } from '../../shared/services/reservas.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { API_URL } from '../../core/config/env';
 
@@ -19,10 +17,13 @@ export type CheckoutResultado = {
   mensajeError?: string | null;
 };
 
-type ConfirmarReservaResponse = {
-  id: string;
+/** Reserva creada a partir de los asientos bloqueados (POST /reservas). */
+export type ReservaCreada = {
+  id_reserva: string;
   numero_reserva: string;
-  expira_en: string;
+  estado: string;
+  asientos: Array<{ codigo: string; tipo: string }>;
+  total_estimado: string;
 };
 
 @Injectable({ providedIn: 'root' })
@@ -33,6 +34,7 @@ export class CheckoutStateService {
   private readonly reservasUrl = `${API_URL}/reservas`;
 
   private resultado: CheckoutResultado | null = null;
+  private reservaPendiente: ReservaCreada | null = null;
 
   setResultado(data: CheckoutResultado): void {
     this.resultado = data;
@@ -45,24 +47,31 @@ export class CheckoutStateService {
     return r;
   }
 
+  /** Reserva creada en el paso de asientos, disponible para el flujo de pago. */
+  setReservaPendiente(r: ReservaCreada | null): void {
+    this.reservaPendiente = r;
+  }
+
+  getReservaPendiente(): ReservaCreada | null {
+    return this.reservaPendiente;
+  }
+
   /**
-   * Confirms a reservation with seat version information.
-   * POSTs to POST /reservas (authenticated client endpoint).
-   * Handles 409 Conflict by showing toast and returning error for caller to refresh.
+   * Crea la reserva a partir de los asientos que el usuario tiene bloqueados
+   * (POST /reservas). Convierte el bloqueo temporal en una reserva pendiente de pago.
+   * Maneja el 409 (asiento ya no disponible / bloqueo expirado) para que el
+   * llamador refresque el mapa.
    */
   confirmarReserva(
     funcionId: string,
-    asientosSeleccionados: Asiento[],
-  ): Observable<ConfirmarReservaResponse> {
-    const payload: ConfirmarReservaInput = {
+    idsAsientoFuncion: string[],
+  ): Observable<ReservaCreada> {
+    const payload = {
       id_funcion: funcionId,
-      asientos: asientosSeleccionados.map((a) => ({
-        id_asiento_funcion: a.id,
-        version: a.version,
-      })),
+      ids_asiento_funcion: idsAsientoFuncion,
     };
 
-    return this.http.post<ConfirmarReservaResponse>(this.reservasUrl, payload).pipe(
+    return this.http.post<ReservaCreada>(this.reservasUrl, payload).pipe(
       catchError((error) => {
         if (error.status === 409) {
           this.toastSvc.show(
