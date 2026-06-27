@@ -11,7 +11,9 @@ export type HeroSlide = {
   ratingCount: number;
   sinopsis: string;
   poster: string;
-  badge: BadgeTipo;
+  /** URL real del poster (backend). Si está presente, se prioriza sobre la clase `poster`. */
+  poster_url?: string | null;
+  badge: BadgeTipo | null;
   badgeLabel: string;
   trailerUrl?: string;
 };
@@ -23,7 +25,10 @@ export type CarteleraPelicula = {
   duracion: string;
   idioma: string;
   clasificacion?: string;
+  sinopsis?: string;
   poster: string;
+  /** URL real del poster (backend). Si está presente, se prioriza sobre la clase `poster`. */
+  poster_url?: string | null;
   badge?: BadgeTipo;
   badgeFecha?: string;
   funciones: { hora: string; asientosLibres: number }[];
@@ -37,6 +42,8 @@ export type ProximoEstreno = {
   genero: string;
   duracion: string;
   poster: string;
+  /** URL real del poster (backend). Si está presente, se prioriza sobre la clase `poster`. */
+  poster_url?: string | null;
   fechaEstreno: string;
   badgeFecha: string;
 };
@@ -64,7 +71,9 @@ export type PeliculaDetalle = {
   rating: number;
   ratingCount: number;
   poster: string;
-  badge: BadgeTipo;
+  /** URL real del poster (backend). Si está presente, se prioriza sobre la clase `poster`. */
+  poster_url?: string | null;
+  badge: BadgeTipo | null;
   badgeLabel: string;
   estreno: string;
   ficha: FichaTecnica;

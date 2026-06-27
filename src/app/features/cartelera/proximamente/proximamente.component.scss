@@ -41,6 +41,14 @@
   position: relative;
   aspect-ratio: 2/3;
   border-radius: var(--r-lg) var(--r-lg) 0 0;
+  overflow: hidden;
+}
+.poster img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .poster.dim { filter: brightness(0.85); }
 .poster::after {

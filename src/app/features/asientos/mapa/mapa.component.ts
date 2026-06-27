@@ -23,10 +23,12 @@ import {
   AsientoFuncion,
 } from '../../../shared/services/asientos.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { CheckoutStateService } from '../../checkout/checkout-state.service';
 
 // Minimal shape passed into the template seat grid
 type AsientoDisplay = {
   codigo: string;
+  numero: number;
   estado: 'disponible' | 'ocupado' | 'bloqueado';
   tipo: TipoAsiento;
 };
@@ -50,8 +52,12 @@ export class MapaComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly asientosSvc = inject(AsientosService);
+  private readonly checkoutState = inject(CheckoutStateService);
   private readonly toastSvc = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
+
+  /** Evita doble envío mientras se crea la reserva. */
+  private creandoReserva = false;
 
   readonly funcionId = signal<string | null>(null);
 
@@ -97,6 +103,7 @@ export class MapaComponent implements OnInit {
         .sort((a, b) => a.numero - b.numero)
         .map<AsientoDisplay>((a) => ({
           codigo: `${a.fila}-${a.numero}`,
+          numero: a.numero,
           estado: a.estado === 'seleccionado' ? 'disponible' : (a.estado as AsientoDisplay['estado']),
           tipo: a.tipo,
         })),
@@ -152,29 +159,37 @@ export class MapaComponent implements OnInit {
     if (yaSeleccionado) {
       const next = sel.filter((a) => `${a.fila}-${a.numero}` !== asiento.codigo);
       this.asientosSeleccionados.set(next);
-    } else {
-      this.asientosSeleccionados.set([...sel, full]);
-      // Bloquear en el servidor al seleccionar
-      const idFuncion = this.funcionId();
-      if (idFuncion) {
-        const todosSeleccionados = [...sel, full];
-        this.asientosSvc
-          .bloquear(idFuncion, todosSeleccionados.map((a) => a.id))
-          .subscribe({
-            next: (res) => {
-              if (res?.expira_en) this.expiraEn.set(res.expira_en);
-            },
-            error: (err) => {
-              if (err.status === 409) {
-                this.mostrarModalConflicto.set(true);
-                // Revert selection and refresh map
-                this.asientosSeleccionados.set(sel);
-                this.cargarMapa(idFuncion, false);
-              }
-            },
-          });
-      }
+      return;
     }
+
+    // Selección optimista
+    this.asientosSeleccionados.set([...sel, full]);
+
+    // Si ya está bloqueado por mí (es_mio), no hace falta re-bloquear en el servidor.
+    if (full.estado === 'seleccionado') return;
+
+    const idFuncion = this.funcionId();
+    if (!idFuncion) return;
+
+    // Bloquear SOLO el asiento recién agregado (reenviar la lista completa
+    // provocaría un 409 porque los ya seleccionados no están DISPONIBLE).
+    this.asientosSvc.bloquear(idFuncion, [full.id]).subscribe({
+      next: (res) => {
+        if (res?.expira_en) this.expiraEn.set(res.expira_en);
+      },
+      error: (err) => {
+        // Revertir solo este asiento
+        this.asientosSeleccionados.set(
+          this.asientosSeleccionados().filter((a) => a.id !== full.id),
+        );
+        if (err?.status === 409) {
+          this.mostrarModalConflicto.set(true);
+          this.cargarMapa(idFuncion, false);
+        } else {
+          this.toastSvc?.show?.('No se pudo bloquear el asiento. Intentá de nuevo.');
+        }
+      },
+    });
   }
 
   onTimerExpirado(): void {
@@ -186,7 +201,30 @@ export class MapaComponent implements OnInit {
   }
 
   continuarAPago(): void {
-    this.router.navigate(['/checkout/metodos-pago']);
+    const idFuncion = this.funcionId();
+    const seleccionados = this.asientosSeleccionados();
+    if (!idFuncion || seleccionados.length === 0 || this.creandoReserva) return;
+
+    this.creandoReserva = true;
+    // Convierte los asientos bloqueados en una reserva pendiente de pago.
+    this.checkoutState
+      .confirmarReserva(idFuncion, seleccionados.map((a) => a.id))
+      .subscribe({
+        next: (reserva) => {
+          this.creandoReserva = false;
+          this.checkoutState.setReservaPendiente(reserva);
+          this.router.navigate(['/checkout/metodos-pago']);
+        },
+        error: (err) => {
+          this.creandoReserva = false;
+          if (err?.code === 'SEAT_CONFLICT' || err?.status === 409) {
+            this.mostrarModalConflicto.set(true);
+            this.cargarMapa(idFuncion, false);
+          } else {
+            this.toastSvc?.show?.('No se pudo crear la reserva. Intentá de nuevo.');
+          }
+        },
+      });
   }
 
   private cargarMapa(idFuncion: string, initial: boolean): void {

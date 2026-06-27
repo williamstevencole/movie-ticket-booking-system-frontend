@@ -1,5 +1,6 @@
 import {
   Component,
+  OnInit,
   signal,
   OnDestroy,
   HostListener,
@@ -10,7 +11,12 @@ import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LucideStar, LucidePlay } from '@lucide/angular';
-import { MOCK_HERO_SLIDES } from '../../../mocks/data/cartelera-display.mock';
+import {
+  HeroSlide,
+  CarteleraPelicula,
+} from '../../../mocks/data/cartelera-display.mock';
+import { CarteleraService } from '../../../shared/services/cartelera.service';
+import { LocationService } from '../../../shared/services/location.service';
 import { PosterBadgeComponent } from '../../../shared/components/poster-badge/poster-badge.component';
 import { PeliculaRatingComponent } from '../../pelicula/rating/rating.component';
 
@@ -30,24 +36,52 @@ const ROTATE_MS = 7000;
   templateUrl: './hero-carousel.component.html',
   styleUrl: './hero-carousel.component.scss',
 })
-export class HeroCarouselComponent implements OnDestroy {
+export class HeroCarouselComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
+  private cartelera = inject(CarteleraService);
+  private location = inject(LocationService);
 
-  readonly slides = MOCK_HERO_SLIDES;
+  readonly slides = signal<HeroSlide[]>([]);
   readonly index = signal(0);
   readonly paused = signal(false);
 
   private timer: ReturnType<typeof setInterval> | null = null;
   private touchStartX = 0;
 
-  constructor() {
-    if (isPlatformBrowser(this.platformId)) {
-      this.startTimer();
-    }
+  ngOnInit(): void {
+    const ciudadId = this.location.selection()?.cityId;
+    this.cartelera.listar({ ciudad_id: ciudadId || undefined, limit: 5 }).subscribe({
+      next: (list) => {
+        this.slides.set(list.map((p) => this.toSlide(p)));
+        this.index.set(0);
+        if (isPlatformBrowser(this.platformId) && this.slides().length > 1) {
+          this.startTimer();
+        }
+      },
+      error: () => this.slides.set([]),
+    });
   }
 
   ngOnDestroy(): void {
     this.stopTimer();
+  }
+
+  private toSlide(p: CarteleraPelicula): HeroSlide {
+    return {
+      id: p.id,
+      titulo: p.titulo,
+      genero: p.genero,
+      duracion: p.duracion,
+      idioma: p.idioma,
+      clasificacion: p.clasificacion ?? '',
+      rating: p.rating_promedio ?? 0,
+      ratingCount: p.rating_count ?? 0,
+      sinopsis: p.sinopsis ?? '',
+      poster: '',
+      poster_url: p.poster_url,
+      badge: p.badge ?? null,
+      badgeLabel: p.badge === 'estreno' ? 'ESTRENO HOY' : 'EN CARTELERA',
+    };
   }
 
   @HostListener('mouseenter')
@@ -84,13 +118,15 @@ export class HeroCarouselComponent implements OnDestroy {
   }
 
   next(): void {
-    this.index.update((i) => (i + 1) % this.slides.length);
+    const n = this.slides().length;
+    if (n === 0) return;
+    this.index.update((i) => (i + 1) % n);
   }
 
   prev(): void {
-    this.index.update(
-      (i) => (i - 1 + this.slides.length) % this.slides.length,
-    );
+    const n = this.slides().length;
+    if (n === 0) return;
+    this.index.update((i) => (i - 1 + n) % n);
   }
 
   truncate(text: string, max = 280): string {

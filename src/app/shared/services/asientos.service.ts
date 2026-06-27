@@ -1,6 +1,8 @@
-import { Injectable } from '@angular/core';
-import { of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { API_URL } from '../../core/config/env';
+import { toStr } from '../../core/api/normalize';
 import { TipoAsiento } from '../../features/asientos/mapa/seat-types/seat-type.model';
 import { EstadoAsiento } from '../../features/asientos/mapa/seat-states/seat-state.model';
 
@@ -21,63 +23,106 @@ export type MapaAsientos = {
   asientos: AsientoFuncion[];
 };
 
-// Generates an 80-seat mock map (rows A-H, columns 1-10)
-function buildMockMapa(idFuncion: string): MapaAsientos {
-  const FILAS = 'ABCDEFGH';
-  const COLUMNAS = 10;
+type BackendAsientoItem = {
+  id_asiento_funcion: string | number;
+  fila: string;
+  columna: number;
+  codigo: string;
+  tipo: string;
+  estado: string;
+  es_mio: boolean;
+};
+type BackendMapa = {
+  funcion_id: string | number;
+  sala: { filas: number; columnas: number };
+  asientos: BackendAsientoItem[];
+};
 
-  // Occupation pattern: ~30% ocupado, 5% reservado, rest disponible
-  // VIP: last 2 rows (G, H), accesible: col 1 in any row
-  const asientos: AsientoFuncion[] = [];
+type BackendBloqueoResp = {
+  bloqueados: (string | number)[];
+  bloqueado_hasta: string;
+};
 
-  for (let fi = 0; fi < FILAS.length; fi++) {
-    const fila = FILAS[fi]!;
-    const isVipRow = fi >= 6; // G, H are VIP
-    for (let col = 1; col <= COLUMNAS; col++) {
-      const idx = fi * COLUMNAS + col;
-      const tipo: TipoAsiento = col === 1 ? 'accesible' : isVipRow ? 'vip' : 'estandar';
+export type ResultadoBloqueo = {
+  bloqueados: string[];
+  /** ISO hasta el que los asientos quedan bloqueados (alias para el timer del UI). */
+  expira_en: string;
+};
 
-      // Deterministic occupation: seed based on funcion id hash + position
-      let seed = 0;
-      for (let k = 0; k < idFuncion.length; k++) seed = (seed * 31 + idFuncion.charCodeAt(k)) % 1000;
-      const val = (seed + idx * 7) % 10;
-      let estado: EstadoAsiento;
-      if (val < 3) {
-        estado = 'ocupado';
-      } else if (val === 3) {
-        estado = 'reservado';
-      } else {
-        estado = 'disponible';
-      }
-
-      const precio = tipo === 'vip' ? 165 : tipo === 'accesible' ? 75 : 85;
-
-      asientos.push({
-        id: `af-${idFuncion}-${fila}${col}`,
-        fila,
-        numero: col,
-        tipo,
-        estado,
-        version: 1,
-        precio,
-      });
-    }
+/** Normaliza el nombre del tipo de asiento del backend a la categoría de UI. */
+function mapTipo(tipo: string): TipoAsiento {
+  const n = (tipo ?? '').toLowerCase();
+  if (n.includes('vip')) return 'vip';
+  if (n.includes('acces') || n.includes('discapac') || n.includes('silla')) {
+    return 'accesible';
   }
+  return 'estandar';
+}
 
-  return {
-    id_funcion: String(idFuncion),
-    asientos,
-  };
+/**
+ * Mapea el estado del backend al de la UI.
+ * - DISPONIBLE → disponible
+ * - BLOQUEADO mío → seleccionado; ajeno → bloqueado
+ * - RESERVADO / OCUPADO / VENDIDO → ocupado (no disponible)
+ */
+function mapEstado(estado: string, esMio: boolean): EstadoAsiento {
+  switch ((estado ?? '').toUpperCase()) {
+    case 'DISPONIBLE':
+      return 'disponible';
+    case 'BLOQUEADO':
+      return esMio ? 'seleccionado' : 'bloqueado';
+    case 'RESERVADO':
+    case 'OCUPADO':
+    case 'VENDIDO':
+      return 'ocupado';
+    default:
+      return 'ocupado';
+  }
 }
 
 @Injectable({ providedIn: 'root' })
 export class AsientosService {
-  mapa(idFuncion: string | number) {
-    return of(buildMockMapa(String(idFuncion))).pipe(delay(120));
+  private readonly http = inject(HttpClient);
+  private readonly base = `${API_URL}/funciones`;
+
+  /** Mapa de asientos de una función (GET /funciones/:id/asientos). */
+  mapa(idFuncion: string | number): Observable<MapaAsientos> {
+    return this.http
+      .get<BackendMapa>(`${this.base}/${idFuncion}/asientos`)
+      .pipe(map((res) => this.toMapa(res)));
   }
 
-  bloquear(idFuncion: string | number, ids: (string | number)[]) {
-    const expira = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-    return of({ expira_en: expira }).pipe(delay(120));
+  private toMapa(res: BackendMapa): MapaAsientos {
+    return {
+      id_funcion: toStr(res.funcion_id),
+      asientos: (res.asientos ?? []).map((a) => ({
+        id: toStr(a.id_asiento_funcion),
+        fila: a.fila,
+        numero: a.columna,
+        tipo: mapTipo(a.tipo),
+        estado: mapEstado(a.estado, a.es_mio),
+        version: 1,
+      })),
+    };
+  }
+
+  /**
+   * Bloquea asientos de una función para el usuario actual
+   * (POST /funciones/:id/asientos/bloquear). Propaga el 409 si alguno
+   * ya no está disponible, para que el componente muestre el conflicto.
+   */
+  bloquear(
+    idFuncion: string | number,
+    ids: (string | number)[],
+  ): Observable<ResultadoBloqueo> {
+    const body = { ids_asiento_funcion: ids.map((id) => toStr(id)) };
+    return this.http
+      .post<BackendBloqueoResp>(`${this.base}/${idFuncion}/asientos/bloquear`, body)
+      .pipe(
+        map((res) => ({
+          bloqueados: (res.bloqueados ?? []).map((id) => toStr(id)),
+          expira_en: res.bloqueado_hasta,
+        })),
+      );
   }
 }
