@@ -89,10 +89,19 @@
 .result-row.rich .ti { display: block; font-weight: 700; }
 .result-row.rich .me { display: block; font-size: 13px; color: var(--text-2); margin-top: 2px; }
 .mini-poster {
+  position: relative;
   width: 36px;
   height: 54px;
   border-radius: 4px;
   flex-shrink: 0;
+  overflow: hidden;
+}
+.mini-poster img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .empty {
   padding: var(--s4) var(--s5);
