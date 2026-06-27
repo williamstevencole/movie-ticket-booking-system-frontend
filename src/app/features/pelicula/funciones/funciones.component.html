@@ -59,21 +59,29 @@
                 </div>
               </div>
 
-              @for (sala of salasDelDia(); track sala.id) {
-                <div class="sala-row">
-                  <div class="sala-info">
-                    <div class="sala-name">{{ sala.nombre }}</div>
-                  </div>
-                  <div class="times-grid">
-                    @for (h of sala.horarios; track h.funcionId) {
-                      <app-horario-chip [horario]="h" />
-                    }
-                  </div>
-                </div>
-              } @empty {
+              @if (cargandoFunciones()) {
+                <p class="muted no-funciones">Cargando funciones…</p>
+              } @else if (errorFunciones()) {
                 <p class="muted no-funciones">
-                  No hay funciones para el día seleccionado en este cine.
+                  No se pudieron cargar las funciones de este cine.
                 </p>
+              } @else {
+                @for (sala of salasDelDia(); track sala.id) {
+                  <div class="sala-row">
+                    <div class="sala-info">
+                      <div class="sala-name">{{ sala.nombre }}</div>
+                    </div>
+                    <div class="times-grid">
+                      @for (h of sala.horarios; track h.funcionId) {
+                        <app-horario-chip [horario]="h" />
+                      }
+                    </div>
+                  </div>
+                } @empty {
+                  <p class="muted no-funciones">
+                    No hay funciones para el día seleccionado en este cine.
+                  </p>
+                }
               }
             </article>
           </div>

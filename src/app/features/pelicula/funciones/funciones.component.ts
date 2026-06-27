@@ -43,6 +43,11 @@ export class PeliculaFuncionesComponent implements OnChanges {
   readonly selectedCineId = signal<string | null>(null);
   readonly selectedDia = signal<string>(diaKey(new Date()));
 
+  /** Salas (con disponibilidad de asientos) del cine seleccionado. */
+  readonly salasCine = signal<SalaVM[]>([]);
+  readonly cargandoFunciones = signal(false);
+  readonly errorFunciones = signal(false);
+
   readonly selectedCine = computed<CineFuncionesVM | null>(() => {
     const list = this.cines();
     if (list.length === 0) return null;
@@ -51,10 +56,8 @@ export class PeliculaFuncionesComponent implements OnChanges {
 
   /** Salas del cine seleccionado, con sus horarios filtrados al día activo. */
   readonly salasDelDia = computed<SalaVM[]>(() => {
-    const cine = this.selectedCine();
-    if (!cine) return [];
     const dia = this.selectedDia();
-    return cine.salas
+    return this.salasCine()
       .map((s) => ({ ...s, horarios: s.horarios.filter((h) => h.dia === dia) }))
       .filter((s) => s.horarios.length > 0);
   });
@@ -68,7 +71,9 @@ export class PeliculaFuncionesComponent implements OnChanges {
   }
 
   selectCine(id: string): void {
+    if (id === this.selectedCineId()) return;
     this.selectedCineId.set(id);
+    this.loadFunciones(id);
   }
 
   private fetch(): void {
@@ -77,13 +82,33 @@ export class PeliculaFuncionesComponent implements OnChanges {
     this.cinesSvc.cines(this.peliculaId).subscribe({
       next: (cines) => {
         this.cines.set(cines);
-        this.selectedCineId.set(this.resolveInitialCine(cines));
+        const inicial = this.resolveInitialCine(cines);
+        this.selectedCineId.set(inicial);
         this.cargando.set(false);
+        if (inicial) this.loadFunciones(inicial);
       },
       error: () => {
         this.cines.set([]);
         this.cargando.set(false);
         this.error.set(true);
+      },
+    });
+  }
+
+  /** Carga las funciones con disponibilidad para el cine seleccionado. */
+  private loadFunciones(cineId: string): void {
+    this.cargandoFunciones.set(true);
+    this.errorFunciones.set(false);
+    this.salasCine.set([]);
+    this.cinesSvc.funciones(this.peliculaId, cineId).subscribe({
+      next: (salas) => {
+        this.salasCine.set(salas);
+        this.cargandoFunciones.set(false);
+      },
+      error: () => {
+        this.salasCine.set([]);
+        this.cargandoFunciones.set(false);
+        this.errorFunciones.set(true);
       },
     });
   }

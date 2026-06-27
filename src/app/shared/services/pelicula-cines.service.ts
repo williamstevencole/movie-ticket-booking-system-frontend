@@ -45,6 +45,26 @@ type BackendCine = {
   salas: BackendSala[];
 };
 
+type BackendAsientos = {
+  total: number;
+  disponibles: number;
+  bloqueados: number;
+  reservados: number;
+  ocupados: number;
+};
+type BackendFuncionConDisp = {
+  id: string | number;
+  fecha_hora: string;
+  estado: string;
+  sala: { id: string | number; nombre: string };
+  asientos: BackendAsientos;
+};
+type BackendFuncionesPorCine = {
+  pelicula: { id: string | number; titulo: string };
+  cine: { id: string | number; nombre: string };
+  funciones: BackendFuncionConDisp[];
+};
+
 function pad(n: number): string {
   return String(n).padStart(2, '0');
 }
@@ -75,6 +95,38 @@ export class PeliculaCinesService {
     return this.http
       .get<BackendCine[]>(`${this.base}/${peliculaId}/cines`)
       .pipe(map((cines) => cines.map((c) => this.mapCine(c))));
+  }
+
+  /**
+   * Funciones de una película en un cine, con disponibilidad de asientos
+   * (GET /peliculas/:id/cines/:cineId/funciones). Devuelve las salas agrupadas.
+   */
+  funciones(peliculaId: string, cineId: string): Observable<SalaVM[]> {
+    return this.http
+      .get<BackendFuncionesPorCine>(`${this.base}/${peliculaId}/cines/${cineId}/funciones`)
+      .pipe(map((res) => this.groupBySala(res.funciones ?? [])));
+  }
+
+  private groupBySala(funciones: BackendFuncionConDisp[]): SalaVM[] {
+    const salas = new Map<string, SalaVM>();
+    for (const f of funciones) {
+      const salaId = toStr(f.sala.id);
+      let sala = salas.get(salaId);
+      if (!sala) {
+        sala = { id: salaId, nombre: f.sala.nombre, horarios: [] };
+        salas.set(salaId, sala);
+      }
+      sala.horarios.push({
+        funcionId: toStr(f.id),
+        fechaHora: f.fecha_hora,
+        hora: toHora(f.fecha_hora),
+        dia: toDia(f.fecha_hora),
+        estado: f.estado,
+        asientosLibres: f.asientos?.disponibles ?? 0,
+        capacidad: f.asientos?.total ?? 0,
+      });
+    }
+    return [...salas.values()];
   }
 
   private mapCine(c: BackendCine): CineFuncionesVM {
