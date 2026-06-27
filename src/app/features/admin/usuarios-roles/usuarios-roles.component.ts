@@ -11,18 +11,16 @@ import {
   LucidePowerOff,
   LucideX,
   LucideUsers,
-  LucideShieldCheck,
   LucideTriangleAlert,
   LucideUserRound,
-  LucideCheck,
 } from '@lucide/angular';
 
 import {
-  RolStaff,
   UsuarioStaff,
   UsuariosService,
 } from '../../../shared/services/usuarios.service';
 import { AdminSidebarComponent } from '../../../shared/components/admin-sidebar.component';
+import { extractMessage } from '../../../shared/utils/http-errors';
 
 type Toast = { kind: 'ok' | 'err'; text: string } | null;
 type ModalMode =
@@ -48,10 +46,8 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     LucidePowerOff,
     LucideX,
     LucideUsers,
-    LucideShieldCheck,
     LucideTriangleAlert,
     LucideUserRound,
-    LucideCheck,
   ],
   template: `
     <div class="admin-body">
@@ -62,195 +58,130 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             <div class="crumb">
               <a routerLink="/admin">Admin</a>
               <span aria-hidden="true">·</span>
-              <span class="crumb-current">Usuarios &amp; roles</span>
+              <span class="crumb-current">Administradores</span>
             </div>
             <div class="head-row">
               <div>
-                <h1>Usuarios &amp; roles</h1>
+                <h1>Administradores</h1>
                 <p class="lead">
-                  Gestiona el staff y sus accesos. {{ count('admin') }}
-                  administradores · {{ count('cliente') }} clientes.
+                  Gestiona el staff y sus accesos.
                 </p>
               </div>
-              @if (tab() === 'usuarios') {
-                <button class="btn btn-primary" (click)="openCreate()">
-                  <svg lucidePlus [size]="16"></svg>
-                  <span>Nuevo usuario</span>
-                </button>
-              }
+              <button class="btn btn-primary" (click)="openCreate()">
+                <svg lucidePlus [size]="16"></svg>
+                <span>Nuevo usuario</span>
+              </button>
             </div>
           </header>
 
-          <section class="tabs" role="tablist">
-            <button
-              class="tab"
-              role="tab"
-              [class.on]="tab() === 'usuarios'"
-              (click)="tab.set('usuarios')"
-            >
-              <svg lucideUsers [size]="15"></svg>
-              <span>Usuarios</span>
-            </button>
-            <button
-              class="tab"
-              role="tab"
-              [class.on]="tab() === 'roles'"
-              (click)="tab.set('roles')"
-            >
-              <svg lucideShieldCheck [size]="15"></svg>
-              <span>Roles</span>
-            </button>
+          <section class="toolbar">
+            <label class="search">
+              <svg lucideSearch [size]="16"></svg>
+              <input
+                class="search-input"
+                type="text"
+                placeholder="Buscar por nombre o email…"
+                [ngModel]="searchTerm()"
+                (ngModelChange)="searchTerm.set($event)"
+              />
+            </label>
+            <span class="result-count tnum">
+              {{ filtered().length }} de {{ usuarios().length }}
+            </span>
           </section>
 
-          @if (tab() === 'usuarios') {
-            <section class="toolbar">
-              <label class="search">
-                <svg lucideSearch [size]="16"></svg>
-                <input
-                  class="search-input"
-                  type="text"
-                  placeholder="Buscar por nombre o email…"
-                  [ngModel]="searchTerm()"
-                  (ngModelChange)="searchTerm.set($event)"
-                />
-              </label>
-              <div class="seg">
-                @for (r of rolFilters; track r.key) {
-                  <button
-                    class="seg-btn"
-                    [class.on]="rolFilter() === r.key"
-                    (click)="rolFilter.set(r.key)"
-                  >
-                    {{ r.label }}
-                  </button>
+          <section class="card">
+            @if (usuariosError()) {
+              <div class="error-banner" role="alert">
+                <span>{{ usuariosError() }}</span>
+                <button type="button" class="btn btn-sm" (click)="retryUsuarios()">Reintentar</button>
+              </div>
+            } @else if (loadingUsuarios() && usuarios().length === 0) {
+              <div class="skeleton-list">
+                @for (i of [1,2,3,4,5]; track i) {
+                  <div class="skeleton-row"></div>
                 }
               </div>
-              <span class="result-count tnum">
-                {{ filtered().length }} de {{ usuarios().length }}
-              </span>
-            </section>
-
-            <section class="card">
-              @if (filtered().length === 0) {
-                <div class="empty">
-                  <span class="empty-mark">
-                    <svg lucideUserRound [size]="22"></svg>
-                  </span>
-                  <h3>Sin resultados</h3>
-                  <p>Nada coincide con los filtros actuales.</p>
-                </div>
-              } @else {
-                <div class="table-scroll">
-                  <table class="tbl">
-                    <thead>
-                      <tr>
-                        <th>Usuario</th>
-                        <th>Rol</th>
-                        <th>Último acceso</th>
-                        <th>Estado</th>
-                        <th class="col-acc" aria-label="Acciones"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (u of filtered(); track u.id) {
-                        <tr [class.is-inactive]="!u.activo">
-                          <td>
-                            <div class="user-cell">
-                              <span class="avatar">{{ initials(u.nombre) }}</span>
-                              <div>
-                                <div class="nombre">{{ u.nombre }}</div>
-                                <div class="email">{{ u.email }}</div>
-                              </div>
+            } @else if (filtered().length === 0) {
+              <div class="empty">
+                <span class="empty-mark">
+                  <svg lucideUserRound [size]="22"></svg>
+                </span>
+                <h3>Sin resultados</h3>
+                <p>Nada coincide con los filtros actuales.</p>
+              </div>
+            } @else {
+              <div class="table-scroll">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Usuario</th>
+                      <th>Último acceso</th>
+                      <th>Estado</th>
+                      <th class="col-acc" aria-label="Acciones"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (u of filtered(); track u.id) {
+                      <tr [class.is-inactive]="!u.activo">
+                        <td>
+                          <div class="user-cell">
+                            <span class="avatar">{{ initials(u.nombre) }}</span>
+                            <div>
+                              <div class="nombre">{{ u.nombre }}</div>
+                              <div class="email">{{ u.email }}</div>
                             </div>
-                          </td>
-                          <td>
-                            <span class="rol-badge" [class.admin]="u.rol === 'admin'">
-                              {{ rolLabel(u.rol) }}
-                            </span>
-                          </td>
-                          <td class="muted tnum">{{ fmtAcceso(u.ultimoAcceso) }}</td>
-                          <td>
-                            <span
-                              class="estado-badge"
-                              [class.activo]="u.activo"
-                              [class.inactivo]="!u.activo"
+                          </div>
+                        </td>
+                        <td class="muted tnum">{{ fmtAcceso(u.ultimoAcceso) }}</td>
+                        <td>
+                          <span
+                            class="estado-badge"
+                            [class.activo]="u.activo"
+                            [class.inactivo]="!u.activo"
+                          >
+                            {{ u.activo ? 'Activo' : 'Inactivo' }}
+                          </span>
+                        </td>
+                        <td class="col-acc">
+                          <div class="row-acc">
+                            <button
+                              class="icon-btn"
+                              (click)="openEdit(u)"
+                              title="Editar"
+                              aria-label="Editar usuario"
                             >
-                              {{ u.activo ? 'Activo' : 'Inactivo' }}
-                            </span>
-                          </td>
-                          <td class="col-acc">
-                            <div class="row-acc">
-                              <button
-                                class="icon-btn"
-                                (click)="openEdit(u)"
-                                title="Editar"
-                                aria-label="Editar usuario"
-                              >
-                                <svg lucidePencil [size]="15"></svg>
-                              </button>
-                              <button
-                                class="icon-btn"
-                                (click)="resetPassword(u)"
-                                title="Resetear contraseña"
-                                aria-label="Resetear contraseña"
-                              >
-                                <svg lucideKeyRound [size]="15"></svg>
-                              </button>
-                              <button
-                                class="icon-btn"
-                                [class.danger]="u.activo"
-                                (click)="toggle(u)"
-                                [title]="u.activo ? 'Desactivar' : 'Activar'"
-                              >
-                                @if (u.activo) {
-                                  <svg lucidePower [size]="15"></svg>
-                                } @else {
-                                  <svg lucidePowerOff [size]="15"></svg>
-                                }
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              }
-            </section>
-          } @else {
-            <section class="roles-grid">
-              <article class="role-card">
-                <header>
-                  <span class="role-mark admin"><svg lucideShieldCheck [size]="18"></svg></span>
-                  <div>
-                    <h3>Administrador</h3>
-                    <span class="role-count">{{ count('admin') }} usuarios</span>
-                  </div>
-                </header>
-                <ul class="perms">
-                  <li><svg lucideCheck [size]="14"></svg> Acceso a todos los cines</li>
-                  <li><svg lucideCheck [size]="14"></svg> Gestión de catálogo, funciones y precios</li>
-                  <li><svg lucideCheck [size]="14"></svg> Procesar reembolsos y políticas</li>
-                  <li><svg lucideCheck [size]="14"></svg> Administrar usuarios y roles</li>
-                </ul>
-              </article>
-              <article class="role-card">
-                <header>
-                  <span class="role-mark"><svg lucideUserRound [size]="18"></svg></span>
-                  <div>
-                    <h3>Cliente</h3>
-                    <span class="role-count">{{ count('cliente') }} usuarios</span>
-                  </div>
-                </header>
-                <ul class="perms">
-                  <li><svg lucideCheck [size]="14"></svg> Comprar y reservar boletos</li>
-                  <li><svg lucideCheck [size]="14"></svg> Ver historial y gestionar boletos</li>
-                  <li><svg lucideCheck [size]="14"></svg> Calificar películas</li>
-                  <li class="off">Sin acceso a configuración del sistema</li>
-                </ul>
-              </article>
-            </section>
-          }
+                              <svg lucidePencil [size]="15"></svg>
+                            </button>
+                            <button
+                              class="icon-btn"
+                              (click)="resetPassword(u)"
+                              title="Resetear contraseña"
+                              aria-label="Resetear contraseña"
+                            >
+                              <svg lucideKeyRound [size]="15"></svg>
+                            </button>
+                            <button
+                              class="icon-btn"
+                              [class.danger]="u.activo"
+                              (click)="toggle(u)"
+                              [title]="u.activo ? 'Desactivar' : 'Activar'"
+                            >
+                              @if (u.activo) {
+                                <svg lucidePower [size]="15"></svg>
+                              } @else {
+                                <svg lucidePowerOff [size]="15"></svg>
+                              }
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </section>
         </div>
       </main>
     </div>
@@ -291,32 +222,10 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 autocomplete="off"
               />
             </div>
-            <div class="field mt">
-              <label>Rol</label>
-              <div class="seg seg-block">
-                <button
-                  class="seg-btn"
-                  [class.on]="formRol() === 'cliente'"
-                  (click)="formRol.set('cliente')"
-                >
-                  Cliente
-                </button>
-                <button
-                  class="seg-btn"
-                  [class.on]="formRol() === 'admin'"
-                  (click)="formRol.set('admin')"
-                >
-                  Administrador
-                </button>
-              </div>
+            <div class="info-row mt">
+              <svg lucideUsers [size]="15"></svg>
+              <span>Los administradores tienen acceso a <strong>todos los cines</strong>.</span>
             </div>
-
-            @if (formRol() === 'admin') {
-              <div class="info-row mt">
-                <svg lucideShieldCheck [size]="15"></svg>
-                <span>Los administradores tienen acceso a <strong>todos los cines</strong>.</span>
-              </div>
-            }
 
             @if (modalError()) {
               <div class="alert">
@@ -374,31 +283,22 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export class AdminUsuariosRolesComponent {
   private svc = inject(UsuariosService);
 
-  readonly rolFilters: { key: 'todos' | RolStaff; label: string }[] = [
-    { key: 'todos', label: 'Todos' },
-    { key: 'admin', label: 'Admins' },
-    { key: 'cliente', label: 'Clientes' },
-  ];
-
-  readonly tab = signal<'usuarios' | 'roles'>('usuarios');
   readonly usuarios = signal<UsuarioStaff[]>([]);
+  readonly loadingUsuarios = signal(false);
+  readonly usuariosError = signal<string | null>(null);
   readonly searchTerm = signal('');
-  readonly rolFilter = signal<'todos' | RolStaff>('todos');
 
   readonly modal = signal<ModalMode>({ kind: 'closed' });
   readonly modalError = signal<string | null>(null);
   readonly formNombre = signal('');
   readonly formEmail = signal('');
-  readonly formRol = signal<RolStaff>('cliente');
 
   readonly resetResult = signal<{ nombre: string; pwd: string } | null>(null);
   readonly toast = signal<Toast>(null);
 
   readonly filtered = computed(() => {
     const q = this.searchTerm().trim().toLowerCase();
-    const rol = this.rolFilter();
     return this.usuarios().filter((u) => {
-      if (rol !== 'todos' && u.rol !== rol) return false;
       if (!q) return true;
       return (
         u.nombre.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
@@ -416,10 +316,6 @@ export class AdminUsuariosRolesComponent {
     this.refresh();
   }
 
-  count(rol: RolStaff): number {
-    return this.usuarios().filter((u) => u.rol === rol).length;
-  }
-
   initials(nombre: string): string {
     return nombre
       .split(' ')
@@ -427,10 +323,6 @@ export class AdminUsuariosRolesComponent {
       .slice(0, 2)
       .map((p) => p[0]!.toUpperCase())
       .join('');
-  }
-
-  rolLabel(rol: RolStaff): string {
-    return rol === 'admin' ? 'Administrador' : 'Cliente';
   }
 
   fmtAcceso(iso: string | null): string {
@@ -447,7 +339,6 @@ export class AdminUsuariosRolesComponent {
   openCreate() {
     this.formNombre.set('');
     this.formEmail.set('');
-    this.formRol.set('cliente');
     this.modalError.set(null);
     this.modal.set({ kind: 'create' });
   }
@@ -455,7 +346,6 @@ export class AdminUsuariosRolesComponent {
   openEdit(u: UsuarioStaff) {
     this.formNombre.set(u.nombre);
     this.formEmail.set(u.email);
-    this.formRol.set(u.rol);
     this.modalError.set(null);
     this.modal.set({ kind: 'edit', usuario: u });
   }
@@ -467,30 +357,27 @@ export class AdminUsuariosRolesComponent {
 
   submitModal() {
     if (!this.canSubmit()) return;
-    const payload = {
-      nombre: this.formNombre().trim(),
-      email: this.formEmail().trim(),
-      rol: this.formRol(),
-    };
+    const nombre = this.formNombre().trim();
+    const email = this.formEmail().trim();
     const mode = this.modal();
 
     if (mode.kind === 'create') {
-      this.svc.create(payload).subscribe({
+      this.svc.create({ nombre, email }).subscribe({
         next: () => {
           this.refresh();
           this.closeModal();
-          this.showToast('ok', `${payload.nombre} creado`);
+          this.showToast('ok', `${nombre} creado`);
         },
-        error: (e) => this.modalError.set(e?.message ?? 'No se pudo crear'),
+        error: (e) => this.modalError.set(extractMessage(e)),
       });
     } else if (mode.kind === 'edit') {
-      this.svc.update(mode.usuario.id, payload).subscribe({
+      this.svc.update(mode.usuario.id, { nombre, email }).subscribe({
         next: () => {
           this.refresh();
           this.closeModal();
-          this.showToast('ok', `${payload.nombre} actualizado`);
+          this.showToast('ok', `${nombre} actualizado`);
         },
-        error: (e) => this.modalError.set(e?.message ?? 'No se pudo guardar'),
+        error: (e) => this.modalError.set(extractMessage(e)),
       });
     }
   }
@@ -503,14 +390,14 @@ export class AdminUsuariosRolesComponent {
         this.refresh();
         this.showToast('ok', `${u.nombre} ${u.activo ? 'desactivado' : 'activado'}`);
       },
-      error: (e) => this.showToast('err', e?.message ?? 'No se pudo actualizar'),
+      error: (e) => this.showToast('err', extractMessage(e)),
     });
   }
 
   resetPassword(u: UsuarioStaff) {
     this.svc.resetPassword(u.id).subscribe({
       next: (res) => this.resetResult.set({ nombre: u.nombre, pwd: res.tempPassword }),
-      error: (e) => this.showToast('err', e?.message ?? 'No se pudo resetear'),
+      error: (e) => this.showToast('err', extractMessage(e)),
     });
   }
 
@@ -522,7 +409,22 @@ export class AdminUsuariosRolesComponent {
   }
 
   private refresh() {
-    this.svc.list().subscribe((data) => this.usuarios.set(data));
+    this.loadingUsuarios.set(true);
+    this.usuariosError.set(null);
+    this.svc.list().subscribe({
+      next: (data) => {
+        this.usuarios.set(data);
+        this.loadingUsuarios.set(false);
+      },
+      error: (err) => {
+        this.usuariosError.set(extractMessage(err));
+        this.loadingUsuarios.set(false);
+      },
+    });
+  }
+
+  retryUsuarios(): void {
+    this.refresh();
   }
 
   private showToast(kind: 'ok' | 'err', text: string) {
