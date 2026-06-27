@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TarjetaComponent } from './tarjeta/tarjeta.component';
 import { EfectivoComponent } from './efectivo/efectivo.component';
 import { CuponComponent } from '../cupon/cupon.component';
@@ -41,6 +41,7 @@ export class MetodosPagoComponent implements OnInit {
   private readonly metodosPagoSvc = inject(MetodosPagoService);
   private readonly auth = inject(AuthService);
   private readonly pagosSvc = inject(PagosService);
+  private readonly route = inject(ActivatedRoute);
 
   readonly pelicula = signal('Spider-Man: Across the Spider-Verse');
   readonly cine = signal('Cinetario Mall');
@@ -78,9 +79,12 @@ export class MetodosPagoComponent implements OnInit {
   );
 
   ngOnInit(): void {
+    const reservaId = this.route.snapshot.queryParamMap.get('reserva');
+    if (reservaId) this.idReserva.set(reservaId);
+
     this.metodosPagoSvc.listar().subscribe((list) => {
       this.tarjetasGuardadas.set(list);
-      const predeterminado = list.find((m) => m.predeterminado);
+      const predeterminado = list.find((m) => m.predeterminado);      
       if (predeterminado) {
         this.tarjetaSeleccionadaId.set(predeterminado.id);
         this.mostrarFormNueva.set(false);
@@ -113,7 +117,6 @@ export class MetodosPagoComponent implements OnInit {
     this.pagoError.set(null);
 
     if (this.metodoPago() === 'efectivo') {
-      // Efectivo is admin-only via API. For cliente self-service: show result as "pending taquilla".
       this.checkoutStateSvc.setResultado({
         resultado: 'exito',
         email: this.auth.user()?.email ?? '',
@@ -129,11 +132,8 @@ export class MetodosPagoComponent implements OnInit {
       return;
     }
 
-    // Tarjeta flow: POST /api/pagos
     const idReserva = this.idReserva();
     if (!idReserva) {
-      // No real reservation id available (e.g. UI not yet fully wired to booking flow)
-      // Fall through to success screen with existing state
       this.checkoutStateSvc.setResultado({
         resultado: 'exito',
         email: this.auth.user()?.email ?? '',

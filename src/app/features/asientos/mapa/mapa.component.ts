@@ -22,6 +22,7 @@ import {
   AsientosService,
   AsientoFuncion,
 } from '../../../shared/services/asientos.service';
+import { CheckoutStateService } from '../../checkout/checkout-state.service';
 import { ToastService } from '../../../shared/services/toast.service';
 
 // Minimal shape passed into the template seat grid
@@ -52,6 +53,8 @@ export class MapaComponent implements OnInit {
   private readonly asientosSvc = inject(AsientosService);
   private readonly toastSvc = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly checkoutStateSvc = inject(CheckoutStateService);
+  readonly cargando = signal(false);
 
   readonly funcionId = signal<string | null>(null);
 
@@ -186,7 +189,27 @@ export class MapaComponent implements OnInit {
   }
 
   continuarAPago(): void {
-    this.router.navigate(['/checkout/metodos-pago']);
+    const funcionId = this.funcionId();
+    if (!funcionId) return;
+
+    this.cargando.set(true);
+
+    this.checkoutStateSvc
+      .confirmarReserva(funcionId, this.asientosSeleccionados())
+      .subscribe({
+        next: (reserva) => {
+          this.cargando.set(false);
+          this.router.navigate(['/checkout/metodos-pago'], {
+            queryParams: { reserva: reserva.id_reserva },
+          });
+        },
+        error: (err) => {
+          this.cargando.set(false);
+          if (err?.code !== 'SEAT_CONFLICT') {
+            this.cargarMapa(funcionId, false);
+          }
+        },
+      });
   }
 
   private cargarMapa(idFuncion: string, initial: boolean): void {
