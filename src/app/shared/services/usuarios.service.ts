@@ -11,10 +11,21 @@ export type UsuarioStaff = {
   id: string;
   nombre: string;
   email: string;
+  telefono: string | null;
   rol: RolStaff;
   notificaciones_activas: boolean;
   ultimo_acceso: string | null;
   activo: boolean;
+  created_at: string;
+};
+
+export type MiPerfil = {
+  id: string;
+  nombre: string;
+  email: string;
+  telefono: string | null;
+  notificaciones_activas: boolean;
+  estado: string;
   created_at: string;
 };
 
@@ -40,14 +51,11 @@ export type ActualizarPasswordInput = {
   newPassword: string;
 };
 
-export type ToggleNotificacionesResponse = {
-  notificaciones_activas: boolean;
-};
-
 type BackendUsuario = {
   id: string | number;
   nombre: string;
   email: string;
+  telefono?: string | null;
   rol: RolStaff;
   notificaciones_activas: boolean;
   ultimo_acceso: string | null;
@@ -60,6 +68,7 @@ function mapBackendUsuario(u: BackendUsuario): UsuarioStaff {
     id: toStr(u.id),
     nombre: u.nombre,
     email: u.email,
+    telefono: u.telefono ?? null,
     rol: u.rol,
     notificaciones_activas: u.notificaciones_activas,
     ultimo_acceso: u.ultimo_acceso,
@@ -109,6 +118,10 @@ export class UsuariosService {
     );
   }
 
+  getMiPerfil(): Observable<MiPerfil> {
+    return this.http.get<MiPerfil>(`${API_URL}/me/perfil`);
+  }
+
   actualizarMiPerfil(input: ActualizarMiPerfilInput): Observable<UsuarioStaff> {
     return this.http
       .patch<BackendUsuario>(`${API_URL}/me/perfil`, input)
@@ -125,12 +138,7 @@ export class UsuariosService {
     );
   }
 
-  toggleNotificaciones(
-    id: string,
-  ): Observable<ToggleNotificacionesResponse> {
-    return this.http.patch<ToggleNotificacionesResponse>(
-      `${API_URL}/admin/users/${id}/notificaciones`,
-      {},
-    );
+  eliminarMiCuenta(): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${API_URL}/me/cuenta`);
   }
 }
