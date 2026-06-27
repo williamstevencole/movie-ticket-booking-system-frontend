@@ -60,10 +60,10 @@ import { RatingDisplayComponent } from '../../../shared/components/rating-displa
             }
           </div>
           <div class="film-cta">
-            <a href="#funciones" class="btn btn-primary btn-lg">
+            <button type="button" class="btn btn-primary btn-lg" (click)="scrollToFunciones()">
               <svg lucidePlay [size]="16"></svg>
               Ver funciones
-            </a>
+            </button>
             <button type="button" class="btn btn-lg btn-trailer">Tráiler oficial</button>
           </div>
         </div>
@@ -74,4 +74,11 @@ import { RatingDisplayComponent } from '../../../shared/components/rating-displa
 })
 export class PeliculaHeroComponent {
   @Input({ required: true }) pelicula!: PeliculaDetalle;
+
+  /** Scroll a la sección de funciones (anchorScrolling del router está deshabilitado). */
+  scrollToFunciones(): void {
+    document
+      .getElementById('funciones')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }

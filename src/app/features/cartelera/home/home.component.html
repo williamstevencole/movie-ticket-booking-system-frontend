@@ -16,35 +16,48 @@
       </a>
     </div>
 
-    <div class="movie-grid">
-      @for (p of filtered(); track p.id) {
-        <a [routerLink]="['/pelicula', p.id]" class="movie-card">
-          <div class="poster" [class]="p.poster">
-            <app-poster-badge [tipo]="p.badge ?? null" [fecha]="p.badgeFecha" />
-            <span class="title-overlay">{{ p.titulo }}</span>
-          </div>
-          <div class="body">
-            <h3 class="title">{{ p.titulo }}</h3>
-            <app-rating-display [promedio]="p.rating_promedio" [count]="p.rating_count ?? 0" size="sm" />
-            <div class="meta">
-              <span>{{ p.genero }}</span>
-              <span class="sep">·</span>
-              <span>{{ p.duracion }}</span>
-              <span class="sep">·</span>
-              <span>{{ p.idioma }}</span>
+    @if (cargando()) {
+      <div class="movie-grid">
+        @for (s of [1, 2, 3, 4]; track s) {
+          <div class="movie-card skeleton">
+            <div class="poster"></div>
+            <div class="body">
+              <div class="sk-line"></div>
+              <div class="sk-line short"></div>
             </div>
-            <div class="times">
-              @for (f of p.funciones; track f.hora) {
-                <span
-                  class="time tnum"
-                  [class.full]="f.asientosLibres <= 0"
-                >{{ f.hora }}</span>
+          </div>
+        }
+      </div>
+    } @else if (error()) {
+      <p class="cartelera-empty">No pudimos cargar la cartelera. Intentá de nuevo.</p>
+    } @else {
+      <div class="movie-grid">
+        @for (p of filtered(); track p.id) {
+          <a [routerLink]="['/pelicula', p.id]" class="movie-card">
+            <div class="poster" [class]="p.poster">
+              @if (p.poster_url) {
+                <img [src]="p.poster_url" [alt]="p.titulo" loading="lazy" />
               }
+              <app-poster-badge [tipo]="p.badge ?? null" [fecha]="p.badgeFecha" />
+              <span class="title-overlay">{{ p.titulo }}</span>
             </div>
-          </div>
-        </a>
-      }
-    </div>
+            <div class="body">
+              <h3 class="title">{{ p.titulo }}</h3>
+              <app-rating-display [promedio]="p.rating_promedio" [count]="p.rating_count ?? 0" size="sm" />
+              <div class="meta">
+                <span>{{ p.genero }}</span>
+                <span class="sep">·</span>
+                <span>{{ p.duracion }}</span>
+                <span class="sep">·</span>
+                <span>{{ p.idioma }}</span>
+              </div>
+            </div>
+          </a>
+        } @empty {
+          <p class="cartelera-empty">No hay películas en cartelera para tu ciudad.</p>
+        }
+      </div>
+    }
   </section>
 </main>
 
