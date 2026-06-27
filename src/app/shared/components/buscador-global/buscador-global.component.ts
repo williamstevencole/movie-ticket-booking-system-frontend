@@ -2,9 +2,10 @@ import { Component, inject, signal, DestroyRef, HostListener } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { LucideSearch, LucideX } from '@lucide/angular';
-import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, of, catchError, Subject } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MOCK_BUSQUEDA_SUGERENCIAS } from '../../../mocks/data/cartelera-display.mock';
+import { CarteleraService } from '../../services/cartelera.service';
+import { CarteleraPelicula } from '../../../mocks/data/cartelera-display.mock';
 
 const RECENT_KEY = 'cinetario_busqueda_recientes';
 
@@ -58,7 +59,11 @@ const RECENT_KEY = 'cinetario_busqueda_recientes';
                     [routerLink]="['/pelicula', p.id]"
                     (click)="pick(p.titulo)"
                   >
-                    <span class="mini-poster poster" [class]="p.poster"></span>
+                    <span class="mini-poster poster" [class]="p.poster">
+                      @if (p.poster_url) {
+                        <img [src]="p.poster_url" [alt]="p.titulo" loading="lazy" />
+                      }
+                    </span>
                     <span>
                       <span class="ti">{{ p.titulo }}</span>
                       <span class="me">{{ p.genero }}</span>
@@ -66,7 +71,13 @@ const RECENT_KEY = 'cinetario_busqueda_recientes';
                   </a>
                 </li>
               } @empty {
-                <li class="empty">Sin resultados para «{{ query() }}»</li>
+                <li class="empty">
+                  @if (cargando()) {
+                    Buscando…
+                  } @else {
+                    Sin resultados para «{{ query() }}»
+                  }
+                </li>
               }
             </ul>
           }
@@ -79,29 +90,34 @@ const RECENT_KEY = 'cinetario_busqueda_recientes';
 export class BuscadorGlobalComponent {
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
+  private cartelera = inject(CarteleraService);
   private search$ = new Subject<string>();
 
   readonly visible = signal(false);
   readonly query = signal('');
-  readonly resultados = signal(MOCK_BUSQUEDA_SUGERENCIAS);
+  readonly cargando = signal(false);
+  readonly resultados = signal<CarteleraPelicula[]>([]);
   readonly recientes = signal<string[]>(this.loadRecientes());
 
   constructor() {
     this.search$
-      .pipe(debounceTime(250), distinctUntilChanged(), takeUntilDestroyed())
-      .subscribe((q) => {
-        const term = q.trim().toLowerCase();
-        if (!term) {
-          this.resultados.set(MOCK_BUSQUEDA_SUGERENCIAS);
-          return;
-        }
-        this.resultados.set(
-          MOCK_BUSQUEDA_SUGERENCIAS.filter(
-            (p) =>
-              p.titulo.toLowerCase().includes(term) ||
-              p.genero.toLowerCase().includes(term),
-          ),
-        );
+      .pipe(
+        debounceTime(250),
+        distinctUntilChanged(),
+        switchMap((q) => {
+          const term = q.trim();
+          if (!term) {
+            this.cargando.set(false);
+            return of([] as CarteleraPelicula[]);
+          }
+          this.cargando.set(true);
+          return this.cartelera.buscar(term, 6).pipe(catchError(() => of([] as CarteleraPelicula[])));
+        }),
+        takeUntilDestroyed(),
+      )
+      .subscribe((list) => {
+        this.resultados.set(list);
+        this.cargando.set(false);
       });
   }
 

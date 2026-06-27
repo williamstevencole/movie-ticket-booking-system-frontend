@@ -1,8 +1,7 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { MOCK_CINES } from '../../mocks/data/cines.mock';
-import { MOCK_PRECIOS_DEFAULTS, MOCK_PRECIOS_OVERRIDES } from '../../mocks/data/precios.mock';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+import { API_URL } from '../../core/config/env';
 
 // ── Schema-aligned flat type ────────────────────────────────────────────────
 
@@ -13,7 +12,8 @@ export type PrecioCine = {
   precio: number;
 };
 
-// ── Backend matrix response type (Task 18 shape) ────────────────────────────
+// ── Backend matrix response type ─────────────────────────────────────────────
+// Matches GET /admin/precios/matriz exactly (confirmed Task 0 gap analysis)
 
 export type BackendPreciosMatriz = {
   tipos_asiento: Array<{ id: string; nombre: string; color?: string }>;
@@ -24,6 +24,16 @@ export type BackendPreciosMatriz = {
     ciudad: string;
     precios: Record<string, number | null>;
   }>;
+};
+
+// ── Backend flat precio-cine item (GET /admin/precios/cine/:id) ──────────────
+
+type BackendPrecioCineItem = {
+  id: string;
+  id_cine: string;
+  id_tipo_asiento: string;
+  precio: string | number;
+  tipo_asiento?: { id: string; nombre: string; color?: string };
 };
 
 // ── Backwards-compat view types (used by admin/precios matrix UI) ───────────
@@ -56,23 +66,50 @@ export type GuardarMatrizInput = {
   cines: { cineId: string; precios: Record<string, number | null> }[];
 };
 
-const MOCK_TIPOS: PrecioTipoCol[] = [
-  { id: 'std', nombre: 'Estándar', color: '#6B7280' },
-  { id: 'vip', nombre: 'VIP', color: '#F59E0B' },
-  { id: 'acc', nombre: 'Accesible', color: '#3B82F6' },
-];
+// ── Pure mappers ─────────────────────────────────────────────────────────────
 
-function buildMatriz(): PreciosMatriz {
-  const cineRows: PrecioCineRow[] = MOCK_CINES.slice(0, 8).map((c) => ({
-    cineId: c.id,
-    cineNombre: c.nombre,
-    ciudad: c.id_ciudad,
-    precios: { ...(MOCK_PRECIOS_OVERRIDES[c.id] ?? {}) },
-  }));
+/** Coerce backend precio string "100" or number 100 to number. */
+function toNum(v: string | number | null | undefined): number {
+  if (v === null || v === undefined) return 0;
+  const n = Number(v);
+  return isFinite(n) ? n : 0;
+}
+
+/**
+ * Maps BackendPreciosMatriz → PreciosMatriz.
+ * Field renames: tipos_asiento → tipos, cine id → cineId, nombre → cineNombre.
+ */
+function mapBackendMatriz(res: BackendPreciosMatriz): PreciosMatriz {
   return {
-    tipos: MOCK_TIPOS,
-    defaults: { ...MOCK_PRECIOS_DEFAULTS },
-    cines: cineRows,
+    tipos: res.tipos_asiento.map((t) => ({
+      id: t.id,
+      nombre: t.nombre,
+      color: t.color ?? '#6B7280',
+    })),
+    defaults: { ...res.defaults },
+    cines: res.cines.map((c) => ({
+      cineId: c.id,
+      cineNombre: c.nombre,
+      ciudad: c.ciudad,
+      precios: Object.fromEntries(
+        Object.entries(c.precios).map(([k, v]) => [k, v === null ? null : toNum(v)]),
+      ),
+    })),
+  };
+}
+
+/**
+ * Reverse-maps GuardarMatrizInput → GuardarMatrizDto body.
+ * Frontend uses cineId; DTO accepts id_cine (or id).
+ * precio strings coerced to number before sending.
+ */
+function mapInputToDto(input: GuardarMatrizInput): object {
+  return {
+    defaults: input.defaults,
+    cines: input.cines.map((c) => ({
+      id_cine: c.cineId,
+      precios: c.precios,
+    })),
   };
 }
 
@@ -80,53 +117,37 @@ function buildMatriz(): PreciosMatriz {
 
 @Injectable({ providedIn: 'root' })
 export class PreciosService {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${API_URL}/admin/precios`;
+
   /** GET /api/admin/precios/matriz */
   getMatriz(): Observable<PreciosMatriz> {
-    return of(buildMatriz()).pipe(delay(120));
+    return this.http
+      .get<BackendPreciosMatriz>(`${this.base}/matriz`)
+      .pipe(map(mapBackendMatriz));
   }
 
-  /** POST /api/admin/precios/matriz */
+  /** POST /api/admin/precios/matriz — saves and returns the updated matrix */
   guardar(input: GuardarMatrizInput): Observable<PreciosMatriz> {
-    // Echo back the input shaped as PreciosMatriz
-    const resultado: PreciosMatriz = {
-      tipos: MOCK_TIPOS,
-      defaults: { ...input.defaults },
-      cines: input.cines.map((c) => {
-        const cine = MOCK_CINES.find((mc) => mc.id === c.cineId);
-        return {
-          cineId: c.cineId,
-          cineNombre: cine?.nombre ?? c.cineId,
-          ciudad: cine?.id_ciudad ?? '',
-          precios: { ...c.precios },
-        };
-      }),
-    };
-    return of(resultado).pipe(delay(120));
+    return this.http
+      .post<BackendPreciosMatriz>(`${this.base}/matriz`, mapInputToDto(input))
+      .pipe(map(mapBackendMatriz));
   }
 
   /** GET /api/admin/precios/cine/:idCine */
   listarPorCine(idCine: string): Observable<PrecioCine[]> {
-    const overrides = MOCK_PRECIOS_OVERRIDES[idCine] ?? {};
-    const items: PrecioCine[] = MOCK_TIPOS.map((t, i) => ({
-      id: `pc-${idCine}-${t.id}`,
-      id_cine: idCine,
-      id_tipo_asiento: t.id,
-      precio: overrides[t.id] ?? MOCK_PRECIOS_DEFAULTS[t.id] ?? 75,
-    }));
-    return of(items).pipe(delay(120));
-  }
-
-  /** @deprecated Use getMatriz() + guardar() for matrix UI */
-  listar(): Observable<PrecioCine[]> {
-    const items: PrecioCine[] = MOCK_CINES.slice(0, 5).flatMap((c) =>
-      MOCK_TIPOS.map((t) => ({
-        id: `pc-${c.id}-${t.id}`,
-        id_cine: c.id,
-        id_tipo_asiento: t.id,
-        precio: MOCK_PRECIOS_OVERRIDES[c.id]?.[t.id] ?? MOCK_PRECIOS_DEFAULTS[t.id] ?? 75,
-      })),
-    );
-    return of(items).pipe(delay(120));
+    return this.http
+      .get<BackendPrecioCineItem[]>(`${this.base}/cine/${idCine}`)
+      .pipe(
+        map((items) =>
+          items.map((item) => ({
+            id: item.id,
+            id_cine: item.id_cine,
+            id_tipo_asiento: item.id_tipo_asiento,
+            precio: toNum(item.precio),
+          })),
+        ),
+      );
   }
 
   /** Derive the minimum precio for a given cine from a flat list. */

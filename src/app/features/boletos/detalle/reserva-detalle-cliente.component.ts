@@ -17,11 +17,12 @@ import {
 import { AppbarComponent } from '../../../shared/components/appbar/appbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
 import { AuthService } from '../../../shared/services/auth.service';
-import { Reserva, EstadoReserva, ReservasService } from '../../../shared/services/reservas.service';
+import { EstadoReserva } from '../../../shared/services/reservas.service';
+import { MisReservasService, Boleto } from '../../../shared/services/mis-reservas.service';
 import { Funcion, FuncionesService } from '../../../shared/services/funciones.service';
 import { Pelicula, PeliculasService } from '../../../shared/services/peliculas.service';
 import { Cine, CinesService } from '../../../shared/services/cines.service';
-import { Pago, PagosService } from '../../../shared/services/pagos.service';
+import { Pago } from '../../../shared/services/pagos.service';
 import {
   PoliticasCancelacionService,
   PoliticaCancelacion,
@@ -56,11 +57,10 @@ export class ReservaDetalleClienteComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
-  private readonly reservasSvc = inject(ReservasService);
+  private readonly misReservasSvc = inject(MisReservasService);
   private readonly funcionesSvc = inject(FuncionesService);
   private readonly peliculasSvc = inject(PeliculasService);
   private readonly cinesSvc = inject(CinesService);
-  private readonly pagosSvc = inject(PagosService);
   private readonly politicasSvc = inject(PoliticasCancelacionService);
 
   readonly nav = [
@@ -73,7 +73,7 @@ export class ReservaDetalleClienteComponent {
   // ── Estado ────────────────────────────────────────────────────
   readonly cargando = signal(true);
   readonly error = signal<string | null>(null);
-  readonly reserva = signal<Reserva | null>(null);
+  readonly reserva = signal<Boleto | null>(null);
   readonly pelicula = signal<Pelicula | null>(null);
   readonly cine = signal<Cine | null>(null);
   readonly funcion = signal<Funcion | null>(null);
@@ -159,6 +159,9 @@ export class ReservaDetalleClienteComponent {
     () => this.politicas().find((p) => p.activa) ?? null,
   );
 
+  /** Boleto doesn't have num_asientos — derive from asientos array. */
+  readonly numAsientos = computed(() => this.reserva()?.asientos?.length ?? 0);
+
   // ── Constructor / carga ───────────────────────────────────────
   constructor() {
     const numero = this.route.snapshot.paramMap.get('numero');
@@ -168,15 +171,9 @@ export class ReservaDetalleClienteComponent {
       return;
     }
 
-    this.reservasSvc.list().subscribe({
+    this.misReservasSvc.list().subscribe({
       next: (all) => {
-        const userId = this.auth.user()?.id;
-        let mine = userId ? all.filter((r) => r.id_usuario === userId) : all;
-        // MOCK FALLBACK: si el usuario logueado no tiene reservas en los mocks
-        // (los mocks usan u-1…u-12 y el usuario real puede tener otro id)
-        if (mine.length === 0) mine = all;
-
-        const reserva = mine.find((r) => r.numero_reserva === numero) ?? null;
+        const reserva = all.find((r) => r.numero_reserva === numero) ?? null;
         if (!reserva) {
           this.error.set('Esta reserva no existe o no es tuya.');
           this.cargando.set(false);
@@ -184,18 +181,15 @@ export class ReservaDetalleClienteComponent {
         }
         this.reserva.set(reserva);
 
-        // Carga en cadena: funcion → pelicula + cine + pago + politicas
+        // Derive pago inline from the boleto's embedded snapshot fields.
+        // Boleto already carries monto_total, ultimos4_snapshot, marca_snapshot from
+        // /me/reservas — no need to hit /admin/pagos/reserva/:id (admin-gated, 403 for normal users).
+        this.pago.set(this.pagoFromBoleto(reserva));
+
+        // Carga en cadena: funcion → pelicula + cine + politicas
         this.funcionesSvc.getById(reserva.id_funcion).subscribe({
           next: (funcion) => {
             this.funcion.set(funcion);
-
-            // pago — getByReserva returns array, take the first exitoso/reembolsado
-            this.pagosSvc.getByReserva(reserva.id).subscribe({
-              next: (ps) => this.pago.set(
-                ps.find((p) => p.estado === 'exitoso' || p.estado === 'reembolsado') ?? ps[0] ?? null
-              ),
-              error: () => this.pago.set(null),
-            });
 
             // pelicula
             this.peliculasSvc.getById(funcion.id_pelicula).subscribe({
@@ -240,6 +234,35 @@ export class ReservaDetalleClienteComponent {
   }
 
   // ── Helpers ───────────────────────────────────────────────────
+
+  /**
+   * Build a minimal Pago view-model from the Boleto's embedded snapshot fields.
+   * This avoids calling GET /admin/pagos/reserva/:id (admin-gated) from a client page.
+   * The Boleto shape from /me/reservas already carries monto_total, ultimos4_snapshot,
+   * and marca_snapshot, which is everything the template needs.
+   */
+  private pagoFromBoleto(b: Boleto): Pago {
+    const metodo: 'tarjeta' | 'efectivo' = b.ultimos4_snapshot ? 'tarjeta' : 'efectivo';
+    const estadoMap: Record<string, 'exitoso' | 'reembolsado' | 'procesando' | 'rechazado'> = {
+      pagada: 'exitoso',
+      cancelada: 'reembolsado',
+      reembolsada: 'reembolsado',
+    };
+    return {
+      id: b.id,
+      id_reserva: b.id,
+      monto_original: b.monto_total,
+      monto_descuento: 0,
+      monto_final: b.monto_total,
+      metodo,
+      estado: estadoMap[b.estado] ?? 'procesando',
+      referencia_externa: null,
+      ultimos4_snapshot: b.ultimos4_snapshot,
+      marca_snapshot: b.marca_snapshot ?? undefined,
+      created_at: b.created_at,
+    };
+  }
+
   fechaFuncionTexto(): string {
     const f = this.funcion();
     if (!f) return '—';

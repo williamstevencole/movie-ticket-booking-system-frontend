@@ -10,7 +10,9 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideTriangleAlert, LucideArmchair } from '@lucide/angular';
 
 import { Cine, CinesService } from '../../../../shared/services/cines.service';
+import { SalasService, CrearSalaInput } from '../../../../shared/services/salas.service';
 import { ToastService } from '../../../../shared/services/toast.service';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 
 const MAX_DIM = 30;
@@ -161,7 +163,7 @@ const MAX_DIM = 30;
             }
 
             <div class="foot">
-              <a class="btn" routerLink="/admin/cines">Cancelar</a>
+              <a class="btn" routerLink="/admin/salas">Cancelar</a>
               <button
                 type="submit"
                 class="btn btn-primary"
@@ -182,6 +184,7 @@ export class AdminSalaFormComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private cinesSvc = inject(CinesService);
+  private salasSvc = inject(SalasService);
   private toast = inject(ToastService);
 
   readonly MAX_DIM = MAX_DIM;
@@ -234,27 +237,27 @@ export class AdminSalaFormComponent {
 
     const v = this.form.value;
     const idCine = v.id_cine!;
-    const cineNombre =
-      this.cines().find((c) => c.id === idCine)?.nombre ?? 'el cine';
+
+    const input: CrearSalaInput = {
+      nombre: v.nombre!,
+      filas: Number(v.filas),
+      columnas: Number(v.columnas),
+      id_cine: idCine,
+    };
 
     this.saving.set(true);
-    this.cinesSvc
-      .addSala(idCine, {
-        nombre: v.nombre!,
-        filas: Number(v.filas),
-        columnas: Number(v.columnas),
-      })
-      .subscribe({
-        next: (sala) => {
-          this.saving.set(false);
-          this.toast.show(`Sala ${sala.nombre} creada en ${cineNombre}`);
-          this.router.navigate(['/admin/cines']);
-        },
-        error: (e) => {
-          this.saving.set(false);
-          this.formError.set(e?.message ?? 'No se pudo crear la sala');
-        },
-      });
+    this.salasSvc.create(input).subscribe({
+      next: (sala) => {
+        this.saving.set(false);
+        this.toast.show(`Sala "${sala.nombre}" creada`);
+        this.router.navigate(['/admin/salas']);
+      },
+      error: (err) => {
+        this.saving.set(false);
+        this.formError.set(extractMessage(err));
+        this.toast.show(`Error al crear sala: ${extractMessage(err)}`);
+      },
+    });
   }
 
   private syncDims(v: { filas?: unknown; columnas?: unknown }) {

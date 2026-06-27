@@ -1,7 +1,22 @@
 <div class="admin-body">
   <app-admin-sidebar />
   <main class="admin-main">
-    @if (notFound()) {
+    @if (loading()) {
+      <div class="shell">
+        <div class="skeleton-list" aria-busy="true">
+          @for (i of [1,2,3,4,5]; track i) {
+            <div class="skeleton-row"></div>
+          }
+        </div>
+      </div>
+    } @else if (detalleError()) {
+      <div class="shell">
+        <div class="error-banner" role="alert">
+          <span>{{ detalleError() }}</span>
+          <button type="button" class="btn btn-sm" (click)="reload()">Reintentar</button>
+        </div>
+      </div>
+    } @else if (notFound()) {
       <div class="shell">
         <div class="not-found">
           <span class="not-found-mark">
@@ -142,7 +157,7 @@
               <div class="panel-body">
                 <div class="seat-grid">
                   @for (a of r.asientos; track a.id) {
-                    <span class="seat-chip">{{ a.codigo }}<span class="seat-tipo"> · {{ a.tipo_asiento }}</span></span>
+                    <span class="seat-chip">{{ a.codigo }}<span class="seat-tipo"> · {{ a.tipo }}</span></span>
                   }
                 </div>
               </div>
@@ -194,52 +209,6 @@
           </div>
         </div>
 
-        @if (cancelOpen()) {
-          <section class="cancel-panel">
-            <header>
-              <h3>Cancelar reserva {{ r.numero_reserva }}</h3>
-              <button type="button" class="link" (click)="closeCancel()">Cerrar</button>
-            </header>
-
-            <div class="cancel-body">
-              <label class="field">
-                <span>Motivo</span>
-                <select [(ngModel)]="motivo" name="motivo">
-                  @for (m of motivos; track m.id) {
-                    <option [ngValue]="m.id">{{ m.label }}</option>
-                  }
-                </select>
-              </label>
-
-              <div class="refund-card">
-                <div class="rf-row">
-                  <span>Monto pagado</span>
-                  <span class="tnum">L {{ r.monto_total | number }}</span>
-                </div>
-                <div class="rf-row">
-                  <span>% según política</span>
-                  <span class="tnum">{{ cancelPercent() }}%</span>
-                </div>
-                <div class="rf-row total">
-                  <span>Reembolso</span>
-                  <span class="tnum">L {{ cancelMonto() | number }}</span>
-                </div>
-              </div>
-
-              <p class="warn">
-                Esta acción no se puede deshacer. El cliente recibirá una notificación por email.
-              </p>
-
-              <div class="cancel-actions">
-                <button type="button" class="btn-ghost" (click)="closeCancel()">No cancelar</button>
-                <button type="button" class="btn-danger" (click)="confirmCancel()">
-                  Cancelar y reembolsar L {{ cancelMonto() | number }}
-                </button>
-              </div>
-            </div>
-          </section>
-        }
-
         <!-- spacer for sticky bar -->
         <div class="stuck-spacer" aria-hidden="true"></div>
       </div>
@@ -271,11 +240,14 @@
                   Reenviar comprobante
                 </button>
               }
-              @if (canCancel() && !cancelOpen()) {
-                <button type="button" class="btn btn-primary-danger" (click)="openCancel()">
+              @if (canCancel()) {
+                <a
+                  class="btn btn-primary-danger"
+                  [routerLink]="['/admin/reservas', r.id, 'cancelar']"
+                >
                   <svg lucideBan [size]="14"></svg>
                   Cancelar reserva
-                </button>
+                </a>
               }
             </div>
           </div>

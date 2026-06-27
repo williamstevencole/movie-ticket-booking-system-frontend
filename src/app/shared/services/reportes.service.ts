@@ -1,8 +1,8 @@
-import { Injectable } from '@angular/core';
-import { of } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { MOCK_RESERVAS } from '../../mocks/data/reservas.mock';
-import { MOCK_PAGOS } from '../../mocks/data/pagos.mock';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
+import { API_URL } from '../../core/config/env';
+import { toNum, toStr } from '../../core/api/normalize';
 
 // --- Generic page wrapper ---
 export type Page<T> = {
@@ -56,111 +56,196 @@ export type CancelacionesReporte = {
   tendencia_30d: Array<{ fecha: string; count: number }>;
 };
 
-const USUARIOS_MAP: Record<string, { nombre: string; email: string }> = {
-  'u-1': { nombre: 'Andrea López', email: 'andrea.lopez@gmail.com' },
-  'u-2': { nombre: 'Marco Rodríguez', email: 'marco.rod@gmail.com' },
-  'u-3': { nombre: 'Sofía García', email: 'sofia.garcia@outlook.com' },
-  'u-4': { nombre: 'Daniel Méndez', email: 'dmendez@gmail.com' },
-  'u-5': { nombre: 'Lucía Hernández', email: 'lucia.h@hotmail.com' },
-  'u-6': { nombre: 'Pablo Castillo', email: 'pcastillo@gmail.com' },
-  'u-7': { nombre: 'Camila Reyes', email: 'cami.reyes@gmail.com' },
-  'u-8': { nombre: 'Javier Morales', email: 'j.morales@yahoo.com' },
-  'u-9': { nombre: 'Isabella Cruz', email: 'isa.cruz@gmail.com' },
-  'u-10': { nombre: 'Rodrigo Paz', email: 'rpaz@gmail.com' },
-  'u-11': { nombre: 'Valeria Torres', email: 'valeria.t@gmail.com' },
-  'u-12': { nombre: 'Mateo Aguilar', email: 'mateo.a@gmail.com' },
+type BackendReporteReservaItem = {
+  id: string | number;
+  numeroReserva: string;
+  estado: string;
+  usuario: { id: string | number; nombre: string; email: string };
+  funcion: {
+    id: string | number;
+    fechaHora: string;
+    pelicula: { id: string | number; titulo: string };
+    sala: {
+      id: string | number;
+      nombre: string;
+      cine: { id: string | number; nombre: string };
+    };
+  };
+  numAsientos: number;
+  montoTotal: number | string;
+  createdAt: string;
+  updatedAt: string;
 };
 
-const PELICULAS_LIST = ['Tormenta sobre el Pacífico', 'Cartas a mi yo de mañana', 'El Reino de Niebla'];
-const CINES_LIST = ['Cinépolis Oakland Mall', 'Multiplaza', 'Cinépolis City Mall', 'Multiplaza San Salvador'];
+type BackendReporteReservasPage = {
+  data: BackendReporteReservaItem[];
+  total: number;
+  page: number;
+  limit: number;
+};
 
-const MOCK_REPORTE_RESERVAS: ReporteReservaRow[] = MOCK_RESERVAS.map((r, i) => {
-  const u = USUARIOS_MAP[r.id_usuario] ?? { nombre: 'Usuario Desconocido', email: 'unknown@example.com' };
+function mapBackendReporteReserva(
+  r: BackendReporteReservaItem,
+): ReporteReservaRow {
   return {
-    id: r.id,
-    numero_reserva: r.numero_reserva,
-    id_usuario: r.id_usuario,
-    nombre_usuario: u.nombre,
-    email_usuario: u.email,
-    id_funcion: r.id_funcion,
-    fecha_hora_funcion: new Date(Date.now() + (i % 7) * 86400000).toISOString(),
-    titulo_pelicula: PELICULAS_LIST[i % PELICULAS_LIST.length]!,
-    nombre_cine: CINES_LIST[i % CINES_LIST.length]!,
-    nombre_sala: `Sala ${(i % 5) + 1}`,
-    num_asientos: r.num_asientos,
-    monto_total: r.monto_total,
+    id: toStr(r.id),
+    numero_reserva: r.numeroReserva,
+    id_usuario: toStr(r.usuario.id),
+    nombre_usuario: r.usuario.nombre,
+    email_usuario: r.usuario.email,
+    id_funcion: toStr(r.funcion.id),
+    fecha_hora_funcion: r.funcion.fechaHora,
+    titulo_pelicula: r.funcion.pelicula.titulo,
+    nombre_cine: r.funcion.sala.cine.nombre,
+    nombre_sala: r.funcion.sala.nombre,
+    num_asientos: r.numAsientos,
+    monto_total: toNum(r.montoTotal),
     estado: r.estado as ReporteReservaRow['estado'],
-    created_at: r.created_at,
+    created_at: r.createdAt,
   };
-});
+}
 
-const MOCK_REPORTE_PAGOS: ReportePagoRow[] = MOCK_PAGOS.map((p, i) => {
-  const reserva = MOCK_RESERVAS.find((r) => r.id === p.id_reserva);
-  const u = USUARIOS_MAP[reserva?.id_usuario ?? ''] ?? { nombre: 'Usuario', email: 'user@example.com' };
+// ── Pagos backend types ────────────────────────────────────────────────────
+type BackendReportePagoItem = {
+  id: string;
+  montoOriginal: number;
+  montoFinal: number;
+  metodo: string;
+  estado: string;
+  referenciaExterna: string | null;
+  reserva: { id: string; numeroReserva: string };
+  cupon?: { id: string; codigo: string };
+  reembolsos: Array<{ id: string; montoReembolso: number }>;
+  createdAt: string;
+};
+
+type BackendReportePagosPage = {
+  data: BackendReportePagoItem[];
+  total: number;
+  page: number;
+  limit: number;
+  resumen: { totalMontoOriginal: number; totalMontoFinal: number };
+};
+
+function mapBackendReportePago(p: BackendReportePagoItem): ReportePagoRow {
   return {
     id: p.id,
-    id_reserva: p.id_reserva,
-    numero_reserva: reserva?.numero_reserva ?? `CIN-R-${String(i).padStart(4, '0')}`,
-    nombre_usuario: u.nombre,
-    email_usuario: u.email,
-    nombre_cine: CINES_LIST[i % CINES_LIST.length]!,
-    metodo: p.metodo,
-    monto_original: p.monto_original,
-    monto_descuento: p.monto_descuento,
-    monto_final: p.monto_final,
-    estado: p.estado,
-    referencia_externa: p.referencia_externa,
-    created_at: p.created_at,
+    id_reserva: p.reserva.id,
+    numero_reserva: p.reserva.numeroReserva,
+    nombre_usuario: '',       // backend no incluye usuario en este endpoint
+    email_usuario: '',        // backend no incluye usuario en este endpoint
+    nombre_cine: '',          // backend no incluye cine en este endpoint
+    metodo: p.metodo.toLowerCase() as ReportePagoRow['metodo'],
+    monto_original: p.montoOriginal,
+    monto_descuento: p.montoOriginal - p.montoFinal,  // derivado
+    monto_final: p.montoFinal,
+    estado: p.estado.toLowerCase() as ReportePagoRow['estado'],
+    referencia_externa: p.referenciaExterna,
+    created_at: p.createdAt,
   };
-});
+}
+
+// ── Cancelaciones backend types ────────────────────────────────────────────
+type BackendCancelacionesResponse = {
+  total_canceladas: number;
+  tasa: number;          // fracción 0–1; el frontend lo espera multiplicado x 100
+  por_politica: Array<{ nombre: string; count: number }>;
+  por_cine: Array<{ nombre: string; count: number }>;
+  tendencia_30d: Array<{ fecha: string; count: number }>;
+};
+
+function mapBackendCancelaciones(r: BackendCancelacionesResponse): CancelacionesReporte {
+  return {
+    total_canceladas: r.total_canceladas,
+    tasa: Math.round(r.tasa * 100),   // backend: 0.15 → frontend: 15 (porcentaje entero)
+    por_politica: r.por_politica,
+    por_cine: r.por_cine,
+    tendencia_30d: r.tendencia_30d,
+  };
+}
 
 @Injectable({ providedIn: 'root' })
 export class ReportesService {
-  reservas(q: Record<string, any> = {}) {
-    let rows = [...MOCK_REPORTE_RESERVAS];
-    if (q['estado']) rows = rows.filter((r) => r.estado === q['estado']);
-    const page = Number(q['page'] ?? 1);
-    const limit = Number(q['limit'] ?? 10);
-    const start = (page - 1) * limit;
-    return of({ data: rows.slice(start, start + limit), total: rows.length, page, limit } as Page<ReporteReservaRow>).pipe(delay(120));
+  private readonly http = inject(HttpClient);
+  private readonly reservasBase = `${API_URL}/admin/reportes/reservas`;
+  private readonly pagosBase = `${API_URL}/admin/reportes/pagos`;
+  private readonly cancelacionesBase = `${API_URL}/admin/reportes/cancelaciones`;
+
+  reservas(q: Record<string, any> = {}): Observable<Page<ReporteReservaRow>> {
+    const params = this.buildReservasParams(q);
+    return this.http
+      .get<BackendReporteReservasPage>(this.reservasBase, { params })
+      .pipe(
+        map((res) => ({
+          data: res.data.map(mapBackendReporteReserva),
+          total: res.total,
+          page: res.page,
+          limit: res.limit,
+        })),
+      );
   }
 
-  reservasCsv(q: Record<string, any> = {}) {
-    const header = 'id,numero_reserva,nombre_usuario,titulo_pelicula,monto_total,estado,created_at\n';
-    const rows = MOCK_REPORTE_RESERVAS
-      .map((r) => `${r.id},${r.numero_reserva},${r.nombre_usuario},${r.titulo_pelicula},${r.monto_total},${r.estado},${r.created_at}`)
-      .join('\n');
-    const blob = new Blob([header + rows], { type: 'text/csv' });
-    return of(blob).pipe(delay(120));
+  reservasCsv(q: Record<string, any> = {}): Observable<Blob> {
+    const params = this.buildReservasParams(q);
+    return this.http.get(`${this.reservasBase}/export`, {
+      params,
+      responseType: 'blob',
+    });
   }
 
-  pagos(q: Record<string, any> = {}) {
-    let rows = [...MOCK_REPORTE_PAGOS];
-    if (q['estado']) rows = rows.filter((r) => r.estado === q['estado']);
-    if (q['metodo']) rows = rows.filter((r) => r.metodo === q['metodo']);
-    const page = Number(q['page'] ?? 1);
-    const limit = Number(q['limit'] ?? 10);
-    const start = (page - 1) * limit;
-    return of({ data: rows.slice(start, start + limit), total: rows.length, page, limit } as Page<ReportePagoRow>).pipe(delay(120));
+  pagos(q: Record<string, any> = {}): Observable<Page<ReportePagoRow>> {
+    let params = new HttpParams();
+    if (q['estado']) params = params.set('estado', String(q['estado']));
+    if (q['fecha']) params = params.set('fecha', String(q['fecha']));
+    if (q['page']) params = params.set('page', String(q['page']));
+    if (q['limit']) params = params.set('limit', String(q['limit']));
+
+    return this.http
+      .get<BackendReportePagosPage>(this.pagosBase, { params })
+      .pipe(
+        map((res) => ({
+          data: res.data.map(mapBackendReportePago),
+          total: res.total,
+          page: res.page,
+          limit: res.limit,
+        })),
+      );
   }
 
-  cancelaciones(q: Record<string, any> = {}) {
-    const canceladas = MOCK_RESERVAS.filter((r) => r.estado === 'cancelada');
-    const tasa = Math.round((canceladas.length / MOCK_RESERVAS.length) * 100);
-    const result: CancelacionesReporte = {
-      total_canceladas: canceladas.length,
-      tasa,
-      por_politica: [
-        { nombre: 'Flexible 24h', count: 4 },
-        { nombre: 'Estricta 12h', count: 2 },
-        { nombre: 'Sin política', count: canceladas.length - 6 },
-      ],
-      por_cine: CINES_LIST.map((nombre, i) => ({ nombre, count: Math.max(1, canceladas.length - i * 2) })),
-      tendencia_30d: Array.from({ length: 10 }, (_, i) => ({
-        fecha: new Date(Date.now() - (9 - i) * 3 * 86400000).toISOString().slice(0, 10),
-        count: Math.floor(Math.random() * 3) + 1,
-      })),
-    };
-    return of(result).pipe(delay(120));
+  cancelaciones(q: Record<string, any> = {}): Observable<CancelacionesReporte> {
+    let params = new HttpParams();
+    // El backend usa fecha_desde/fecha_hasta; el componente pasa 'desde'/'hasta'
+    if (q['desde']) params = params.set('fecha_desde', String(q['desde']));
+    if (q['hasta']) params = params.set('fecha_hasta', String(q['hasta']));
+    if (q['id_cine']) params = params.set('id_cine', String(q['id_cine']));
+    // Nota: q['id_politica'] que construye el componente no existe en CancelacionesQueryDto;
+    // el backend lo ignora silenciosamente.
+
+    return this.http
+      .get<BackendCancelacionesResponse>(this.cancelacionesBase, { params })
+      .pipe(map(mapBackendCancelaciones));
+  }
+
+  private buildReservasParams(q: Record<string, any>): HttpParams {
+    let params = new HttpParams();
+    const map: Array<[string, string]> = [
+      // [frontend key, backend key]
+      ['search', 'search'],
+      ['id_cine', 'idCine'],
+      ['id_ciudad', 'idCiudad'],
+      ['id_pelicula', 'idPelicula'],
+      ['estado', 'estado'],
+      ['desde', 'desde'],
+      ['hasta', 'hasta'],
+      ['page', 'page'],
+      ['limit', 'limit'],
+    ];
+    for (const [feKey, beKey] of map) {
+      const v = q[feKey];
+      if (v !== undefined && v !== null && v !== '') {
+        params = params.set(beKey, String(v));
+      }
+    }
+    return params;
   }
 }

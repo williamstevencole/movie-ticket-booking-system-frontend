@@ -22,6 +22,7 @@ import {
   Cine,
   CinesService,
 } from '../../../../shared/services/cines.service';
+import { SalasService, Sala } from '../../../../shared/services/salas.service';
 import {
   Ciudad,
   CiudadesService,
@@ -273,6 +274,7 @@ export class AdminFuncionesComponent {
   private peliculasSvc = inject(PeliculasService);
   private cinesSvc = inject(CinesService);
   private ciudadesSvc = inject(CiudadesService);
+  private salasSvc = inject(SalasService);
   private router = inject(Router);
 
   readonly Math = Math;
@@ -281,6 +283,7 @@ export class AdminFuncionesComponent {
   readonly peliculas = signal<Pelicula[]>([]);
   readonly cines = signal<Cine[]>([]);
   readonly ciudades = signal<Ciudad[]>([]);
+  readonly salasById = signal<Map<string, Sala>>(new Map());
   readonly filtro = signal<Filtro>('todas');
   readonly idCiudad = signal<string>('');
   readonly idCine = signal<string>('');
@@ -289,7 +292,7 @@ export class AdminFuncionesComponent {
   readonly toast = signal<Toast>(null);
   readonly loading = signal<boolean>(true);
   readonly error = signal<string | null>(null);
-  readonly skeletonRows = Array.from({ length: 6 });
+  readonly skeletonRows = Array.from({ length: 6 }, (_, i) => i);
 
   readonly peliculasById = computed(() => {
     const map = new Map<string, Pelicula>();
@@ -345,6 +348,9 @@ export class AdminFuncionesComponent {
     this.peliculasSvc.list().subscribe((d) => this.peliculas.set(d.data));
     this.cinesSvc.list().subscribe((p) => this.cines.set(p.data));
     this.ciudadesSvc.list().subscribe((c) => this.ciudades.set(c));
+    this.salasSvc.list().subscribe((salas) => {
+      this.salasById.set(new Map(salas.map((s) => [s.id, s])));
+    });
 
     const state = this.router.getCurrentNavigation()?.extras?.state ?? history.state;
     if (state?.toast) this.showToast('ok', String(state.toast));
@@ -394,11 +400,9 @@ export class AdminFuncionesComponent {
       ?.salas.find((s) => s.id === idSala);
     return sala?.nombre ?? '—';
   }
-  capacidad(idCine: string, idSala: string): number {
-    const sala = this.cinesById()
-      .get(idCine)
-      ?.salas.find((s) => s.id === idSala);
-    return sala ? (sala.filas ?? 0) * (sala.columnas ?? 0) : 0;
+  capacidad(_idCine: string, idSala: string): number {
+    const sala = this.salasById().get(idSala);
+    return sala ? sala.filas * sala.columnas : 0;
   }
   estadoLabel(e: Funcion['estado']): string {
     switch (e) {

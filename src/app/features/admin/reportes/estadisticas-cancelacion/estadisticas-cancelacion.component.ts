@@ -6,6 +6,7 @@ import {
   ReportesService,
   CancelacionesReporte,
 } from '../../../../shared/services/reportes.service';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 import {
   ReportFiltrosComponent,
@@ -52,6 +53,11 @@ import {
 
           @if (loading()) {
             <div class="empty-state"><p>Cargando…</p></div>
+          } @else if (cancelacionesError()) {
+            <div class="error-banner" role="alert">
+              <span>{{ cancelacionesError() }}</span>
+              <button type="button" class="btn btn-sm" (click)="reload()">Reintentar</button>
+            </div>
           } @else if (!reporte()) {
             <div class="empty-state">
               <p>Sin datos de cancelaciones.</p>
@@ -165,6 +171,8 @@ export class AdminReporteEstadisticasCancelacionComponent {
 
   readonly reporte = signal<CancelacionesReporte | null>(null);
   readonly loading = signal(false);
+  readonly cancelacionesError = signal<string | null>(null);
+  private readonly retryTick = signal(0);
 
   readonly filtros = signal<ReportFiltrosValue>({
     periodo: { preset: '30d', from: '', to: '' },
@@ -222,13 +230,23 @@ export class AdminReporteEstadisticasCancelacionComponent {
 
   private cargar() {
     this.loading.set(true);
+    this.cancelacionesError.set(null);
+    this.reporte.set(null);
     this.reportesSvc.cancelaciones(this.buildQuery()).subscribe({
       next: (data) => {
         this.reporte.set(data);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: (err) => {
+        this.cancelacionesError.set(extractMessage(err));
+        this.loading.set(false);
+      },
     });
+  }
+
+  reload(): void {
+    this.retryTick.update((n) => n + 1);
+    this.cargar();
   }
 
   onFiltrosChange(v: ReportFiltrosValue) {

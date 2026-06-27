@@ -38,6 +38,7 @@ import {
 } from '../../../../shared/services/pagos.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 
 @Component({
   selector: 'app-recepcionista-pago-efectivo',
@@ -89,6 +90,11 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
                 <div class="skel-block"></div>
               </div>
             </section>
+          } @else if (loadError()) {
+            <div class="error-banner" role="alert">
+              <span>{{ loadError() }}</span>
+              <button type="button" class="btn btn-sm" (click)="retryLoad()">Reintentar</button>
+            </div>
           } @else if (notFound()) {
             <section class="empty-state">
               <span class="empty-mark"><svg lucideBan [size]="28"></svg></span>
@@ -366,7 +372,8 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
                         min="0"
                         step="0.01"
                         placeholder="0.00"
-                        [(ngModel)]="clientePagaInput"
+                        [ngModel]="clientePagaInput()"
+                        (ngModelChange)="clientePagaInput.set($event)"
                         (keyup.enter)="confirmar()"
                         [disabled]="noCobrable() || procesando()"
                       />
@@ -437,13 +444,14 @@ export class RecepcionistaPagoEfectivoComponent {
   readonly reserva = signal<ReservaCobrarDetail | null>(null);
   readonly loading = signal<boolean>(true);
   readonly notFound = signal<boolean>(false);
+  readonly loadError = signal<string | null>(null);
 
   readonly cupon = signal<Cupon | null>(null);
   readonly cuponLoading = signal<boolean>(false);
   readonly cuponError = signal<string | null>(null);
   cuponInput = '';
 
-  clientePagaInput: number | null = null;
+  readonly clientePagaInput = signal<number | null>(null);
 
   readonly procesando = signal<boolean>(false);
   readonly exito = signal<boolean>(false);
@@ -471,7 +479,7 @@ export class RecepcionistaPagoEfectivoComponent {
     Math.max(0, +(this.subtotal() - this.descuento()).toFixed(2)),
   );
 
-  readonly clientePaga = computed(() => Number(this.clientePagaInput ?? 0));
+  readonly clientePaga = computed(() => Number(this.clientePagaInput() ?? 0));
 
   readonly vuelto = computed(() =>
     +(this.clientePaga() - this.totalFinal()).toFixed(2),
@@ -500,24 +508,33 @@ export class RecepcionistaPagoEfectivoComponent {
       const numero =
         this.route.snapshot.paramMap.get('numero') ?? '';
       this.numero.set(numero);
-      this.loading.set(true);
-      this.notFound.set(false);
-
-      this.adminReservasSvc.getByNumero(numero).subscribe({
-        next: (r) => {
-          if (!r) {
-            this.notFound.set(true);
-          } else {
-            this.reserva.set(r);
-          }
-          this.loading.set(false);
-        },
-        error: () => {
-          this.notFound.set(true);
-          this.loading.set(false);
-        },
-      });
+      this.doLoad(numero);
     });
+  }
+
+  private doLoad(numero: string) {
+    this.loading.set(true);
+    this.notFound.set(false);
+    this.loadError.set(null);
+
+    this.adminReservasSvc.getByNumero(numero).subscribe({
+      next: (r) => {
+        if (!r) {
+          this.notFound.set(true);
+        } else {
+          this.reserva.set(r);
+        }
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.loadError.set(extractMessage(err));
+        this.loading.set(false);
+      },
+    });
+  }
+
+  retryLoad() {
+    this.doLoad(this.numero());
   }
 
   // ── Acciones ────────────────────────────────────────────────────────────
@@ -551,7 +568,7 @@ export class RecepcionistaPagoEfectivoComponent {
   }
 
   quickFill(amount: number): void {
-    this.clientePagaInput = amount;
+    this.clientePagaInput.set(amount);
   }
 
   confirmar(): void {
@@ -567,12 +584,8 @@ export class RecepcionistaPagoEfectivoComponent {
       })
       .subscribe({
         next: (pago) => {
-          // El mock devuelve montos fijos; sustituyo por los reales calculados aquí
           const pagoReal: Pago = {
             ...pago,
-            monto_original: this.subtotal(),
-            monto_descuento: this.descuento(),
-            monto_final: this.totalFinal(),
             id_cupon: this.cupon()?.id,
           };
           this.vueltoFinal.set(this.vuelto());
@@ -581,9 +594,7 @@ export class RecepcionistaPagoEfectivoComponent {
           this.procesando.set(false);
         },
         error: (err) => {
-          this.toast.show(
-            err?.error?.message ?? 'No se pudo registrar el pago',
-          );
+          this.toast.show(extractMessage(err));
           this.procesando.set(false);
         },
       });

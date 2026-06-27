@@ -20,6 +20,7 @@ export type AuthUser = {
   email: string;
   id_rol: string;
   estado: string;
+  telefono?: string | null;
   notificaciones_activas?: boolean;
 };
 
@@ -105,6 +106,20 @@ export class AuthService {
     }
     this._token.set(null);
     this._user.set(null);
+  }
+
+  updateUser(user: Partial<AuthUser>): void {
+    const current = this._user();
+
+    if (!current) return;
+
+    const updated = {
+      ...current,
+      ...user,
+    };
+
+    localStorage.setItem(USER_KEY, JSON.stringify(updated));
+    this._user.set(updated);
   }
 
   // ─── helpers privados ───────────────────────────────────────

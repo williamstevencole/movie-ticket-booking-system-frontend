@@ -19,6 +19,7 @@ import {
   EstadoReembolsoAdmin,
   ReembolsoAdmin,
 } from '../../../shared/services/admin-reembolsos.service';
+import { extractMessage } from '../../../shared/utils/http-errors';
 import { AdminSidebarComponent } from '../../../shared/components/admin-sidebar.component';
 
 type Toast = { kind: 'ok' | 'err'; text: string } | null;
@@ -71,128 +72,141 @@ const TABS: TabDef[] = [
             </div>
           </header>
 
-          <section class="kpis">
-            <div class="kpi">
-              <span class="kpi-label">Pendientes</span>
-              <span class="kpi-value">{{ count('pendiente') }}</span>
+          @if (listError()) {
+            <div class="error-banner" role="alert">
+              <span>{{ listError() }}</span>
+              <button type="button" class="btn btn-sm" (click)="reload()">Reintentar</button>
             </div>
-            <div class="kpi">
-              <span class="kpi-label">En procesamiento</span>
-              <span class="kpi-value">{{ count('procesando') }}</span>
+          } @else if (listLoading() && items().length === 0) {
+            <div class="skeleton-list">
+              @for (i of [1,2,3,4,5]; track i) {
+                <div class="skeleton-row"></div>
+              }
             </div>
-            <div class="kpi kpi-accent">
-              <span class="kpi-label">Monto pendiente</span>
-              <span class="kpi-value">{{ money(montoPendiente()) }}</span>
-            </div>
-          </section>
-
-          <section class="tabs" role="tablist">
-            @for (t of tabs; track t.key) {
-              <button
-                class="tab"
-                role="tab"
-                [class.on]="tab() === t.key"
-                [attr.aria-selected]="tab() === t.key"
-                (click)="tab.set(t.key)"
-              >
-                {{ t.label }}
-                <span class="tab-count">{{ count(t.key) }}</span>
-              </button>
-            }
-          </section>
-
-          <section class="card">
-            @if (filtered().length === 0) {
-              <div class="empty">
-                <span class="empty-mark">
-                  <svg lucideUndo2 [size]="22"></svg>
-                </span>
-                <h3>Nada por aquí</h3>
-                <p>No hay reembolsos en <strong>{{ activeLabel() }}</strong>.</p>
+          } @else {
+            <section class="kpis">
+              <div class="kpi">
+                <span class="kpi-label">Pendientes</span>
+                <span class="kpi-value">{{ count('pendiente') }}</span>
               </div>
-            } @else {
-              <div class="table-scroll">
-                <table class="tbl">
-                  <thead>
-                    <tr>
-                      <th>Reserva</th>
-                      <th>Cliente</th>
-                      <th>Película</th>
-                      <th class="col-num">Monto</th>
-                      <th>Método</th>
-                      <th>En cola</th>
-                      <th>Política</th>
-                      <th class="col-acc" aria-label="Acciones"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (r of filtered(); track r.id) {
+              <div class="kpi">
+                <span class="kpi-label">En procesamiento</span>
+                <span class="kpi-value">{{ count('procesando') }}</span>
+              </div>
+              <div class="kpi kpi-accent">
+                <span class="kpi-label">Monto pendiente</span>
+                <span class="kpi-value">{{ money(montoPendiente()) }}</span>
+              </div>
+            </section>
+
+            <section class="tabs" role="tablist">
+              @for (t of tabs; track t.key) {
+                <button
+                  class="tab"
+                  role="tab"
+                  [class.on]="tab() === t.key"
+                  [attr.aria-selected]="tab() === t.key"
+                  (click)="tab.set(t.key)"
+                >
+                  {{ t.label }}
+                  <span class="tab-count">{{ count(t.key) }}</span>
+                </button>
+              }
+            </section>
+
+            <section class="card">
+              @if (filtered().length === 0) {
+                <div class="empty">
+                  <span class="empty-mark">
+                    <svg lucideUndo2 [size]="22"></svg>
+                  </span>
+                  <h3>Nada por aquí</h3>
+                  <p>No hay reembolsos en <strong>{{ activeLabel() }}</strong>.</p>
+                </div>
+              } @else {
+                <div class="table-scroll">
+                  <table class="tbl">
+                    <thead>
                       <tr>
-                        <td><span class="mono">{{ r.reserva }}</span></td>
-                        <td class="cell-strong">{{ r.cliente }}</td>
-                        <td class="muted">{{ r.pelicula }}</td>
-                        <td class="col-num">
-                          <span class="monto">{{ money(r.monto) }}</span>
-                          <span class="pct">{{ r.porcentaje }}%</span>
-                        </td>
-                        <td>
-                          <span class="metodo">
-                            @if (r.metodo === 'efectivo') {
-                              <svg lucideBanknote [size]="15"></svg>
-                            } @else {
-                              <svg lucideCreditCard [size]="15"></svg>
-                            }
-                            <span>{{ r.metodo === 'efectivo' ? 'Efectivo' : 'Tarjeta' }}</span>
-                          </span>
-                        </td>
-                        <td>
-                          @if (r.estado === 'pendiente' || r.estado === 'procesando') {
-                            <span class="cola" [class.warn]="r.diasEnCola >= 5">
-                              <svg lucideClock [size]="14"></svg>
-                              {{ r.diasEnCola }}
-                              {{ r.diasEnCola === 1 ? 'día' : 'días' }}
-                            </span>
-                          } @else {
-                            <span class="muted">—</span>
-                          }
-                        </td>
-                        <td class="muted politica">{{ r.politica }}</td>
-                        <td class="col-acc">
-                          <div class="row-acc">
-                            @if (r.estado === 'pendiente' || r.estado === 'procesando') {
-                              <button
-                                class="btn btn-sm btn-primary"
-                                (click)="onProcesar(r)"
-                              >
-                                <svg lucideCheck [size]="14"></svg>
-                                <span>{{ procesarLabel(r) }}</span>
-                              </button>
-                              <button
-                                class="icon-btn danger"
-                                (click)="askReject(r)"
-                                title="Rechazar"
-                                aria-label="Rechazar"
-                              >
-                                <svg lucideX [size]="15"></svg>
-                              </button>
-                            }
-                            <button
-                              class="icon-btn"
-                              (click)="openDetail(r)"
-                              title="Ver detalle"
-                              aria-label="Ver detalle"
-                            >
-                              <svg lucideEye [size]="15"></svg>
-                            </button>
-                          </div>
-                        </td>
+                        <th>Reserva</th>
+                        <th>Cliente</th>
+                        <th>Película</th>
+                        <th class="col-num">Monto</th>
+                        <th>Método</th>
+                        <th>En cola</th>
+                        <th>Política</th>
+                        <th class="col-acc" aria-label="Acciones"></th>
                       </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            }
-          </section>
+                    </thead>
+                    <tbody>
+                      @for (r of filtered(); track r.id) {
+                        <tr>
+                          <td><span class="mono">{{ r.reserva }}</span></td>
+                          <td class="cell-strong">{{ r.cliente }}</td>
+                          <td class="muted">{{ r.pelicula }}</td>
+                          <td class="col-num">
+                            <span class="monto">{{ money(r.monto) }}</span>
+                            <span class="pct">{{ r.porcentaje }}%</span>
+                          </td>
+                          <td>
+                            <span class="metodo">
+                              @if (r.metodo === 'efectivo') {
+                                <svg lucideBanknote [size]="15"></svg>
+                              } @else {
+                                <svg lucideCreditCard [size]="15"></svg>
+                              }
+                              <span>{{ r.metodo === 'efectivo' ? 'Efectivo' : 'Tarjeta' }}</span>
+                            </span>
+                          </td>
+                          <td>
+                            @if (r.estado === 'pendiente' || r.estado === 'procesando') {
+                              <span class="cola" [class.warn]="r.diasEnCola >= 5">
+                                <svg lucideClock [size]="14"></svg>
+                                {{ r.diasEnCola }}
+                                {{ r.diasEnCola === 1 ? 'día' : 'días' }}
+                              </span>
+                            } @else {
+                              <span class="muted">—</span>
+                            }
+                          </td>
+                          <td class="muted politica">{{ r.politica }}</td>
+                          <td class="col-acc">
+                            <div class="row-acc">
+                              @if (r.estado === 'pendiente' || r.estado === 'procesando') {
+                                <button
+                                  class="btn btn-sm btn-primary"
+                                  (click)="onProcesar(r)"
+                                >
+                                  <svg lucideCheck [size]="14"></svg>
+                                  <span>{{ procesarLabel(r) }}</span>
+                                </button>
+                                <button
+                                  class="icon-btn danger"
+                                  (click)="askReject(r)"
+                                  title="Rechazar"
+                                  aria-label="Rechazar"
+                                >
+                                  <svg lucideX [size]="15"></svg>
+                                </button>
+                              }
+                              <button
+                                class="icon-btn"
+                                (click)="openDetail(r)"
+                                title="Ver detalle"
+                                aria-label="Ver detalle"
+                              >
+                                <svg lucideEye [size]="15"></svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </section>
+          }
         </div>
       </main>
     </div>
@@ -330,6 +344,8 @@ export class AdminReembolsosComponent {
   readonly tabs = TABS;
 
   readonly items = signal<ReembolsoAdmin[]>([]);
+  readonly listLoading = signal(false);
+  readonly listError = signal<string | null>(null);
   readonly tab = signal<EstadoReembolsoAdmin>('pendiente');
 
   readonly confirmTarget = signal<ReembolsoAdmin | null>(null);
@@ -390,7 +406,7 @@ export class AdminReembolsosComponent {
             : `Reembolso ${r.reserva} enviado a procesamiento`;
         this.showToast('ok', msg);
       },
-      error: (e) => this.showToast('err', e?.message ?? 'No se pudo procesar'),
+      error: (e) => this.showToast('err', extractMessage(e)),
     });
   }
 
@@ -413,7 +429,7 @@ export class AdminReembolsosComponent {
         this.rejectTarget.set(null);
         this.showToast('ok', `Reembolso ${r.reserva} rechazado`);
       },
-      error: (e) => this.showToast('err', e?.message ?? 'No se pudo rechazar'),
+      error: (e) => this.showToast('err', extractMessage(e)),
     });
   }
 
@@ -449,7 +465,16 @@ export class AdminReembolsosComponent {
   }
 
   private refresh() {
-    this.svc.list().subscribe((res) => this.items.set(res.data));
+    this.listLoading.set(true);
+    this.listError.set(null);
+    this.svc.list().subscribe({
+      next: (res) => { this.items.set(res.data); this.listLoading.set(false); },
+      error: (err) => { this.listError.set(extractMessage(err)); this.listLoading.set(false); },
+    });
+  }
+
+  reload(): void {
+    this.refresh();
   }
 
   private showToast(kind: 'ok' | 'err', text: string) {

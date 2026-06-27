@@ -329,3 +329,44 @@
   .shell { padding: var(--s5) var(--s4) var(--s8); }
   .tbl th, .tbl td { padding: 10px var(--s4); }
 }
+
+/* --- inline error banner --------------------------------------------------- */
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  margin: var(--s3) var(--s5);
+  border-radius: var(--r);
+  background: var(--red-soft);
+  color: var(--red-ink);
+  border: 1px solid color-mix(in oklch, var(--red) 22%, transparent);
+
+  > span { flex: 1; }
+}
+
+/* --- skeleton rows --------------------------------------------------------- */
+.skeleton-row td {
+  padding: 14px var(--s5);
+}
+
+.skeleton {
+  display: block;
+  height: 14px;
+  width: 100%;
+  border-radius: 7px;
+  background: linear-gradient(
+    90deg,
+    var(--surface) 0%,
+    var(--surface-2, rgba(255,255,255,0.08)) 50%,
+    var(--surface) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

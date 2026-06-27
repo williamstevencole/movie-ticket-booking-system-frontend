@@ -22,12 +22,13 @@ import {
   ClientesStats,
 } from '../../../../shared/services/clientes.service';
 import {
-  EstadoReserva,
-  Reserva,
-  ReservasService,
-} from '../../../../shared/services/reservas.service';
+  AdminReservasService,
+  AdminReservaRow,
+} from '../../../../shared/services/admin-reservas.service';
+import { EstadoReserva } from '../../../../shared/services/reservas.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 import { PagerComponent } from '../../../../shared/components/pager.component';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 
 @Component({
   selector: 'app-recepcionista-buscar-cliente',
@@ -69,18 +70,26 @@ import { PagerComponent } from '../../../../shared/components/pager.component';
                 </p>
               </div>
               <div class="stats">
-                <span class="stat">
-                  <svg lucideUsers [size]="15"></svg>
-                  <b>{{ stats().total }}</b> clientes
-                </span>
-                <span class="stat ok">
-                  <svg lucideUserCheck [size]="15"></svg>
-                  <b>{{ stats().activos }}</b> activos
-                </span>
-                <span class="stat danger">
-                  <svg lucideBan [size]="15"></svg>
-                  <b>{{ stats().bloqueados }}</b> bloqueados
-                </span>
+                @if (statsError()) {
+                  <span class="stat err">Stats no disponibles</span>
+                } @else if (statsLoading() && stats().total === 0) {
+                  <span class="stat skeleton-stat">&nbsp;</span>
+                  <span class="stat skeleton-stat">&nbsp;</span>
+                  <span class="stat skeleton-stat">&nbsp;</span>
+                } @else {
+                  <span class="stat">
+                    <svg lucideUsers [size]="15"></svg>
+                    <b>{{ stats().total }}</b> clientes
+                  </span>
+                  <span class="stat ok">
+                    <svg lucideUserCheck [size]="15"></svg>
+                    <b>{{ stats().activos }}</b> activos
+                  </span>
+                  <span class="stat danger">
+                    <svg lucideBan [size]="15"></svg>
+                    <b>{{ stats().bloqueados }}</b> bloqueados
+                  </span>
+                }
               </div>
             </div>
           </header>
@@ -125,7 +134,18 @@ import { PagerComponent } from '../../../../shared/components/pager.component';
                 <span class="panel-count">{{ total() }}</span>
               </div>
 
-              @if (results().length === 0) {
+              @if (clientesError(); as msg) {
+                <div class="error-banner">
+                  <span>{{ msg }}</span>
+                  <button type="button" (click)="reload()">Reintentar</button>
+                </div>
+              } @else if (clientesLoading() && results().length === 0) {
+                <ul class="res-list">
+                  @for (i of [1,2,3,4,5]; track i) {
+                    <li><div class="res-item skeleton"></div></li>
+                  }
+                </ul>
+              } @else if (results().length === 0) {
                 <div class="placeholder">
                   <svg lucideUserSearch [size]="26"></svg>
                   <p>Ningún cliente coincide con <strong>"{{ query() }}"</strong>.</p>
@@ -166,113 +186,134 @@ import { PagerComponent } from '../../../../shared/components/pager.component';
 
             <!-- Ficha del cliente -->
             <div class="detail">
-              @if (selected(); as c) {
-                <div class="ficha">
-                  <div class="ficha-head" [class.is-blocked]="c.estado === 'bloqueado'">
-                    <span class="avatar xl" [class.blocked]="c.estado === 'bloqueado'">
-                      {{ initials(c.nombre) }}
-                    </span>
-                    <div class="ficha-id">
-                      <h2>{{ c.nombre }}</h2>
-                      <span
-                        class="estado-badge"
-                        [class.activo]="c.estado === 'activo'"
-                        [class.bloqueado]="c.estado === 'bloqueado'"
-                      >
-                        {{ c.estado === 'activo' ? 'Activo' : 'Bloqueado' }}
+              @if (detalleError(); as msg) {
+                <div class="error-banner">
+                  <span>{{ msg }}</span>
+                </div>
+              } @else if (detalleLoading()) {
+                <div class="ficha skeleton">Cargando ficha…</div>
+              } @else {
+                @if (selected(); as c) {
+                  <div class="ficha">
+                    <div class="ficha-head" [class.is-blocked]="c.estado === 'bloqueado'">
+                      <span class="avatar xl" [class.blocked]="c.estado === 'bloqueado'">
+                        {{ initials(c.nombre) }}
                       </span>
-                    </div>
-                    <div class="ficha-quick">
-                      <div class="qstat">
-                        <span class="qnum">{{ selectedReservas().length }}</span>
-                        <span class="qlbl">reservas</span>
-                      </div>
-                      <div class="qdiv"></div>
-                      <div class="qstat">
-                        <span class="qnum">{{ money(totalPagado()) }}</span>
-                        <span class="qlbl">pagado</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="ficha-body">
-                    @if (c.estado === 'bloqueado') {
-                      <div class="alert">
-                        <svg lucideBan [size]="15"></svg>
-                        <span>
-                          Cliente bloqueado. No puede generar nuevas reservas en
-                          taquilla.
+                      <div class="ficha-id">
+                        <h2>{{ c.nombre }}</h2>
+                        <span
+                          class="estado-badge"
+                          [class.activo]="c.estado === 'activo'"
+                          [class.bloqueado]="c.estado === 'bloqueado'"
+                        >
+                          {{ c.estado === 'activo' ? 'Activo' : 'Bloqueado' }}
                         </span>
                       </div>
-                    }
-
-                    <dl class="contact">
-                      <div>
-                        <dt><svg lucideMail [size]="14"></svg> Email</dt>
-                        <dd>{{ c.email }}</dd>
+                      <div class="ficha-quick">
+                        <div class="qstat">
+                          <span class="qnum">{{ selectedReservas().length }}</span>
+                          <span class="qlbl">reservas</span>
+                        </div>
+                        <div class="qdiv"></div>
+                        <div class="qstat">
+                          <span class="qnum">{{ money(totalPagado()) }}</span>
+                          <span class="qlbl">pagado</span>
+                        </div>
                       </div>
-                      <div>
-                        <dt><svg lucidePhone [size]="14"></svg> Teléfono</dt>
-                        <dd>{{ c.telefono || 'No registrado' }}</dd>
-                      </div>
-                    </dl>
+                    </div>
 
-                    <div class="res-head">
-                      <h3><svg lucideTicket [size]="16"></svg> Reservas</h3>
-                      @if (pendientes() > 0) {
-                        <span class="por-cobrar">
-                          <svg lucideWallet [size]="13"></svg>
-                          {{ pendientes() }} por cobrar
-                        </span>
+                    <div class="ficha-body">
+                      @if (c.estado === 'bloqueado') {
+                        <div class="alert">
+                          <svg lucideBan [size]="15"></svg>
+                          <span>
+                            Cliente bloqueado. No puede generar nuevas reservas en
+                            taquilla.
+                          </span>
+                        </div>
+                      }
+
+                      <dl class="contact">
+                        <div>
+                          <dt><svg lucideMail [size]="14"></svg> Email</dt>
+                          <dd>{{ c.email }}</dd>
+                        </div>
+                        <div>
+                          <dt><svg lucidePhone [size]="14"></svg> Teléfono</dt>
+                          <dd>{{ c.telefono || 'No registrado' }}</dd>
+                        </div>
+                      </dl>
+
+                      <div class="res-head">
+                        <h3><svg lucideTicket [size]="16"></svg> Reservas</h3>
+                        @if (pendientes() > 0) {
+                          <span class="por-cobrar">
+                            <svg lucideWallet [size]="13"></svg>
+                            {{ pendientes() }} por cobrar
+                          </span>
+                        }
+                      </div>
+
+                      @if (reservasError(); as msg) {
+                        <div class="error-banner" role="alert">
+                          <span>{{ msg }}</span>
+                          <button type="button" class="btn btn-sm" (click)="reloadReservas()">Reintentar</button>
+                        </div>
+                      } @else if (reservasLoading()) {
+                        <div class="skeleton-list">
+                          @for (i of [1,2,3]; track i) {
+                            <div class="skeleton-row"></div>
+                          }
+                        </div>
+                      } @else {
+                        @if (selectedReservas().length === 0) {
+                          <p class="no-res">Este cliente no tiene reservas registradas.</p>
+                        } @else {
+                          <ul class="reservas">
+                            @for (r of selectedReservas(); track r.id) {
+                              <li class="reserva" [class.pendiente]="r.estado === 'pendiente_pago'">
+                                <div class="r-top">
+                                  <span class="r-num">{{ r.numero_reserva }}</span>
+                                  <span class="estado-badge" [class]="'st-' + r.estado">
+                                    {{ estadoLabel(r.estado) }}
+                                  </span>
+                                </div>
+                                <div class="r-meta">
+                                  <span>{{ r.num_asientos }} {{ r.num_asientos === 1 ? 'asiento' : 'asientos' }}</span>
+                                  @if (r.asientos.length) {
+                                    <span class="r-seats">
+                                      @for (a of r.asientos; track a.id) {
+                                        <span class="seat-chip">{{ a.codigo }}</span>
+                                      }
+                                    </span>
+                                  }
+                                  <span class="r-monto">{{ money(r.monto_total) }}</span>
+                                </div>
+                                <div class="r-foot">
+                                  <span class="r-date">{{ fmtDate(r.created_at) }}</span>
+                                  @if (r.estado === 'pendiente_pago') {
+                                    <a
+                                      class="btn btn-sm primary"
+                                      [routerLink]="['/admin/recepcionista/pago-efectivo', r.numero_reserva]"
+                                    >
+                                      <svg lucideWallet [size]="13"></svg>
+                                      Cobrar en taquilla
+                                    </a>
+                                  }
+                                </div>
+                              </li>
+                            }
+                          </ul>
+                        }
                       }
                     </div>
-
-                    @if (selectedReservas().length === 0) {
-                      <p class="no-res">Este cliente no tiene reservas registradas.</p>
-                    } @else {
-                      <ul class="reservas">
-                        @for (r of selectedReservas(); track r.id) {
-                          <li class="reserva" [class.pendiente]="r.estado === 'pendiente_pago'">
-                            <div class="r-top">
-                              <span class="r-num">{{ r.numero_reserva }}</span>
-                              <span class="estado-badge" [class]="'st-' + r.estado">
-                                {{ estadoLabel(r.estado) }}
-                              </span>
-                            </div>
-                            <div class="r-meta">
-                              <span>{{ r.num_asientos }} {{ r.num_asientos === 1 ? 'asiento' : 'asientos' }}</span>
-                              @if (r.asientos?.length) {
-                                <span class="r-seats">
-                                  @for (a of (r.asientos ?? []); track a.id) {
-                                    <span class="seat-chip">{{ a.codigo }}</span>
-                                  }
-                                </span>
-                              }
-                              <span class="r-monto">{{ money(r.monto_total) }}</span>
-                            </div>
-                            <div class="r-foot">
-                              <span class="r-date">{{ fmtDate(r.created_at) }}</span>
-                              @if (r.estado === 'pendiente_pago') {
-                                <a
-                                  class="btn btn-sm primary"
-                                  [routerLink]="['/admin/recepcionista/pago-efectivo', r.numero_reserva]"
-                                >
-                                  <svg lucideWallet [size]="13"></svg>
-                                  Cobrar en taquilla
-                                </a>
-                              }
-                            </div>
-                          </li>
-                        }
-                      </ul>
-                    }
                   </div>
-                </div>
-              } @else {
-                <div class="placeholder tall">
-                  <span class="ph-mark"><svg lucideUserSearch [size]="28"></svg></span>
-                  <p>Selecciona un cliente de la lista para ver su ficha y reservas.</p>
-                </div>
+                } @else {
+                  <div class="placeholder tall">
+                    <span class="ph-mark"><svg lucideUserSearch [size]="28"></svg></span>
+                    <p>Selecciona un cliente de la lista para ver su ficha y reservas.</p>
+                  </div>
+                }
               }
             </div>
           </section>
@@ -284,18 +325,30 @@ import { PagerComponent } from '../../../../shared/components/pager.component';
 })
 export class RecepcionistaBuscarClienteComponent {
   private clientesSvc = inject(ClientesService);
-  private reservasSvc = inject(ReservasService);
+  private reservasSvc = inject(AdminReservasService);
 
   readonly query = signal('');
   readonly clientes = signal<Cliente[]>([]);
-  readonly reservas = signal<Reserva[]>([]);
+  readonly reservas = signal<AdminReservaRow[]>([]);
   readonly selectedId = signal<string | null>(null);
+
+  readonly reservasLoading = signal(false);
+  readonly reservasError = signal<string | null>(null);
 
   readonly page = signal(1);
   readonly pageSize = signal(10);
   readonly total = signal(0);
   readonly stats = signal<ClientesStats>({ total: 0, activos: 0, bloqueados: 0 });
   readonly selectedDetalle = signal<ClienteDetalle | null>(null);
+
+  private readonly retryTick = signal(0);
+
+  readonly clientesLoading = signal<boolean>(false);
+  readonly clientesError = signal<string | null>(null);
+  readonly statsLoading = signal<boolean>(false);
+  readonly statsError = signal<string | null>(null);
+  readonly detalleLoading = signal<boolean>(false);
+  readonly detalleError = signal<string | null>(null);
 
   readonly hasQuery = computed(() => this.query().trim().length > 0);
 
@@ -316,7 +369,8 @@ export class RecepcionistaBuscarClienteComponent {
     const usuariosPorReserva = new Set(
       this.reservas()
         .filter((r) => r.numero_reserva.toLowerCase().includes(reservaQuery))
-        .map((r) => r.id_usuario),
+        .map((r) => r.id_usuario)
+        .filter((id): id is string => !!id),
     );
 
     if (!usuariosPorReserva.size) return all;
@@ -328,7 +382,7 @@ export class RecepcionistaBuscarClienteComponent {
     return [...all, ...extras];
   });
 
-  readonly matchedReserva = computed<Reserva | null>(() => {
+  readonly matchedReserva = computed<AdminReservaRow | null>(() => {
     if (!this.hasQuery()) return null;
     const q = this.query().trim().toLowerCase().replace(/^#/, '');
     if (!q) return null;
@@ -360,35 +414,83 @@ export class RecepcionistaBuscarClienteComponent {
   private queryDebounce: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
-    this.reservasSvc.list().subscribe((data) => this.reservas.set(data));
+    this.cargarReservas();
     this.reloadStats();
     effect(() => {
       const busqueda = this.query().trim();
+      this.retryTick(); // dependency: trigger re-fetch on retry
+      this.clientesLoading.set(true);
+      this.clientesError.set(null);
       this.clientesSvc
         .list({
           page: this.page(),
           limit: this.pageSize(),
           busqueda: busqueda || undefined,
         })
-        .subscribe((res) => {
-          this.clientes.set(res.data);
-          this.total.set(res.total);
+        .subscribe({
+          next: (res) => {
+            this.clientes.set(res.data);
+            this.total.set(res.total);
+            this.clientesLoading.set(false);
+          },
+          error: (err) => {
+            this.clientesError.set(extractMessage(err));
+            this.clientesLoading.set(false);
+          },
         });
     });
     effect(() => {
       const id = this.selectedId();
       if (!id) {
         this.selectedDetalle.set(null);
+        this.detalleError.set(null);
         return;
       }
-      this.clientesSvc
-        .getById(id)
-        .subscribe((d) => this.selectedDetalle.set(d));
+      this.detalleLoading.set(true);
+      this.detalleError.set(null);
+      this.clientesSvc.getById(id).subscribe({
+        next: (d) => {
+          this.selectedDetalle.set(d);
+          this.detalleLoading.set(false);
+        },
+        error: (err) => {
+          this.detalleError.set(extractMessage(err));
+          this.detalleLoading.set(false);
+        },
+      });
     });
   }
 
+  private cargarReservas(): void {
+    this.reservasLoading.set(true);
+    this.reservasError.set(null);
+    this.reservasSvc.list({ limit: 200 }).subscribe({
+      next: (res) => {
+        this.reservas.set(res.data);
+        this.reservasLoading.set(false);
+      },
+      error: (err) => {
+        this.reservasError.set(extractMessage(err));
+        this.reservasLoading.set(false);
+      },
+    });
+  }
+
+  reloadReservas(): void { this.cargarReservas(); }
+
   private reloadStats(): void {
-    this.clientesSvc.getStats().subscribe((s) => this.stats.set(s));
+    this.statsLoading.set(true);
+    this.statsError.set(null);
+    this.clientesSvc.getStats().subscribe({
+      next: (s) => {
+        this.stats.set(s);
+        this.statsLoading.set(false);
+      },
+      error: (err) => {
+        this.statsError.set(extractMessage(err));
+        this.statsLoading.set(false);
+      },
+    });
   }
 
   onQuery(value: string) {
@@ -397,7 +499,7 @@ export class RecepcionistaBuscarClienteComponent {
       this.query.set(value);
       this.page.set(1);
       const matched = this.matchedReserva();
-      if (matched) {
+      if (matched?.id_usuario) {
         this.selectedId.set(matched.id_usuario);
         return;
       }
@@ -421,6 +523,11 @@ export class RecepcionistaBuscarClienteComponent {
 
   select(id: string) {
     this.selectedId.set(id);
+  }
+
+  reload(): void {
+    this.clientesError.set(null);
+    this.retryTick.update((n) => n + 1);
   }
 
   initials(nombre: string): string {

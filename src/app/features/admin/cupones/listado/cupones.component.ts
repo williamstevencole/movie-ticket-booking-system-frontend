@@ -297,7 +297,7 @@ export class AdminCuponesComponent {
 
   readonly loading = signal<boolean>(true);
   readonly error = signal<string | null>(null);
-  readonly skeletonRows = Array.from({ length: 6 });
+  readonly skeletonRows = Array.from({ length: 6 }, (_, i) => i);
 
   readonly page = signal(1);
   readonly pageSize = signal(10);

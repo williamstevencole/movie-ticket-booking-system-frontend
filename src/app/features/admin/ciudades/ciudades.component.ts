@@ -307,7 +307,7 @@ export class AdminCiudadesComponent {
 
   readonly loading = signal<boolean>(true);
   readonly error = signal<string | null>(null);
-  readonly skeletonRows = Array.from({ length: 6 });
+  readonly skeletonRows = Array.from({ length: 6 }, (_, i) => i);
 
   readonly filtered = computed(() => {
     const t = this.searchTerm().trim().toLowerCase();

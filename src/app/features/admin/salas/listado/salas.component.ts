@@ -12,6 +12,8 @@ import {
 } from '@lucide/angular';
 
 import { Cine, CinesService } from '../../../../shared/services/cines.service';
+import { SalasService, Sala } from '../../../../shared/services/salas.service';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 import {
   Funcion,
   FuncionesService,
@@ -118,8 +120,36 @@ type SalaRow = {
             </span>
           </section>
 
+          @if (error(); as msg) {
+            <div class="error-banner">
+              <span>{{ msg }}</span>
+              <button type="button" (click)="reload()">Reintentar</button>
+            </div>
+          }
+
           <section class="card">
-            @if (paged().length === 0) {
+            @if (loading() && salasData().length === 0) {
+              <div class="table-scroll">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Sala</th>
+                      <th>Cine</th>
+                      <th class="col-num">Grilla</th>
+                      <th class="col-num">Asientos</th>
+                      <th class="col-num">Funciones</th>
+                      <th>Estado</th>
+                      <th class="col-acc" aria-label="Acciones"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (i of skeletonRows; track i) {
+                      <tr class="row-skeleton"><td colspan="7"><div class="skeleton-bar"></div></td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else if (paged().length === 0) {
               <div class="empty">
                 <span class="empty-mark">
                   <svg lucideArmchair [size]="22"></svg>
@@ -232,12 +262,18 @@ type SalaRow = {
 })
 export class AdminSalasComponent {
   private cinesSvc = inject(CinesService);
+  private salasSvc = inject(SalasService);
   private funcionesSvc = inject(FuncionesService);
   private route = inject(ActivatedRoute);
   private toast = inject(ToastService);
 
   readonly cines = signal<Cine[]>([]);
   readonly funciones = signal<Funcion[]>([]);
+
+  readonly loading = signal<boolean>(true);
+  readonly error = signal<string | null>(null);
+  readonly salasData = signal<Sala[]>([]);
+  readonly skeletonRows = Array.from({ length: 6 }, (_, i) => i);
 
   readonly busqueda = signal<string>('');
   readonly idCine = signal<string>('');
@@ -248,22 +284,20 @@ export class AdminSalasComponent {
   readonly pageSize = signal(10);
 
   readonly rows = computed<SalaRow[]>(() => {
-    const out: SalaRow[] = [];
-    for (const c of this.cines()) {
-      for (const s of c.salas) {
-        out.push({
-          key: `${c.id}:${s.id}`,
-          id: s.id,
-          nombre: s.nombre,
-          cineId: c.id,
-          cineNombre: c.nombre,
-          filas: s.filas ?? 0,
-          columnas: s.columnas ?? 0,
-          asientos: (s.filas ?? 0) * (s.columnas ?? 0),
-        });
-      }
-    }
-    return out;
+    const cinesById = new Map(this.cines().map((c) => [c.id, c]));
+    return this.salasData().map((s) => {
+      const cine = cinesById.get(s.id_cine);
+      return {
+        key: `${s.id_cine}:${s.id}`,
+        id: s.id,
+        nombre: s.nombre,
+        cineId: s.id_cine,
+        cineNombre: cine?.nombre ?? '—',
+        filas: s.filas,
+        columnas: s.columnas,
+        asientos: s.filas * s.columnas,
+      };
+    });
   });
 
   readonly funcionesActivasPorSala = computed(() => {
@@ -307,6 +341,7 @@ export class AdminSalasComponent {
   constructor() {
     this.cinesSvc.list().subscribe((p) => this.cines.set(p.data));
     this.funcionesSvc.list().subscribe((f) => this.funciones.set(f));
+    this.fetchSalas();
 
     const preCine = this.route.snapshot.queryParamMap.get('cine');
     if (preCine) this.idCine.set(preCine);
@@ -363,5 +398,25 @@ export class AdminSalasComponent {
       this.toast.show(`${s.nombre} desactivada`);
     }
     this.inactivos.set(next);
+  }
+
+  private fetchSalas(): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.salasSvc.list().subscribe({
+      next: (salas) => {
+        this.salasData.set(salas);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.salasData.set([]);
+        this.error.set(extractMessage(err));
+        this.loading.set(false);
+      },
+    });
+  }
+
+  reload(): void {
+    this.fetchSalas();
   }
 }

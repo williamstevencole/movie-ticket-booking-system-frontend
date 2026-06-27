@@ -37,7 +37,7 @@
               >
                 @if (asiento.tipo === 'accesible') { ♿ }
                 @else if (asiento.tipo === 'vip') { ★ }
-                @else { {{ asiento.codigo.slice(2) }} }
+                @else { {{ asiento.numero }} }
               </button>
             }
             <span class="row-letra">{{ fila.letra }}</span>

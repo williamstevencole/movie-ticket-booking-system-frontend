@@ -17,12 +17,22 @@ export type CheckoutResultado = {
   mensajeError?: string | null;
 };
 
+/** Reserva creada a partir de los asientos bloqueados (POST /reservas). */
+export type ReservaCreada = {
+  id_reserva: string;
+  numero_reserva: string;
+  estado: string;
+  asientos: Array<{ codigo: string; tipo: string }>;
+  total_estimado: string;
+};
+
 @Injectable({ providedIn: 'root' })
 export class CheckoutStateService {
   private readonly reservasSvc = inject(ReservasService);
   private readonly toastSvc = inject(ToastService);
 
   private resultado: CheckoutResultado | null = null;
+  private reservaPendiente: ReservaCreada | null = null;
 
   setResultado(data: CheckoutResultado): void {
     this.resultado = data;
@@ -35,9 +45,20 @@ export class CheckoutStateService {
     return r;
   }
 
+  /** Reserva creada en el paso de asientos, disponible para el flujo de pago. */
+  setReservaPendiente(r: ReservaCreada | null): void {
+    this.reservaPendiente = r;
+  }
+
+  getReservaPendiente(): ReservaCreada | null {
+    return this.reservaPendiente;
+  }
+
   /**
-   * Confirms a reservation with seat version information.
-   * Handles 409 Conflict by showing toast and returning error for caller to refresh.
+   * Crea la reserva a partir de los asientos que el usuario tiene bloqueados
+   * (POST /reservas). Convierte el bloqueo temporal en una reserva pendiente de pago.
+   * Maneja el 409 (asiento ya no disponible / bloqueo expirado) para que el
+   * llamador refresque el mapa.
    */
 
   

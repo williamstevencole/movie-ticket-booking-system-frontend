@@ -296,7 +296,7 @@ export class AdminCinesComponent {
   readonly error = signal<string | null>(null);
   readonly total = signal<number>(0);
   readonly togglingId = signal<string | null>(null);
-  readonly skeletonRows = Array.from({ length: 6 });
+  readonly skeletonRows = Array.from({ length: 6 }, (_, i) => i);
 
   readonly ciudadesById = computed(() => {
     const map = new Map<string, Ciudad>();

@@ -20,15 +20,22 @@ import { RatingDisplayComponent } from '../../../shared/components/rating-displa
     <section class="film-hero">
       <div class="film-hero-inner">
         <div class="poster" [class]="pelicula.poster">
+          @if (pelicula.poster_url) {
+            <img [src]="pelicula.poster_url" [alt]="pelicula.titulo" />
+          }
           <app-poster-badge [tipo]="pelicula.badge" />
         </div>
         <div>
           <div class="film-meta-row">
-            <span class="pill red">★ {{ pelicula.badgeLabel }}</span>
+            @if (pelicula.badgeLabel) {
+              <span class="pill red">★ {{ pelicula.badgeLabel }}</span>
+            }
             <span class="pill">{{ pelicula.genero }}</span>
             <span class="pill">{{ pelicula.duracion }}</span>
             <span class="pill">{{ pelicula.idioma }}</span>
-            <span class="pill">{{ pelicula.clasificacion }}</span>
+            @if (pelicula.clasificacion) {
+              <span class="pill">{{ pelicula.clasificacion }}</span>
+            }
             <app-pelicula-rating
               [valor]="pelicula.rating"
               [total]="pelicula.ratingCount"
@@ -53,10 +60,10 @@ import { RatingDisplayComponent } from '../../../shared/components/rating-displa
             }
           </div>
           <div class="film-cta">
-            <a href="#funciones" class="btn btn-primary btn-lg">
+            <button type="button" class="btn btn-primary btn-lg" (click)="scrollToFunciones()">
               <svg lucidePlay [size]="16"></svg>
               Ver funciones
-            </a>
+            </button>
             <button type="button" class="btn btn-lg btn-trailer">Tráiler oficial</button>
           </div>
         </div>
@@ -67,4 +74,11 @@ import { RatingDisplayComponent } from '../../../shared/components/rating-displa
 })
 export class PeliculaHeroComponent {
   @Input({ required: true }) pelicula!: PeliculaDetalle;
+
+  /** Scroll a la sección de funciones (anchorScrolling del router está deshabilitado). */
+  scrollToFunciones(): void {
+    document
+      .getElementById('funciones')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }

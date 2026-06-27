@@ -457,3 +457,72 @@
   .shell { padding: var(--s5) var(--s4) var(--s8); }
   .tbl-ops th, .tbl-ops td { padding: 9px var(--s3); }
 }
+
+/* ───── skeleton shimmer (shared admin convention) ───── */
+@keyframes skel-pulse {
+  0%   { background-position:  200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  padding: var(--s4) var(--s5);
+  gap: var(--s3);
+}
+
+.skeleton-row {
+  height: 52px;
+  border-radius: var(--r-sm);
+  background: linear-gradient(90deg, var(--surface) 25%, var(--bg-soft) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: skel-pulse 1.2s ease-in-out infinite;
+}
+
+/* pagos-listado uses skel-list / skel-row / skel-cell aliases */
+.skel-list {
+  display: flex;
+  flex-direction: column;
+  padding: var(--s4) var(--s5);
+  gap: var(--s3);
+}
+
+.skel-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  height: 52px;
+  border-radius: var(--r-sm);
+  background: linear-gradient(90deg, var(--surface) 25%, var(--bg-soft) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: skel-pulse 1.2s ease-in-out infinite;
+}
+
+.skel-cell {
+  flex: 1;
+  height: 14px;
+  border-radius: var(--r-sm);
+  background: var(--bg-soft);
+  opacity: 0.6;
+}
+.skel-cell.wide  { flex: 2; }
+.skel-cell.narrow { flex: 0.6; }
+.skel-cell.right { margin-left: auto; }
+
+/* ───── error banner (shared admin convention) ───── */
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s4) var(--s5);
+  background: var(--red-soft);
+  border-left: 3px solid var(--red);
+  border-radius: var(--r-sm);
+  margin: var(--s4) var(--s5);
+  color: var(--red);
+  font-size: 14px;
+  font-weight: 600;
+
+  span { flex: 1; }
+  .btn { margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+}

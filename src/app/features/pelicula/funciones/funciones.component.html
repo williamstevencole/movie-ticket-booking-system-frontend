@@ -2,56 +2,91 @@
   <div class="wrap">
     <div class="picker-section">
       <h2>1. Elegí el día</h2>
-      <app-day-strip />
+      <app-day-strip (dayChange)="onDayChange($event)" />
     </div>
 
-    <div class="picker-section">
-      <h2>2. Elegí la función</h2>
-      <div class="funciones-list">
-        @let c = selectedCine();
-        <article class="funcion-block">
-          <div class="funcion-head">
-            <div class="info">
-              <span
-                class="icon"
-                [style.background]="c.iconColor === 'orange' ? 'var(--orange)' : null"
-              >{{ c.iconLetter }}</span>
-              <div>
-                <div class="name">{{ c.nombre }}</div>
-                <div class="sub">
-                  {{ c.direccion }} · {{ c.ciudad }}
-                  <app-distancia-cine [coords]="c.coords" />
-                </div>
-              </div>
-            </div>
-            <a
-              class="btn btn-sm"
-              [href]="mapsUrl(c.coords.lat, c.coords.lng)"
-              target="_blank"
-              rel="noopener"
-            >Cómo llegar →</a>
-          </div>
-
-          @for (sala of c.salas; track sala.id) {
-            <div class="sala-row">
-              <div class="sala-info">
-                <div class="sala-name">{{ sala.nombre }}</div>
-                <div class="feats">
-                  @for (f of sala.feats; track f.label) {
-                    <span class="feat" [class.vip]="f.vip">{{ f.label }}</span>
-                  }
-                </div>
-                <div class="price">Desde <strong>L {{ sala.precioDesde }}</strong></div>
-              </div>
-              <div class="times-grid">
-                @for (h of sala.horarios; track h.id) {
-                  <app-horario-chip [horario]="h" />
-                }
-              </div>
-            </div>
-          }
-        </article>
+    @if (cargando()) {
+      <div class="picker-section">
+        <p class="muted">Cargando funciones…</p>
       </div>
-    </div>
+    } @else if (error()) {
+      <div class="picker-section">
+        <p class="muted">No se pudieron cargar las funciones. Intentá de nuevo.</p>
+      </div>
+    } @else if (cines().length === 0) {
+      <div class="picker-section">
+        <p class="muted">Esta película aún no tiene funciones programadas.</p>
+      </div>
+    } @else {
+      <div class="picker-section">
+        <h2>2. Elegí el cine</h2>
+        <div class="cine-tabs">
+          @for (cine of cines(); track cine.id) {
+            <button
+              type="button"
+              class="cine-tab"
+              [class.on]="selectedCine()?.id === cine.id"
+              (click)="selectCine(cine.id)"
+            >
+              <span class="icon">{{ cine.iconLetter }}</span>
+              <span class="lbl">
+                <span class="name">{{ cine.nombre }}</span>
+                <span class="city">{{ cine.ciudad }}</span>
+              </span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="picker-section">
+        <h2>3. Elegí la función</h2>
+        @let cine = selectedCine();
+        @if (cine) {
+          <div class="funciones-list">
+            <article class="funcion-block">
+              <div class="funcion-head">
+                <div class="info">
+                  <span class="icon">{{ cine.iconLetter }}</span>
+                  <div>
+                    <div class="name">{{ cine.nombre }}</div>
+                    <div class="sub">
+                      @if (cine.direccion) {
+                        {{ cine.direccion }} ·
+                      }
+                      {{ cine.ciudad }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              @if (cargandoFunciones()) {
+                <p class="muted no-funciones">Cargando funciones…</p>
+              } @else if (errorFunciones()) {
+                <p class="muted no-funciones">
+                  No se pudieron cargar las funciones de este cine.
+                </p>
+              } @else {
+                @for (sala of salasDelDia(); track sala.id) {
+                  <div class="sala-row">
+                    <div class="sala-info">
+                      <div class="sala-name">{{ sala.nombre }}</div>
+                    </div>
+                    <div class="times-grid">
+                      @for (h of sala.horarios; track h.funcionId) {
+                        <app-horario-chip [horario]="h" />
+                      }
+                    </div>
+                  </div>
+                } @empty {
+                  <p class="muted no-funciones">
+                    No hay funciones para el día seleccionado en este cine.
+                  </p>
+                }
+              }
+            </article>
+          </div>
+        }
+      </div>
+    }
   </div>
 </section>

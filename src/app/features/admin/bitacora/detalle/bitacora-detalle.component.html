@@ -12,7 +12,21 @@
     <p class="detalle" *ngIf="detail()?.detalle as t">{{ t }}</p>
   </header>
 
-  <p *ngIf="loading()" class="loading">Cargando…</p>
+  @if (detailError()) {
+    <div class="error-banner" role="alert">
+      <span>{{ detailError() }}</span>
+      <button type="button" class="btn-retry" (click)="retryDetail()">Reintentar</button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="skeleton-detail">
+      <div class="skel-line skel-title"></div>
+      <div class="skel-line skel-body"></div>
+      <div class="skel-line skel-body"></div>
+      <div class="skel-line skel-body skel-short"></div>
+    </div>
+  }
 
   <div class="body" *ngIf="detail() as d">
     <h3>{{ modo() === 'create' ? 'Estado inicial' : modo() === 'delete' ? 'Estado al borrar' : 'Cambios' }}</h3>

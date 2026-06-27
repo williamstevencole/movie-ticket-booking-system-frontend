@@ -13,7 +13,7 @@ import {
   LucideFilm,
 } from '@lucide/angular';
 
-import { ReservasService, Reserva, ReservaUsuario } from '../../../../shared/services/reservas.service';
+import { AdminReservasService, AdminReservaDetail, UsuarioReserva } from '../../../../shared/services/admin-reservas.service';
 import { FuncionesService, Funcion } from '../../../../shared/services/funciones.service';
 import { PeliculasService, Pelicula } from '../../../../shared/services/peliculas.service';
 import { CinesService, Cine } from '../../../../shared/services/cines.service';
@@ -24,6 +24,7 @@ import {
   ReglaPolitica,
 } from '../../../../shared/services/politicas-cancelacion.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 
 @Component({
   selector: 'app-admin-reserva-cancelar',
@@ -177,7 +178,7 @@ import { AdminSidebarComponent } from '../../../../shared/components/admin-sideb
 export class AdminReservaCancelarComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private reservasSvc = inject(ReservasService);
+  private reservasSvc = inject(AdminReservasService);
   private funcionesSvc = inject(FuncionesService);
   private peliculasSvc = inject(PeliculasService);
   private cinesSvc = inject(CinesService);
@@ -186,8 +187,8 @@ export class AdminReservaCancelarComponent {
 
   readonly cargando = signal(true);
   readonly error = signal<string | null>(null);
-  readonly reserva = signal<Reserva | null>(null);
-  readonly cliente = signal<ReservaUsuario | null>(null);
+  readonly reserva = signal<AdminReservaDetail | null>(null);
+  readonly cliente = signal<UsuarioReserva | null>(null);
   readonly pago = signal<Pago | null>(null);
   readonly funcion = signal<Funcion | null>(null);
   readonly pelicula = signal<Pelicula | null>(null);
@@ -260,11 +261,8 @@ export class AdminReservaCancelarComponent {
         }
         this.reserva.set(reserva);
 
-        // Load usuario
-        this.reservasSvc.getUsuario(reserva.id_usuario).subscribe({
-          next: (u) => this.cliente.set(u ?? null),
-          error: () => {},
-        });
+        // Set cliente directly from embedded usuario (no extra HTTP call)
+        this.cliente.set(reserva.usuario ?? null);
 
         // Load pago — getByReserva returns array, take the first exitoso/reembolsado
         this.pagosSvc.getByReserva(reserva.id).subscribe({
@@ -275,6 +273,11 @@ export class AdminReservaCancelarComponent {
         });
 
         // Load funcion → then pelicula + cine
+        if (!reserva.id_funcion) {
+          this.error.set('Función no encontrada para esta reserva.');
+          this.cargando.set(false);
+          return;
+        }
         this.funcionesSvc.getById(reserva.id_funcion).subscribe({
           next: (funcion) => {
             this.funcion.set(funcion);
@@ -316,8 +319,8 @@ export class AdminReservaCancelarComponent {
           },
         });
       },
-      error: () => {
-        this.error.set('No se pudo cargar la reserva.');
+      error: (err) => {
+        this.error.set(extractMessage(err));
         this.cargando.set(false);
       },
     });
