@@ -223,8 +223,6 @@ export class AdminSidebarComponent {
         {
           label: 'Reembolsos',
           icon: LucideUndo2,
-          count: 3,
-          urgent: true,
           routerLink: '/admin/reembolsos',
         },
       ],
@@ -259,7 +257,7 @@ export class AdminSidebarComponent {
       links: [
         { label: 'Clientes', icon: LucideUserRound, routerLink: '/admin/clientes' },
         {
-          label: 'Usuarios & roles',
+          label: 'Administradores',
           icon: LucideUsers,
           routerLink: '/admin/usuarios-roles',
         },
