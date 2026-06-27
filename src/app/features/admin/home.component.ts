@@ -225,11 +225,11 @@ export class AdminHomeComponent implements OnInit {
       done();
     };
 
-    this.reservasSvc.list({ limit: 200 }).subscribe({
+    this.reservasSvc.list({ limit: 100 }).subscribe({
       next: (res) => { this.reservas.set(res.data); done(); },
       error: fail,
     });
-    this.pagosSvc.list({ limit: 200 }).subscribe({
+    this.pagosSvc.list({ limit: 100 }).subscribe({
       next: (res) => { this.pagos.set(res.data); done(); },
       error: fail,
     });
