@@ -11,9 +11,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import {
-  LucideBell,
   LucideCreditCard,
-  LucideGift,
   LucideLayoutDashboard,
   LucideLogOut,
   LucideMapPin,
@@ -37,9 +35,7 @@ export type AppNavItem = { label: string; route?: string; active?: boolean };
     LucideLayoutDashboard,
     LucideUser,
     LucideCreditCard,
-    LucideGift,
     LucideShield,
-    LucideBell,
     BuscadorGlobalComponent,
   ],
   template: `
@@ -103,14 +99,8 @@ export type AppNavItem = { label: string; route?: string; active?: boolean };
                   <a routerLink="/cuenta/metodos-pago" (click)="closeMenu()" role="menuitem">
                     <svg lucideCreditCard [size]="16"></svg><span>Métodos de pago</span>
                   </a>
-                  <a routerLink="/cuenta/cupones" (click)="closeMenu()" role="menuitem">
-                    <svg lucideGift [size]="16"></svg><span>Cupones</span>
-                  </a>
                   <a routerLink="/cuenta/seguridad" (click)="closeMenu()" role="menuitem">
                     <svg lucideShield [size]="16"></svg><span>Seguridad</span>
-                  </a>
-                  <a routerLink="/cuenta/notificaciones" (click)="closeMenu()" role="menuitem">
-                    <svg lucideBell [size]="16"></svg><span>Notificaciones</span>
                   </a>
                   @if (showLogout) {
                     <button class="menu-logout" (click)="onLogout()" role="menuitem">
