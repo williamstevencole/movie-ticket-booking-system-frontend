@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../shared/services/auth.service';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -56,7 +56,7 @@ import { UsuariosService } from '../../../shared/services/usuarios.service';
   `,
   styleUrl: './perfil.component.scss',
 })
-export class PerfilPageComponent {
+export class PerfilPageComponent implements OnInit {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private toast = inject(ToastService);
@@ -65,10 +65,28 @@ export class PerfilPageComponent {
   readonly form = this.fb.nonNullable.group({
     nombre: [this.auth.user()?.nombre ?? '', Validators.required],
     email: [{ value: this.auth.user()?.email ?? '', disabled: true }],
-    telefono: [''],
+    telefono: [this.auth.user()?.telefono ?? ''],
   });
 
   notificacionesActivas = this.auth.user()?.notificaciones_activas ?? false;
+
+  ngOnInit(): void {
+    this.usuariosSvc.getMiPerfil().subscribe({
+      next: (perfil) => {
+        this.form.patchValue({
+          nombre: perfil.nombre,
+          telefono: perfil.telefono ?? '',
+        });
+        this.notificacionesActivas = perfil.notificaciones_activas;
+        this.auth.updateUser({
+          nombre: perfil.nombre,
+          email: perfil.email,
+          telefono: perfil.telefono,
+          notificaciones_activas: perfil.notificaciones_activas,
+        });
+      },
+    });
+  }
 
   save(): void {
     if (this.form.invalid) return;

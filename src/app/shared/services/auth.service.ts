@@ -20,6 +20,7 @@ export type AuthUser = {
   email: string;
   id_rol: string;
   estado: string;
+  telefono?: string | null;
   notificaciones_activas?: boolean;
 };
 
