@@ -1,7 +1,9 @@
 import { Component, signal, OnInit, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { LucideSearch } from '@lucide/angular';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { LucideSearch, LucideX } from '@lucide/angular';
 import { AppbarComponent } from '../../../shared/components/appbar/appbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
 import { PosterBadgeComponent } from '../../../shared/components/poster-badge/poster-badge.component';
@@ -15,7 +17,9 @@ import { CarteleraPelicula } from '../../../mocks/data/cartelera-display.mock';
   standalone: true,
   imports: [
     RouterLink,
+    FormsModule,
     LucideSearch,
+    LucideX,
     AppbarComponent,
     FooterComponent,
     PosterBadgeComponent,
@@ -26,9 +30,12 @@ import { CarteleraPelicula } from '../../../mocks/data/cartelera-display.mock';
 })
 export class BusquedaResultadosComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private cartelera = inject(CarteleraService);
   private location = inject(LocationService);
   private destroyRef = inject(DestroyRef);
+
+  private readonly tipeo$ = new Subject<string>();
 
   readonly nav = [
     { label: 'Cartelera', route: '/cartelera' },
@@ -44,10 +51,33 @@ export class BusquedaResultadosComponent implements OnInit {
   readonly resultados = signal<CarteleraPelicula[]>([]);
 
   ngOnInit(): void {
+    // La URL (?q=) es la fuente de verdad: dispara la consulta.
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((p) => {
       this.query.set(p.get('q') ?? '');
       this.fetch();
     });
+
+    // El tipeo, con debounce, sincroniza la URL (que a su vez consulta).
+    this.tipeo$
+      .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe((q) => {
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { q: q.trim() || null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      });
+  }
+
+  onQueryChange(value: string): void {
+    this.query.set(value); // refleja el tipeo al instante
+    this.tipeo$.next(value);
+  }
+
+  clearQuery(): void {
+    this.query.set('');
+    this.tipeo$.next('');
   }
 
   onFiltros(f: FiltrosBusqueda): void {

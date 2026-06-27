@@ -7,12 +7,30 @@
       @if (query()) {
         <p class="meta">Resultados para «{{ query() }}»</p>
       } @else {
-        <p class="meta">Explorá la cartelera con filtros</p>
+        <p class="meta">Buscá por título o filtrá la cartelera</p>
       }
     </div>
   </div>
 
-  <app-busqueda-filtros (filtrosChange)="onFiltros($event)" />
+  <div class="search-module">
+    <div class="search-field">
+      <svg lucideSearch [size]="20" class="ico"></svg>
+      <input
+        type="search"
+        class="search-input"
+        placeholder="Buscar por título…"
+        [ngModel]="query()"
+        (ngModelChange)="onQueryChange($event)"
+        autocomplete="off"
+      />
+      @if (query()) {
+        <button type="button" class="clear" (click)="clearQuery()" aria-label="Limpiar búsqueda">
+          <svg lucideX [size]="18"></svg>
+        </button>
+      }
+    </div>
+    <app-busqueda-filtros (filtrosChange)="onFiltros($event)" />
+  </div>
 
   @if (cargando()) {
     <div class="movie-grid">

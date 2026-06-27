@@ -1,13 +1,10 @@
 :host { display: block; }
 
+/* Se integra dentro del módulo de búsqueda; sin tarjeta propia. */
 .filtros {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--s4);
-  padding: var(--s4);
-  background: var(--bg-soft);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
 }
 @media (max-width: 680px) {
   .filtros { grid-template-columns: 1fr; }
