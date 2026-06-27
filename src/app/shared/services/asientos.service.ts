@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, map, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { Observable, map } from 'rxjs';
 import { API_URL } from '../../core/config/env';
 import { toStr } from '../../core/api/normalize';
 import { TipoAsiento } from '../../features/asientos/mapa/seat-types/seat-type.model';
@@ -37,6 +36,17 @@ type BackendMapa = {
   funcion_id: string | number;
   sala: { filas: number; columnas: number };
   asientos: BackendAsientoItem[];
+};
+
+type BackendBloqueoResp = {
+  bloqueados: (string | number)[];
+  bloqueado_hasta: string;
+};
+
+export type ResultadoBloqueo = {
+  bloqueados: string[];
+  /** ISO hasta el que los asientos quedan bloqueados (alias para el timer del UI). */
+  expira_en: string;
 };
 
 /** Normaliza el nombre del tipo de asiento del backend a la categoría de UI. */
@@ -96,11 +106,23 @@ export class AsientosService {
     };
   }
 
-  // TODO(Card 6): reemplazar por POST /funciones/:id/asientos/bloquear
-  bloquear(idFuncion: string | number, ids: (string | number)[]) {
-    void idFuncion;
-    void ids;
-    const expira = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-    return of({ expira_en: expira }).pipe(delay(120));
+  /**
+   * Bloquea asientos de una función para el usuario actual
+   * (POST /funciones/:id/asientos/bloquear). Propaga el 409 si alguno
+   * ya no está disponible, para que el componente muestre el conflicto.
+   */
+  bloquear(
+    idFuncion: string | number,
+    ids: (string | number)[],
+  ): Observable<ResultadoBloqueo> {
+    const body = { ids_asiento_funcion: ids.map((id) => toStr(id)) };
+    return this.http
+      .post<BackendBloqueoResp>(`${this.base}/${idFuncion}/asientos/bloquear`, body)
+      .pipe(
+        map((res) => ({
+          bloqueados: (res.bloqueados ?? []).map((id) => toStr(id)),
+          expira_en: res.bloqueado_hasta,
+        })),
+      );
   }
 }
