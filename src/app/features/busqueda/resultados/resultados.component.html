@@ -29,7 +29,7 @@
         </button>
       }
     </div>
-    <app-busqueda-filtros (filtrosChange)="onFiltros($event)" />
+    <app-busqueda-filtros [value]="filtros()" (filtrosChange)="onFiltros($event)" />
   </div>
 
   @if (cargando()) {

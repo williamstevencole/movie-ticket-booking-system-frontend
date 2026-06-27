@@ -51,9 +51,10 @@ export class BusquedaResultadosComponent implements OnInit {
   readonly resultados = signal<CarteleraPelicula[]>([]);
 
   ngOnInit(): void {
-    // La URL (?q=) es la fuente de verdad: dispara la consulta.
+    // La URL (?q=&genero=&idioma=) es la fuente de verdad: dispara la consulta.
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((p) => {
       this.query.set(p.get('q') ?? '');
+      this.filtros.set({ genero: p.get('genero') ?? '', idioma: p.get('idioma') ?? '' });
       this.fetch();
     });
 
@@ -81,8 +82,12 @@ export class BusquedaResultadosComponent implements OnInit {
   }
 
   onFiltros(f: FiltrosBusqueda): void {
-    this.filtros.set(f);
-    this.fetch();
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { genero: f.genero || null, idioma: f.idioma || null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   /** Consulta el backend aplicando título + filtros + ciudad seleccionada. */

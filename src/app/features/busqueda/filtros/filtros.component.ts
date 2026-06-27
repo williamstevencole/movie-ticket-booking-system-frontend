@@ -1,4 +1,4 @@
-import { Component, OnInit, output, signal, inject } from '@angular/core';
+import { Component, OnInit, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { GenerosService, Genero } from '../../../shared/services/generos.service';
 import { IdiomasService, Idioma } from '../../../shared/services/idiomas.service';
@@ -9,6 +9,8 @@ export type FiltrosBusqueda = {
   /** ID del idioma (vacío = todos). */
   idioma: string;
 };
+
+const EMPTY_FILTROS: FiltrosBusqueda = { genero: '', idioma: '' };
 
 @Component({
   selector: 'app-busqueda-filtros',
@@ -42,6 +44,7 @@ export class BusquedaFiltrosComponent implements OnInit {
   private generosSvc = inject(GenerosService);
   private idiomasSvc = inject(IdiomasService);
 
+  readonly value = input<FiltrosBusqueda>(EMPTY_FILTROS);
   readonly filtrosChange = output<FiltrosBusqueda>();
 
   readonly genero = signal('');
@@ -49,6 +52,14 @@ export class BusquedaFiltrosComponent implements OnInit {
 
   readonly generos = signal<Genero[]>([]);
   readonly idiomas = signal<Idioma[]>([]);
+
+  constructor() {
+    effect(() => {
+      const v = this.value();
+      this.genero.set(v.genero);
+      this.idioma.set(v.idioma);
+    });
+  }
 
   ngOnInit(): void {
     this.generosSvc.list().subscribe({
