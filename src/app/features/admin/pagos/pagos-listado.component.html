@@ -15,6 +15,13 @@
         </span>
       </div>
 
+      @if (pagosError()) {
+        <div class="error-banner" role="alert">
+          <span>{{ pagosError() }}</span>
+          <button type="button" class="btn btn-sm" (click)="reloadPagos()">Reintentar</button>
+        </div>
+      }
+
       <section class="kpi-grid">
         <div class="kpi">
           <span class="kpi-label">Transacciones</span>
@@ -63,7 +70,20 @@
       />
 
       <section class="card">
-        @if (paged().length === 0) {
+        @if (pagosLoading()) {
+          <div class="skel-list" aria-busy="true" aria-label="Cargando pagos">
+            @for (_ of [1,2,3,4,5,6,7,8]; track $index) {
+              <div class="skel-row">
+                <div class="skel-cell wide"></div>
+                <div class="skel-cell"></div>
+                <div class="skel-cell"></div>
+                <div class="skel-cell narrow"></div>
+                <div class="skel-cell narrow right"></div>
+                <div class="skel-cell narrow right"></div>
+              </div>
+            }
+          </div>
+        } @else if (paged().length === 0) {
           <div class="empty">
             <span class="empty-mark">
               <svg lucideCreditCard [size]="22"></svg>
@@ -103,12 +123,12 @@
                       }
                     </td>
                     <td>
-                      <div class="col-num">{{ reservaNumero(p.id_reserva) }}</div>
+                      <div class="col-num">{{ reservaNumero(p) }}</div>
                       <div class="col-sub">{{ cineNombrePorPago(p) }}</div>
                     </td>
                     <td>
-                      <div class="col-strong">{{ clienteNombre(p.id_reserva) }}</div>
-                      <div class="col-sub">{{ clienteEmail(p.id_reserva) }}</div>
+                      <div class="col-strong">{{ clienteNombre(p) }}</div>
+                      <div class="col-sub">{{ clienteEmail(p) }}</div>
                     </td>
                     <td>
                       <span class="metodo">
