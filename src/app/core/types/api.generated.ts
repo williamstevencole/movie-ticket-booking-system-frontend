@@ -366,6 +366,27 @@ export interface paths {
         patch: operations["SalasController_update"];
         trace?: never;
     };
+    "/salas/{id}/asientos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listar asientos físicos de una sala con su tipo asignado */
+        get: operations["SalasController_findAsientos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Actualizar tipos de asiento en batch para una sala
+         * @description Recibe una lista de pares { id_asiento, id_tipo_asiento }. Atómico — si una asignación es inválida, ninguna se aplica.
+         */
+        patch: operations["SalasController_updateAsientos"];
+        trace?: never;
+    };
     "/auth/login": {
         parameters: {
             query?: never;
@@ -984,6 +1005,26 @@ export interface paths {
         };
         /** Listado paginado de todas las reservas (admin) */
         get: operations["AdminReservasController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/reservas/by-numero/{numero}/cobrar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Detalle de reserva para taquilla, con precios por asiento calculados
+         * @description Devuelve la reserva completa (cliente, película, sala, cine, asientos) con el precio unitario de cada asiento resuelto desde precios_cine. El monto_total es la suma sin descuento de cupón. No filtra por estado: el frontend gestiona "no cobrable" para estados distintos a pendiente_pago.
+         */
+        get: operations["AdminReservasController_cobrarByNumero"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2052,6 +2093,39 @@ export interface components {
              */
             limit: number;
         };
+        CineDetailResponseDto: {
+            /**
+             * @description ID del cine
+             * @example 1
+             */
+            id: string;
+            /**
+             * @description Nombre del cine
+             * @example Cinépolis Plaza Mayor
+             */
+            nombre: string;
+            /**
+             * @description Dirección física del cine
+             * @example Av. Principal 123, Ciudad de México
+             */
+            direccion?: Record<string, never> | null;
+            /**
+             * @description ID de la ciudad
+             * @example 1
+             */
+            id_ciudad: string;
+            /**
+             * @description Si el cine está activo
+             * @example true
+             */
+            activo: boolean;
+            /**
+             * Format: date-time
+             * @description Fecha de creación del cine
+             * @example 2026-01-15T10:30:00.000Z
+             */
+            created_at: string;
+        };
         UpdateCineDto: {
             /**
              * @description Nombre del cine
@@ -2068,13 +2142,6 @@ export interface components {
              * @example 1
              */
             id_ciudad?: string;
-        };
-        DeleteResponseDto: {
-            /**
-             * @description ID del recurso eliminado
-             * @example 1
-             */
-            id: string;
         };
         CiudadResponseDto: {
             /**
@@ -2107,6 +2174,13 @@ export interface components {
              * @example Guatemala
              */
             nombre?: string;
+        };
+        DeleteResponseDto: {
+            /**
+             * @description ID del recurso eliminado
+             * @example 1
+             */
+            id: string;
         };
         FichaTecnicaDto: {
             /** @example Christopher Nolan */
@@ -2462,6 +2536,52 @@ export interface components {
              */
             warning?: string;
         };
+        TipoAsientoNestedDto: {
+            /** @example 1 */
+            id: string;
+            /** @example Estandar */
+            nombre: string;
+            /** @example #888888 */
+            color: Record<string, never> | null;
+        };
+        SalaAsientoResponseDto: {
+            /** @example 42 */
+            id: string;
+            /** @example A */
+            fila: string;
+            /** @example 5 */
+            columna: number;
+            /** @example A5 */
+            codigo: string;
+            /** @example 1 */
+            id_tipo_asiento: string;
+            tipo: components["schemas"]["TipoAsientoNestedDto"];
+        };
+        AsignacionDto: {
+            /**
+             * @description ID del asiento a actualizar
+             * @example 42
+             */
+            id_asiento: string;
+            /**
+             * @description ID del nuevo tipo de asiento
+             * @example 2
+             */
+            id_tipo_asiento: string;
+        };
+        UpdateAsientosBatchDto: {
+            /** @description Lista de asignaciones (id_asiento → id_tipo_asiento). Solo enviar los que cambiaron. */
+            asignaciones: components["schemas"]["AsignacionDto"][];
+        };
+        UpdateAsientosBatchResponseDto: {
+            /**
+             * @description Número de asientos actualizados
+             * @example 15
+             */
+            updated: number;
+            /** @example La sala tiene 2 funciones con reservas activas. Los cambios solo afectan reservas futuras. */
+            warning?: string | null;
+        };
         UpdateSalaDto: {
             /**
              * @description Nombre de la sala
@@ -2483,6 +2603,11 @@ export interface components {
              * @example 1
              */
             id_cine?: string;
+            /**
+             * @description Confirma explícitamente el cambio de dimensiones cuando hay funciones activas con reservas. Sin este flag, el backend devuelve 409 requiresConfirmation.
+             * @example true
+             */
+            force?: boolean;
         };
         LoginDto: {
             /**
@@ -3461,6 +3586,13 @@ export interface components {
              * @example 2026-06-25T10:00:00.000Z
              */
             created_at: string;
+            /**
+             * Format: date-time
+             * @example 2026-06-25T10:05:00.000Z
+             */
+            updated_at: string;
+            /** @example 100.00 */
+            monto_total?: string | null;
             cliente: components["schemas"]["AdminReservaClienteDto"];
             funcion: components["schemas"]["AdminReservaFuncionRefDto"];
             pelicula: components["schemas"]["AdminReservaPeliculaRefDto"];
@@ -3478,6 +3610,84 @@ export interface components {
             page: number;
             /** @example 20 */
             limit: number;
+        };
+        ReservaCobrarClienteDto: {
+            /** @example 12 */
+            id: string;
+            /** @example Andrea López */
+            nombre: string;
+            /** @example andrea.lopez@gmail.com */
+            email: string;
+            /** @example +504 3000-1234 */
+            telefono: Record<string, never> | null;
+        };
+        ReservaCobrarPeliculaRefDto: {
+            /** @example 7 */
+            id: string;
+            /** @example Tormenta sobre el Pacífico */
+            titulo: string;
+        };
+        ReservaCobrarFuncionRefDto: {
+            /** @example 99 */
+            id: string;
+            /** Format: date-time */
+            fecha_hora: string;
+        };
+        ReservaCobrarSalaRefDto: {
+            /** @example 4 */
+            id: string;
+            /** @example Sala 4 VIP */
+            nombre: string;
+        };
+        ReservaCobrarCineRefDto: {
+            /** @example 1 */
+            id: string;
+            /** @example Cinépolis Oakland Mall */
+            nombre: string;
+        };
+        ReservaCobrarAsientoDto: {
+            /** @example 42 */
+            id: string;
+            /** @example D5 */
+            codigo: string;
+            /** @example Estandar */
+            tipo: string;
+            /**
+             * @description Precio unitario del asiento según precios_cine
+             * @example 70
+             */
+            precio: number;
+        };
+        ReservaCobrarResponseDto: {
+            /** @example 1234 */
+            id: string;
+            /** @example RES-20260626-ABCDE */
+            numero_reserva: string;
+            /**
+             * @example pendiente_pago
+             * @enum {string}
+             */
+            estado: "pendiente_pago" | "pagada" | "cancelada" | "reembolsada" | "expirada";
+            /** Format: date-time */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description Cuándo expira el lock de la reserva. null si ya no aplica.
+             */
+            expira_en: string | null;
+            cliente: components["schemas"]["ReservaCobrarClienteDto"];
+            pelicula: components["schemas"]["ReservaCobrarPeliculaRefDto"];
+            funcion: components["schemas"]["ReservaCobrarFuncionRefDto"];
+            sala: components["schemas"]["ReservaCobrarSalaRefDto"];
+            cine: components["schemas"]["ReservaCobrarCineRefDto"];
+            asientos: components["schemas"]["ReservaCobrarAsientoDto"][];
+            /** @example 4 */
+            num_asientos: number;
+            /**
+             * @description Suma de precios sin descuento. El descuento de cupón se aplica al confirmar el pago.
+             * @example 280
+             */
+            monto_total: number;
         };
         AdminReservaDetailPeliculaDto: {
             /** @example 3 */
@@ -3557,6 +3767,13 @@ export interface components {
              * @example 2026-06-25T10:05:00.000Z
              */
             updated_at: string;
+            /** @example Cancelada por solicitud del cliente */
+            notas_internas?: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-06-25T10:20:00.000Z
+             */
+            expira_en?: string | null;
             cliente: components["schemas"]["AdminReservaClienteDto"];
             funcion: components["schemas"]["AdminReservaDetailFuncionDto"];
             asientos: components["schemas"]["AdminReservaDetailAsientoDto"][];
@@ -4235,6 +4452,11 @@ export interface components {
              * @example María García López
              */
             nombre: string;
+            /**
+             * @description Email del usuario
+             * @example maria.garcia@ejemplo.com
+             */
+            email: string;
         };
         ReportePeliculaDto: {
             /**
@@ -4311,6 +4533,16 @@ export interface components {
             usuario: components["schemas"]["ReporteUsuarioDto"];
             /** @description Función para la que se realizó la reserva */
             funcion: components["schemas"]["ReporteFuncionDto"];
+            /**
+             * @description Cantidad de asientos en la reserva
+             * @example 2
+             */
+            numAsientos: number;
+            /**
+             * @description Monto total de la reserva (monto_final del pago exitoso más reciente; 0 si no hay pago exitoso)
+             * @example 350
+             */
+            montoTotal: number;
             /**
              * Format: date-time
              * @description Fecha de creación de la reserva
@@ -4558,6 +4790,33 @@ export interface components {
              * @example 2026-01-01T00:00:00.000Z
              */
             created_at: string;
+            /**
+             * @description Película asociada (Prisma include)
+             * @example {
+             *       "id": "1",
+             *       "titulo": "Inception",
+             *       "duracion_min": 148
+             *     }
+             */
+            peliculas?: {
+                [key: string]: unknown;
+            };
+            /**
+             * @description Sala asociada (Prisma include)
+             * @example {
+             *       "id": "1",
+             *       "nombre": "Sala 1",
+             *       "filas": 10,
+             *       "columnas": 15
+             *     }
+             */
+            salas?: {
+                [key: string]: unknown;
+            };
+            /** @description Estado de asientos para esta función (solo en detalle) */
+            asientosFuncions?: {
+                [key: string]: unknown;
+            }[];
         };
         UpdateFuncionDto: {
             /**
@@ -4657,6 +4916,16 @@ export interface components {
              * @example 100
              */
             usos_maximos?: number;
+            /**
+             * @description Título descriptivo del cupón
+             * @example Promo Verano
+             */
+            titulo?: string;
+            /**
+             * @description Descripción larga del cupón
+             * @example Disfruta un 10 % de descuento en tu primera compra.
+             */
+            descripcion?: string;
         };
         UpdateCuponDto: {
             /**
@@ -4685,6 +4954,16 @@ export interface components {
              * @example 100
              */
             usos_maximos?: number;
+            /**
+             * @description Título descriptivo del cupón
+             * @example Promo Verano
+             */
+            titulo?: string;
+            /**
+             * @description Descripción larga del cupón
+             * @example Disfruta un 10 % de descuento en tu primera compra.
+             */
+            descripcion?: string;
         };
         ValidarCuponResponseDto: {
             /** @example true */
@@ -5038,7 +5317,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CineListItemResponseDto"];
+                    "application/json": components["schemas"]["CineDetailResponseDto"];
                 };
             };
             /** @description ID de cine inválido */
@@ -5067,7 +5346,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DeleteResponseDto"];
+                    "application/json": components["schemas"]["CineDetailResponseDto"];
                 };
             };
             /** @description No autorizado */
@@ -5100,7 +5379,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CineListItemResponseDto"];
+                    "application/json": components["schemas"]["CineDetailResponseDto"];
                 };
             };
             /** @description Datos inválidos */
@@ -5143,7 +5422,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CineListItemResponseDto"];
+                    "application/json": components["schemas"]["CineDetailResponseDto"];
                 };
             };
             /** @description Payload inválido */
@@ -5523,13 +5802,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Película marcada como eliminada */
+            /** @description Película marcada como eliminada (activo=false, deleted_at set) */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DeleteResponseDto"];
+                    "application/json": components["schemas"]["PeliculaResponseDto"];
                 };
             };
             /** @description No autorizado */
@@ -5995,6 +6274,89 @@ export interface operations {
             };
             /** @description Ya existe una sala con ese nombre */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SalasController_findAsientos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID de la sala */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SalaAsientoResponseDto"][];
+                };
+            };
+            /** @description Token inválido o ausente */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sala no encontrada */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SalasController_updateAsientos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ID de la sala */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAsientosBatchDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpdateAsientosBatchResponseDto"];
+                };
+            };
+            /** @description Asiento no pertenece a la sala o tipo inexistente */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Token inválido o ausente */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sala no encontrada */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -7718,6 +8080,57 @@ export interface operations {
             };
         };
     };
+    AdminReservasController_cobrarByNumero: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description numero_reserva único (e.g. RES-20260626-ABCDE) */
+                numero: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Detalle listo para taquilla */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservaCobrarResponseDto"];
+                };
+            };
+            /** @description No autorizado */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Rol no autorizado */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Reserva no encontrada */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Algún asiento no tiene precio configurado en precios_cine para este cine */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     AdminReservasController_one: {
         parameters: {
             query?: never;
@@ -9170,6 +9583,18 @@ export interface operations {
                 page?: number;
                 /** @description Cantidad de resultados por página */
                 limit?: number;
+                /** @description Búsqueda libre: matchea numero_reserva, nombre del usuario o email del usuario (case-insensitive contains) */
+                search?: string;
+                /** @description Filtrar por ID de cine exacto */
+                idCine?: string;
+                /** @description Filtrar por ID de ciudad exacto (resuelto vía cine.id_ciudad) */
+                idCiudad?: string;
+                /** @description Filtrar por ID de película exacto (resuelto vía funcion.id_pelicula) */
+                idPelicula?: string;
+                /** @description Filtrar reservas creadas a partir de esta fecha (ISO 8601). Si se provee con `hasta`, forma rango sobre created_at. */
+                desde?: string;
+                /** @description Filtrar reservas creadas hasta esta fecha (ISO 8601). Si se provee con `desde`, forma rango sobre created_at. */
+                hasta?: string;
             };
             header?: never;
             path?: never;
@@ -9223,6 +9648,18 @@ export interface operations {
                 page?: number;
                 /** @description Cantidad de resultados por página */
                 limit?: number;
+                /** @description Búsqueda libre: matchea numero_reserva, nombre del usuario o email del usuario (case-insensitive contains) */
+                search?: string;
+                /** @description Filtrar por ID de cine exacto */
+                idCine?: string;
+                /** @description Filtrar por ID de ciudad exacto (resuelto vía cine.id_ciudad) */
+                idCiudad?: string;
+                /** @description Filtrar por ID de película exacto (resuelto vía funcion.id_pelicula) */
+                idPelicula?: string;
+                /** @description Filtrar reservas creadas a partir de esta fecha (ISO 8601). Si se provee con `hasta`, forma rango sobre created_at. */
+                desde?: string;
+                /** @description Filtrar reservas creadas hasta esta fecha (ISO 8601). Si se provee con `desde`, forma rango sobre created_at. */
+                hasta?: string;
             };
             header?: never;
             path?: never;
