@@ -332,7 +332,7 @@ export class AdminReservasListadoComponent {
   });
 
   constructor() {
-    this.reservasSvc.list().subscribe((d) => {
+    this.reservasSvc.listAll().subscribe((d) => {
       this.rows.set(d);
       this.refreshFilterCounts();
     });

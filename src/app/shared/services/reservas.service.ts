@@ -81,7 +81,7 @@ export class ReservasService {
     return this.http.get<Reserva[]>(this.meBase, params);
   }
 
-  getById(numero: string): Observable<Reserva | undefined> {
+  getByNum(numero: string): Observable<Reserva | undefined> {
     return this.http.get<Reserva>(`${this.meBase}/${numero}`);
   }
 
@@ -104,15 +104,19 @@ export class ReservasService {
   }
 
   listAll(): Observable<Reserva[]> {
-    return this.http.get<Reserva[]>(this.adminBase);
+    return this.http
+      .get<{ data: Reserva[] }>(this.adminBase)
+      .pipe(map((res) => res.data));
   }
 
-  getByIdAdmin(id: string): Observable<Reserva | undefined> {
+  getById(id: string): Observable<Reserva | undefined> {
     return this.http.get<Reserva>(`${this.adminBase}/${id}`);
   }
 
   listUsuarios(): Observable<ReservaUsuario[]> {
-  return this.http.get<ReservaUsuario[]>(`${API_URL}/admin/users`);
+  return this.http
+    .get<{ data: ReservaUsuario[] }>(`${API_URL}/admin/users`)
+    .pipe(map((res) => res.data));
   }
 
   getUsuario(id: string): Observable<ReservaUsuario | undefined> {
