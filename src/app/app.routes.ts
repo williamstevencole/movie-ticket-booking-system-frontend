@@ -126,7 +126,12 @@ export const routes: Routes = [
         (m) => m.ReembolsosComponent,
       ),
   },
-  { path: 'cupones', redirectTo: 'cuenta/cupones', pathMatch: 'full' },
+  {
+    path: 'cupones',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/cupones/list.component').then((m) => m.CuponesListComponent),
+  },
   {
     path: 'cuenta',
     canActivate: [authGuard],
@@ -151,24 +156,10 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'cupones',
-        loadComponent: () =>
-          import('./features/perfil/cupones/cupones.component').then(
-            (m) => m.PerfilCuponesComponent,
-          ),
-      },
-      {
         path: 'metodos-pago',
         loadComponent: () =>
           import('./features/perfil/metodos-pago/metodos-pago.component').then(
             (m) => m.MetodosPagoPageComponent,
-          ),
-      },
-      {
-        path: 'notificaciones',
-        loadComponent: () =>
-          import('./features/perfil/notificaciones/notificaciones.component').then(
-            (m) => m.NotificacionesPageComponent,
           ),
       },
     ],

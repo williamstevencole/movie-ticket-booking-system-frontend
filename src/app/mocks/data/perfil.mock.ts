@@ -55,36 +55,3 @@ export const MOCK_SESIONES: SesionActiva[] = [
   },
 ];
 
-export type NotificacionPref = {
-  id: string;
-  label: string;
-  descripcion: string;
-  activa: boolean;
-};
-
-export const MOCK_NOTIFICACIONES: NotificacionPref[] = [
-  {
-    id: 'n-estrenos',
-    label: 'Próximos estrenos',
-    descripcion: 'Te avisamos cuando se estrene una película que marcaste.',
-    activa: true,
-  },
-  {
-    id: 'n-promos',
-    label: 'Promociones y cupones',
-    descripcion: 'Ofertas especiales y descuentos de la semana.',
-    activa: true,
-  },
-  {
-    id: 'n-recordatorios',
-    label: 'Recordatorios de función',
-    descripcion: 'Un aviso 2 horas antes de tu película.',
-    activa: false,
-  },
-  {
-    id: 'n-marketing',
-    label: 'Novedades de Cinetario',
-    descripcion: 'Noticias del servicio y encuestas ocasionales.',
-    activa: false,
-  },
-];
