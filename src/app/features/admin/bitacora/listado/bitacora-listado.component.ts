@@ -32,6 +32,7 @@ import {
   AuditLogQuery,
 } from '../bitacora.types';
 import { ENTITY_LABELS } from '../bitacora-labels';
+import { extractMessage } from '../../../../shared/utils/http-errors';
 
 interface FilterState {
   accion: string[];
@@ -95,6 +96,7 @@ export class BitacoraListadoComponent {
   ];
 
   readonly loading = signal(false);
+  readonly listError = signal<string | null>(null);
   readonly data = signal<AuditLogListResponse | null>(null);
 
   readonly filters = signal<FilterState>({ ...DEFAULT_FILTERS });
@@ -152,6 +154,7 @@ export class BitacoraListadoComponent {
 
   private fetch(f: FilterState) {
     this.loading.set(true);
+    this.listError.set(null);
     const q: AuditLogQuery = {
       page: f.page,
       page_size: f.page_size,
@@ -166,10 +169,15 @@ export class BitacoraListadoComponent {
         this.data.set(res);
         this.loading.set(false);
       },
-      error: () => {
+      error: (err) => {
+        this.listError.set(extractMessage(err));
         this.loading.set(false);
       },
     });
+  }
+
+  retryList() {
+    this.fetch(this.filters());
   }
 
   aplicar() {
