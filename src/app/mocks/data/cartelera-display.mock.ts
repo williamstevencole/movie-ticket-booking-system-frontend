@@ -66,7 +66,9 @@ export type PeliculaDetalle = {
   rating: number;
   ratingCount: number;
   poster: string;
-  badge: BadgeTipo;
+  /** URL real del poster (backend). Si está presente, se prioriza sobre la clase `poster`. */
+  poster_url?: string | null;
+  badge: BadgeTipo | null;
   badgeLabel: string;
   estreno: string;
   ficha: FichaTecnica;

@@ -9,6 +9,7 @@ import { FichaTecnicaComponent } from '../ficha-tecnica/ficha-tecnica.component'
 import { PeliculasRelacionadasComponent } from '../relacionadas/relacionadas.component';
 import { RatingInputComponent } from '../../../shared/components/rating-input/rating-input.component';
 import { AuthService } from '../../../shared/services/auth.service';
+import { CarteleraService } from '../../../shared/services/cartelera.service';
 import { CalificacionesService, ResultadoCalificacion } from '../../../shared/services/calificaciones.service';
 import { ToastService } from '../../../shared/services/toast.service';
 
@@ -27,7 +28,7 @@ import { ToastService } from '../../../shared/services/toast.service';
   template: `
     <app-appbar [navItems]="nav" />
     <app-pelicula-hero [pelicula]="pelicula()" />
-    <app-pelicula-funciones />
+    <app-pelicula-funciones [peliculaId]="peliculaId" />
 
     <section class="calificar-section wrap">
       @if (auth.isAuthenticated()) {
@@ -69,15 +70,21 @@ export class PeliculaDetalleComponent implements OnInit {
   readonly miVoto = signal<number | null>(null);
 
   readonly auth = inject(AuthService);
+  private readonly cartelera = inject(CarteleraService);
   private readonly calificaciones = inject(CalificacionesService);
   private readonly toast = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
 
-  private get peliculaId(): string {
+  get peliculaId(): string {
     return this.route.snapshot.paramMap.get('id') ?? this.pelicula().id;
   }
 
   ngOnInit(): void {
+    this.cartelera.detalle(this.peliculaId).subscribe({
+      next: (p) => this.pelicula.set(p),
+      error: () => this.toast.show('No se pudo cargar la película'),
+    });
+
     if (!this.auth.isAuthenticated()) {
       this.elegible.set(false);
       return;

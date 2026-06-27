@@ -103,3 +103,31 @@
 .feat.vip { background: var(--orange-soft); color: oklch(0.4 0.13 55); }
 .price { font-size: 13px; color: var(--text-2); margin-top: var(--s2); }
 .times-grid { display: flex; flex-wrap: wrap; gap: var(--s2); }
+
+/* Selector de cines (integración backend) */
+.cine-tabs { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.cine-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3) var(--s4);
+  background: var(--bg);
+  border: 2px solid var(--border-2);
+  border-radius: var(--r);
+  cursor: pointer;
+  transition: all 180ms var(--ease);
+  min-width: 220px;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+.cine-tab:hover { border-color: var(--text-3); }
+.cine-tab.on { border-color: var(--red); background: var(--red-soft); }
+.cine-tab .icon { width: 36px; height: 36px; background: var(--surface); color: var(--text-2); }
+.cine-tab.on .icon { background: var(--red); color: white; }
+.cine-tab .lbl { display: flex; flex-direction: column; }
+.cine-tab .name { font-weight: 700; font-size: 15px; }
+.cine-tab .city { font-size: 12px; color: var(--text-2); }
+
+.muted { color: var(--text-2); font-size: 14px; }
+.no-funciones { padding: var(--s5); margin: 0; }

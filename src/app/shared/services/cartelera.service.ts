@@ -9,8 +9,12 @@ import { GenerosService } from './generos.service';
 import { IdiomasService } from './idiomas.service';
 import {
   CarteleraPelicula,
+  PeliculaDetalle,
+  FichaTecnica,
   BadgeTipo,
 } from '../../mocks/data/cartelera-display.mock';
+
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
 /** Mapas id→nombre de catálogos usados para enriquecer las películas del backend. */
 type Catalogos = {
@@ -55,6 +59,57 @@ export class CarteleraService {
           .pipe(map((page) => page.data.map((p) => this.toDisplay(p, cat)))),
       ),
     );
+  }
+
+  /** Detalle de una película (GET /peliculas/:id) mapeado para la página de detalle. */
+  detalle(id: string): Observable<PeliculaDetalle> {
+    return this.catalogos$.pipe(
+      switchMap((cat) =>
+        this.peliculas.getById(id).pipe(map((p) => this.toDetalle(p, cat))),
+      ),
+    );
+  }
+
+  private toDetalle(p: Pelicula, cat: Catalogos): PeliculaDetalle {
+    const idioma = (p.id_idioma && cat.idioma.get(p.id_idioma)) || '—';
+    const estreno = this.formatFecha(p.fecha_estreno);
+    const badge = this.badgeFromEstreno(p.fecha_estreno) ?? null;
+    const ficha = (p.ficha_tecnica ?? {}) as FichaTecnica;
+    const attrs: { label: string; value: string }[] = [];
+    if (ficha.direccion) attrs.push({ label: 'Dirección', value: ficha.direccion });
+    if (ficha.reparto?.length) {
+      attrs.push({ label: 'Reparto', value: ficha.reparto.slice(0, 2).join(', ') });
+    }
+    attrs.push({ label: 'Idioma', value: idioma });
+    if (estreno) attrs.push({ label: 'Estreno', value: estreno });
+    return {
+      id: p.id,
+      titulo: p.titulo,
+      tagline: p.tagline,
+      sinopsis: p.sinopsis ?? '',
+      genero: (p.id_genero && cat.genero.get(p.id_genero)) || '—',
+      duracion: p.duracion_min ? `${p.duracion_min} min` : '—',
+      idioma,
+      clasificacion: '',
+      rating: p.rating_promedio ?? 0,
+      ratingCount: p.rating_count ?? 0,
+      poster: '',
+      poster_url: p.poster_url,
+      badge,
+      badgeLabel: badge ? 'ESTRENO' : '',
+      estreno,
+      ficha,
+      attrs,
+      rating_promedio: p.rating_promedio ?? null,
+      rating_count: p.rating_count ?? 0,
+    };
+  }
+
+  private formatFecha(fecha: string | null | undefined): string {
+    if (!fecha) return '';
+    const d = new Date(fecha);
+    if (Number.isNaN(d.getTime())) return '';
+    return `${String(d.getDate()).padStart(2, '0')} ${MESES[d.getMonth()]} ${d.getFullYear()}`;
   }
 
   private toDisplay(p: Pelicula, cat: Catalogos): CarteleraPelicula {

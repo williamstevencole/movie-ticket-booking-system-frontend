@@ -20,15 +20,22 @@ import { RatingDisplayComponent } from '../../../shared/components/rating-displa
     <section class="film-hero">
       <div class="film-hero-inner">
         <div class="poster" [class]="pelicula.poster">
+          @if (pelicula.poster_url) {
+            <img [src]="pelicula.poster_url" [alt]="pelicula.titulo" />
+          }
           <app-poster-badge [tipo]="pelicula.badge" />
         </div>
         <div>
           <div class="film-meta-row">
-            <span class="pill red">★ {{ pelicula.badgeLabel }}</span>
+            @if (pelicula.badgeLabel) {
+              <span class="pill red">★ {{ pelicula.badgeLabel }}</span>
+            }
             <span class="pill">{{ pelicula.genero }}</span>
             <span class="pill">{{ pelicula.duracion }}</span>
             <span class="pill">{{ pelicula.idioma }}</span>
-            <span class="pill">{{ pelicula.clasificacion }}</span>
+            @if (pelicula.clasificacion) {
+              <span class="pill">{{ pelicula.clasificacion }}</span>
+            }
             <app-pelicula-rating
               [valor]="pelicula.rating"
               [total]="pelicula.ratingCount"
