@@ -27,6 +27,7 @@ import { ToastService } from '../../../shared/services/toast.service';
 // Minimal shape passed into the template seat grid
 type AsientoDisplay = {
   codigo: string;
+  numero: number;
   estado: 'disponible' | 'ocupado' | 'bloqueado';
   tipo: TipoAsiento;
 };
@@ -97,6 +98,7 @@ export class MapaComponent implements OnInit {
         .sort((a, b) => a.numero - b.numero)
         .map<AsientoDisplay>((a) => ({
           codigo: `${a.fila}-${a.numero}`,
+          numero: a.numero,
           estado: a.estado === 'seleccionado' ? 'disponible' : (a.estado as AsientoDisplay['estado']),
           tipo: a.tipo,
         })),
@@ -152,29 +154,37 @@ export class MapaComponent implements OnInit {
     if (yaSeleccionado) {
       const next = sel.filter((a) => `${a.fila}-${a.numero}` !== asiento.codigo);
       this.asientosSeleccionados.set(next);
-    } else {
-      this.asientosSeleccionados.set([...sel, full]);
-      // Bloquear en el servidor al seleccionar
-      const idFuncion = this.funcionId();
-      if (idFuncion) {
-        const todosSeleccionados = [...sel, full];
-        this.asientosSvc
-          .bloquear(idFuncion, todosSeleccionados.map((a) => a.id))
-          .subscribe({
-            next: (res) => {
-              if (res?.expira_en) this.expiraEn.set(res.expira_en);
-            },
-            error: (err) => {
-              if (err.status === 409) {
-                this.mostrarModalConflicto.set(true);
-                // Revert selection and refresh map
-                this.asientosSeleccionados.set(sel);
-                this.cargarMapa(idFuncion, false);
-              }
-            },
-          });
-      }
+      return;
     }
+
+    // Selección optimista
+    this.asientosSeleccionados.set([...sel, full]);
+
+    // Si ya está bloqueado por mí (es_mio), no hace falta re-bloquear en el servidor.
+    if (full.estado === 'seleccionado') return;
+
+    const idFuncion = this.funcionId();
+    if (!idFuncion) return;
+
+    // Bloquear SOLO el asiento recién agregado (reenviar la lista completa
+    // provocaría un 409 porque los ya seleccionados no están DISPONIBLE).
+    this.asientosSvc.bloquear(idFuncion, [full.id]).subscribe({
+      next: (res) => {
+        if (res?.expira_en) this.expiraEn.set(res.expira_en);
+      },
+      error: (err) => {
+        // Revertir solo este asiento
+        this.asientosSeleccionados.set(
+          this.asientosSeleccionados().filter((a) => a.id !== full.id),
+        );
+        if (err?.status === 409) {
+          this.mostrarModalConflicto.set(true);
+          this.cargarMapa(idFuncion, false);
+        } else {
+          this.toastSvc?.show?.('No se pudo bloquear el asiento. Intentá de nuevo.');
+        }
+      },
+    });
   }
 
   onTimerExpirado(): void {
