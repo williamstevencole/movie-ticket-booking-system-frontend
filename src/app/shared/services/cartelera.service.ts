@@ -10,11 +10,13 @@ import { IdiomasService } from './idiomas.service';
 import {
   CarteleraPelicula,
   PeliculaDetalle,
+  ProximoEstreno,
   FichaTecnica,
   BadgeTipo,
 } from '../../mocks/data/cartelera-display.mock';
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const MESES_BADGE = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
 
 /** Mapas id→nombre de catálogos usados para enriquecer las películas del backend. */
 type Catalogos = {
@@ -119,6 +121,7 @@ export class CarteleraService {
       genero: (p.id_genero && cat.genero.get(p.id_genero)) || '—',
       duracion: p.duracion_min ? `${p.duracion_min}m` : '—',
       idioma: (p.id_idioma && cat.idioma.get(p.id_idioma)) || '—',
+      sinopsis: p.sinopsis ?? '',
       poster: '',
       poster_url: p.poster_url,
       badge: this.badgeFromEstreno(p.fecha_estreno),
@@ -126,6 +129,56 @@ export class CarteleraService {
       rating_promedio: p.rating_promedio ?? null,
       rating_count: p.rating_count ?? 0,
     };
+  }
+
+  /**
+   * Próximos estrenos: películas cuya fecha de estreno es futura
+   * (GET /peliculas?fecha_inicio=mañana), ordenadas por fecha ascendente.
+   */
+  proximos(limit = 8): Observable<ProximoEstreno[]> {
+    const manana = new Date();
+    manana.setHours(0, 0, 0, 0);
+    manana.setDate(manana.getDate() + 1);
+    return this.catalogos$.pipe(
+      switchMap((cat) =>
+        this.peliculas
+          .list({ fecha_inicio: manana.toISOString(), limit })
+          .pipe(
+            map((page) =>
+              page.data
+                .filter((p) => this.esFuturo(p.fecha_estreno))
+                .sort((a, b) => (a.fecha_estreno ?? '').localeCompare(b.fecha_estreno ?? ''))
+                .map((p) => this.toProximo(p, cat)),
+            ),
+          ),
+      ),
+    );
+  }
+
+  private toProximo(p: Pelicula, cat: Catalogos): ProximoEstreno {
+    return {
+      id: p.id,
+      titulo: p.titulo,
+      genero: (p.id_genero && cat.genero.get(p.id_genero)) || '—',
+      duracion: p.duracion_min ? `${p.duracion_min}m` : '—',
+      poster: '',
+      poster_url: p.poster_url,
+      fechaEstreno: p.fecha_estreno ?? '',
+      badgeFecha: this.badgeFecha(p.fecha_estreno),
+    };
+  }
+
+  private esFuturo(fecha: string | null | undefined): boolean {
+    if (!fecha) return false;
+    const t = new Date(fecha).getTime();
+    return !Number.isNaN(t) && t > Date.now();
+  }
+
+  private badgeFecha(fecha: string | null | undefined): string {
+    if (!fecha) return '';
+    const d = new Date(fecha);
+    if (Number.isNaN(d.getTime())) return '';
+    return `${String(d.getDate()).padStart(2, '0')} ${MESES_BADGE[d.getMonth()]}`;
   }
 
   /** Marca como "estreno" las películas estrenadas en los últimos 14 días. */

@@ -1,61 +1,68 @@
-<section class="hero" tabindex="0" aria-roledescription="carousel" aria-label="Películas destacadas">
-  @for (s of slides; track s.id; let i = $index) {
-    @if (i === index()) {
-      <div class="hero-slide">
-        <div class="hero-info">
-          <span class="hero-badge">
-            <svg lucideStar [size]="14"></svg>
-            {{ s.badgeLabel }}
-          </span>
-          <h1>{{ s.titulo }}</h1>
-          <div class="hero-meta">
-            <span>{{ s.genero }}</span>
-            <span class="dot-sep">·</span>
-            <span>{{ s.duracion }}</span>
-            <span class="dot-sep">·</span>
-            <span>{{ s.idioma }}</span>
-            <span class="dot-sep">·</span>
-            <span>{{ s.clasificacion }}</span>
-            <span class="dot-sep">·</span>
-            <app-pelicula-rating
-              [valor]="s.rating"
-              [total]="s.ratingCount"
-              variant="compact-dark"
-            />
-          </div>
-          <p class="hero-desc">{{ truncate(s.sinopsis) }}</p>
-          <div class="hero-cta">
-            <a [routerLink]="['/pelicula', s.id]" class="btn btn-primary btn-lg">
-              <svg lucidePlay [size]="16"></svg>
-              Comprar boletos
-            </a>
-            @if (s.trailerUrl) {
-              <a [href]="s.trailerUrl" target="_blank" rel="noopener" class="btn btn-lg btn-trailer">
-                Ver tráiler
+@if (slides().length > 0) {
+  <section class="hero" tabindex="0" aria-roledescription="carousel" aria-label="Películas destacadas">
+    @for (s of slides(); track s.id; let i = $index) {
+      @if (i === index()) {
+        <div class="hero-slide">
+          <div class="hero-info">
+            <span class="hero-badge">
+              <svg lucideStar [size]="14"></svg>
+              {{ s.badgeLabel }}
+            </span>
+            <h1>{{ s.titulo }}</h1>
+            <div class="hero-meta">
+              <span>{{ s.genero }}</span>
+              <span class="dot-sep">·</span>
+              <span>{{ s.duracion }}</span>
+              <span class="dot-sep">·</span>
+              <span>{{ s.idioma }}</span>
+              @if (s.clasificacion) {
+                <span class="dot-sep">·</span>
+                <span>{{ s.clasificacion }}</span>
+              }
+              <span class="dot-sep">·</span>
+              <app-pelicula-rating
+                [valor]="s.rating"
+                [total]="s.ratingCount"
+                variant="compact-dark"
+              />
+            </div>
+            <p class="hero-desc">{{ truncate(s.sinopsis) }}</p>
+            <div class="hero-cta">
+              <a [routerLink]="['/pelicula', s.id]" class="btn btn-primary btn-lg">
+                <svg lucidePlay [size]="16"></svg>
+                Comprar boletos
               </a>
-            } @else {
-              <button type="button" class="btn btn-lg btn-trailer">Ver tráiler</button>
-            }
+              @if (s.trailerUrl) {
+                <a [href]="s.trailerUrl" target="_blank" rel="noopener" class="btn btn-lg btn-trailer">
+                  Ver tráiler
+                </a>
+              } @else {
+                <button type="button" class="btn btn-lg btn-trailer">Ver tráiler</button>
+              }
+            </div>
           </div>
+          <a [routerLink]="['/pelicula', s.id]" class="hero-poster poster" [class]="s.poster">
+            @if (s.poster_url) {
+              <img [src]="s.poster_url" [alt]="s.titulo" />
+            }
+            <app-poster-badge [tipo]="s.badge" />
+          </a>
         </div>
-        <a [routerLink]="['/pelicula', s.id]" class="hero-poster poster" [class]="s.poster">
-          <app-poster-badge [tipo]="s.badge" />
-        </a>
-      </div>
+      }
     }
-  }
 
-  <div class="hero-dots" role="tablist" aria-label="Slides del carrusel">
-    @for (s of slides; track s.id; let i = $index) {
-      <button
-        type="button"
-        class="d"
-        [class.on]="i === index()"
-        role="tab"
-        [attr.aria-selected]="i === index()"
-        [attr.aria-label]="'Slide ' + (i + 1) + ': ' + s.titulo"
-        (click)="goTo(i)"
-      ></button>
-    }
-  </div>
-</section>
+    <div class="hero-dots" role="tablist" aria-label="Slides del carrusel">
+      @for (s of slides(); track s.id; let i = $index) {
+        <button
+          type="button"
+          class="d"
+          [class.on]="i === index()"
+          role="tab"
+          [attr.aria-selected]="i === index()"
+          [attr.aria-label]="'Slide ' + (i + 1) + ': ' + s.titulo"
+          (click)="goTo(i)"
+        ></button>
+      }
+    </div>
+  </section>
+}
