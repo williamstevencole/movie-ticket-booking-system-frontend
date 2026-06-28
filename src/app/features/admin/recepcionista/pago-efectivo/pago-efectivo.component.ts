@@ -203,8 +203,8 @@ import { extractMessage } from '../../../../shared/utils/http-errors';
                   <svg lucidePrinter [size]="16"></svg>
                   Vista de impresión
                 </button>
-                <a class="btn btn-primary" routerLink="/admin/recepcionista/buscar-cliente">
-                  Siguiente cliente
+                <a class="btn btn-primary" routerLink="/admin/reservas">
+                  Siguiente reserva
                   <svg lucideArrowRight [size]="16"></svg>
                 </a>
               </div>

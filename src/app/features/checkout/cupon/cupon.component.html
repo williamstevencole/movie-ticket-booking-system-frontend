@@ -19,9 +19,9 @@
         <button
           type="button"
           class="aplicar-btn"
-          [disabled]="!codigo().length"
+          [disabled]="!codigo().length || cargando()"
           (click)="aplicar()"
-        >Aplicar</button>
+        >{{ cargando() ? 'Validando...' : 'Aplicar' }}</button>
       </div>
       @if (error()) {
         <p class="cupon-error">{{ error() }}</p>

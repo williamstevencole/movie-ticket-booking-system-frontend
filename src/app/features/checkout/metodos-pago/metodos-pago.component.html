@@ -65,7 +65,7 @@
                 <app-tarjeta />
               }
             } @else {
-              <app-efectivo [fechaHora]="fechaHoraFuncion" />
+              <app-efectivo [fechaHora]="fechaHoraFuncion()" />
             }
           </div>
         </div>
@@ -73,6 +73,7 @@
         <app-cupon
           [precioOriginal]="precioOriginal()"
           (descuentoAplicado)="onDescuentoAplicado($event)"
+          (codigoCambio)="onCodigoCambio($event)"
         />
 
         <app-agreements
@@ -90,7 +91,7 @@
           [pelicula]="pelicula()"
           [cine]="cine()"
           [sala]="sala()"
-          [fechaHora]="fechaHoraFuncion"
+          [fechaHora]="fechaHoraFuncion()"
           [asientos]="asientos()"
         />
 
