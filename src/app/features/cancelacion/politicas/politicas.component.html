@@ -39,12 +39,12 @@
         </div>
 
         <footer>
-            <button class="secondary" (click)="cerrarModal()">
+            <button class="secondary" (click)="cerrarModal()" [disabled]="cancelando">
                 Volver
             </button>
 
-            <button class="danger" (click)="continuarCancelacion()">
-                Continuar cancelación
+            <button class="danger" (click)="continuarCancelacion()" [disabled]="cancelando">
+                {{ cancelando ? 'Cancelando...' : 'Continuar cancelación' }}
             </button>
         </footer>
 

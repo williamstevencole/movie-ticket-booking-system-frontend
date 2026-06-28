@@ -210,6 +210,7 @@ export class MapaComponent implements OnInit {
       .subscribe({
         next: (reserva) => {
           this.cargando.set(false);
+          this.checkoutStateSvc.setReservaPendiente(reserva);
           this.router.navigate(['/checkout/metodos-pago'], {
             queryParams: { reserva: reserva.id_reserva },
           });

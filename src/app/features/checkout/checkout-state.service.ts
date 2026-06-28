@@ -65,10 +65,10 @@ export class CheckoutStateService {
   confirmarReserva(
     funcionId: string,
     asientosSeleccionados: Asiento[],
-  ): Observable<any> {
+  ): Observable<ReservaCreada> {
     const payload: CrearReservaInput = {
-    id_funcion: funcionId,
-    ids_asiento_funcion: asientosSeleccionados.map((a) => a.id),
+      id_funcion: funcionId,
+      ids_asiento_funcion: asientosSeleccionados.map((a) => a.id),
     };
 
     return this.reservasSvc.crear(payload).pipe(

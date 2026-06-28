@@ -90,7 +90,24 @@ export class MisReservasService {
       );
   }
 
-  cancelar(numero: string): Observable<{ id_reserva: string; estado: string; monto_reembolso: string; id_reembolso: string | null; fecha_cancelacion: string }> {
-    return this.http.patch<any>(`${this.base}/${numero}/cancelar`, {});
+  cancelar(numero: string): Observable<CancelarMiReservaResponse> {
+    return this.http.patch<CancelarMiReservaResponse>(
+      `${this.base}/${numero}/cancelar`,
+      {},
+    );
   }
 }
+
+export type CancelarMiReservaResponse = {
+  reserva: {
+    id_reserva: string;
+    numero_reserva: string;
+    estado: string;
+    fecha_cancelacion: string;
+  };
+  reembolso: {
+    id_reembolso: string;
+    estado: string;
+    monto: string;
+  } | null;
+};

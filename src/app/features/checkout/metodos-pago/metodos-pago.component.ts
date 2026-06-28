@@ -133,6 +133,7 @@ export class MetodosPagoComponent implements OnInit {
   }
 
   pagar(): void {
+    if (this.pagando()) return;
     this.pagoError.set(null);
 
     const base = {
@@ -153,8 +154,9 @@ export class MetodosPagoComponent implements OnInit {
 
     const idReserva = this.idReserva();
     if (!idReserva) {
-      this.checkoutStateSvc.setResultado({ ...base, resultado: 'exito', mensajeError: null });
-      this.router.navigate(['/checkout/resultado']);
+      this.pagoError.set(
+        'No se encontró la reserva. Volvé al mapa y seleccioná tus asientos de nuevo.',
+      );
       return;
     }
 
@@ -169,11 +171,20 @@ export class MetodosPagoComponent implements OnInit {
       .subscribe({
         next: () => {
           this.pagando.set(false);
+          this.checkoutStateSvc.setReservaPendiente(null);
           this.checkoutStateSvc.setResultado({ ...base, resultado: 'exito', mensajeError: null });
           this.router.navigate(['/checkout/resultado']);
         },
         error: (err) => {
           this.pagando.set(false);
+          const code = err?.error?.code;
+          if (err?.status === 409 && code === 'RESERVA_NO_PAGABLE') {
+            const msg = 'La reserva expiró o ya fue pagada. Volvé al mapa para reintentar.';
+            this.pagoError.set(msg);
+            this.checkoutStateSvc.setResultado({ ...base, resultado: 'error', mensajeError: msg });
+            this.router.navigate(['/checkout/resultado']);
+            return;
+          }
           const msg =
             err?.error?.message ?? err?.message ?? 'No se pudo procesar el pago. Intenta de nuevo.';
           this.pagoError.set(msg);

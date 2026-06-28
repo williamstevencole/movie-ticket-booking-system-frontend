@@ -57,7 +57,9 @@
       <app-politicas-cancelacion
         [boleto]="reserva!"
         [politica]="politica()"
+        [cancelando]="cancelando()"
         (cerrar)="mostrarConfirmacion.set(false)"
+        (confirmar)="ejecutarCancelacion()"
       />
     }
   </div>
