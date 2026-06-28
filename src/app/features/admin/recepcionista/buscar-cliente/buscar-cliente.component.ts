@@ -464,7 +464,7 @@ export class RecepcionistaBuscarClienteComponent {
   private cargarReservas(): void {
     this.reservasLoading.set(true);
     this.reservasError.set(null);
-    this.reservasSvc.list({ limit: 200 }).subscribe({
+    this.reservasSvc.list({ limit: 100 }).subscribe({
       next: (res) => {
         this.reservas.set(res.data);
         this.reservasLoading.set(false);

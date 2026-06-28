@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TarjetaComponent } from './tarjeta/tarjeta.component';
 import { EfectivoComponent } from './efectivo/efectivo.component';
 import { CuponComponent } from '../cupon/cupon.component';
@@ -16,6 +16,7 @@ import {
 } from '../../../shared/services/metodos-pago.service';
 import { AuthService } from '../../../shared/services/auth.service';
 import { PagosService } from '../../../shared/services/pagos.service';
+import { MisReservasService } from '../../../shared/services/mis-reservas.service';
 
 @Component({
   selector: 'app-metodos-pago',
@@ -41,16 +42,17 @@ export class MetodosPagoComponent implements OnInit {
   private readonly metodosPagoSvc = inject(MetodosPagoService);
   private readonly auth = inject(AuthService);
   private readonly pagosSvc = inject(PagosService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly misReservasSvc = inject(MisReservasService);
 
-  readonly pelicula = signal('Spider-Man: Across the Spider-Verse');
-  readonly cine = signal('Cinetario Mall');
-  readonly sala = signal('Sala 4');
-  readonly numeroReserva = signal('#CT-48291');
-  /** The real reservation UUID used for POST /api/pagos */
+  readonly pelicula = signal('');
+  readonly cine = signal('');
+  readonly sala = signal('');
+  readonly numeroReserva = signal('');
   readonly idReserva = signal<string | null>(null);
-  readonly fechaHoraFuncion = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-  readonly asientos = signal<string[]>(['A3', 'A4']);
-  readonly precioOriginal = signal(200);
+  readonly fechaHoraFuncion = signal<string>(new Date(Date.now() + 60 * 60 * 1000).toISOString());
+  readonly asientos = signal<string[]>([]);
+  readonly precioOriginal = signal(0);
   readonly descuento = signal(0);
   readonly codigoCupon = signal<string | null>(null);
   readonly politicaAceptada = signal(false);
@@ -59,25 +61,42 @@ export class MetodosPagoComponent implements OnInit {
   readonly pagando = signal(false);
   readonly pagoError = signal<string | null>(null);
 
-  // Saved payment methods
   readonly tarjetasGuardadas = signal<MetodoPago[]>([]);
-  /** null = add new, string = id of saved method */
   readonly tarjetaSeleccionadaId = signal<string | null>(null);
   readonly mostrarFormNueva = signal(false);
 
   readonly efectivoDisponible = computed(() => {
-    const min = (new Date(this.fechaHoraFuncion).getTime() - Date.now()) / 60_000;
+    const min = (new Date(this.fechaHoraFuncion()).getTime() - Date.now()) / 60_000;
     return min >= 30;
   });
 
   readonly totalFinal = computed(() => this.precioOriginal() - this.descuento());
 
-  /** The id_metodo_pago to include in the pago payload */
   readonly idMetodoPagoSeleccionado = computed<string | null>(() =>
     this.metodoPago() === 'tarjeta' ? this.tarjetaSeleccionadaId() : null,
   );
 
   ngOnInit(): void {
+    const reservaPendiente = this.checkoutStateSvc.getReservaPendiente();
+    if (reservaPendiente) {
+      this.idReserva.set(reservaPendiente.id_reserva);
+      this.numeroReserva.set(reservaPendiente.numero_reserva);
+      this.asientos.set(reservaPendiente.asientos.map((a) => a.codigo));
+      this.precioOriginal.set(parseFloat(reservaPendiente.total_estimado));
+
+      this.misReservasSvc.getByNumero(reservaPendiente.numero_reserva).subscribe((boleto) => {
+        if (boleto) {
+          this.pelicula.set(boleto.pelicula.titulo);
+          this.cine.set(boleto.cine.nombre);
+          this.sala.set(boleto.sala.nombre);
+          this.fechaHoraFuncion.set(boleto.fecha_hora);
+        }
+      });
+    } else {
+      const reservaId = this.route.snapshot.queryParamMap.get('reserva');
+      if (reservaId) this.idReserva.set(reservaId);
+    }
+
     this.metodosPagoSvc.listar().subscribe((list) => {
       this.tarjetasGuardadas.set(list);
       const predeterminado = list.find((m) => m.predeterminado);
@@ -94,8 +113,12 @@ export class MetodosPagoComponent implements OnInit {
     });
   }
 
-  onDescuentoAplicado(monto: number) {
+  onDescuentoAplicado(monto: number): void {
     this.descuento.set(monto);
+  }
+
+  onCodigoCambio(codigo: string | null): void {
+    this.codigoCupon.set(codigo);
   }
 
   onTarjetaGuardadaChange(event: Event): void {
@@ -110,42 +133,30 @@ export class MetodosPagoComponent implements OnInit {
   }
 
   pagar(): void {
+    if (this.pagando()) return;
     this.pagoError.set(null);
 
+    const base = {
+      email: this.auth.user()?.email ?? '',
+      numeroReserva: this.numeroReserva(),
+      pelicula: this.pelicula(),
+      cine: this.cine(),
+      fechaHora: this.fechaHoraFuncion(),
+      asientos: this.asientos(),
+      total: this.totalFinal() + 15,
+    };
+
     if (this.metodoPago() === 'efectivo') {
-      // Efectivo is admin-only via API. For cliente self-service: show result as "pending taquilla".
-      this.checkoutStateSvc.setResultado({
-        resultado: 'exito',
-        email: this.auth.user()?.email ?? '',
-        numeroReserva: this.numeroReserva(),
-        pelicula: this.pelicula(),
-        cine: this.cine(),
-        fechaHora: this.fechaHoraFuncion,
-        asientos: this.asientos(),
-        total: this.totalFinal() + 15,
-        mensajeError: null,
-      });
+      this.checkoutStateSvc.setResultado({ ...base, resultado: 'exito', mensajeError: null });
       this.router.navigate(['/checkout/resultado']);
       return;
     }
 
-    // Tarjeta flow: POST /api/pagos
     const idReserva = this.idReserva();
     if (!idReserva) {
-      // No real reservation id available (e.g. UI not yet fully wired to booking flow)
-      // Fall through to success screen with existing state
-      this.checkoutStateSvc.setResultado({
-        resultado: 'exito',
-        email: this.auth.user()?.email ?? '',
-        numeroReserva: this.numeroReserva(),
-        pelicula: this.pelicula(),
-        cine: this.cine(),
-        fechaHora: this.fechaHoraFuncion,
-        asientos: this.asientos(),
-        total: this.totalFinal() + 15,
-        mensajeError: null,
-      });
-      this.router.navigate(['/checkout/resultado']);
+      this.pagoError.set(
+        'No se encontró la reserva. Volvé al mapa y seleccioná tus asientos de nuevo.',
+      );
       return;
     }
 
@@ -158,37 +169,26 @@ export class MetodosPagoComponent implements OnInit {
         codigo_cupon: this.codigoCupon() ?? undefined,
       })
       .subscribe({
-        next: (_pago) => {
+        next: () => {
           this.pagando.set(false);
-          this.checkoutStateSvc.setResultado({
-            resultado: 'exito',
-            email: this.auth.user()?.email ?? '',
-            numeroReserva: this.numeroReserva(),
-            pelicula: this.pelicula(),
-            cine: this.cine(),
-            fechaHora: this.fechaHoraFuncion,
-            asientos: this.asientos(),
-            total: this.totalFinal() + 15,
-            mensajeError: null,
-          });
+          this.checkoutStateSvc.setReservaPendiente(null);
+          this.checkoutStateSvc.setResultado({ ...base, resultado: 'exito', mensajeError: null });
           this.router.navigate(['/checkout/resultado']);
         },
         error: (err) => {
           this.pagando.set(false);
+          const code = err?.error?.code;
+          if (err?.status === 409 && code === 'RESERVA_NO_PAGABLE') {
+            const msg = 'La reserva expiró o ya fue pagada. Volvé al mapa para reintentar.';
+            this.pagoError.set(msg);
+            this.checkoutStateSvc.setResultado({ ...base, resultado: 'error', mensajeError: msg });
+            this.router.navigate(['/checkout/resultado']);
+            return;
+          }
           const msg =
             err?.error?.message ?? err?.message ?? 'No se pudo procesar el pago. Intenta de nuevo.';
           this.pagoError.set(msg);
-          this.checkoutStateSvc.setResultado({
-            resultado: 'error',
-            email: this.auth.user()?.email ?? '',
-            numeroReserva: this.numeroReserva(),
-            pelicula: this.pelicula(),
-            cine: this.cine(),
-            fechaHora: this.fechaHoraFuncion,
-            asientos: this.asientos(),
-            total: this.totalFinal() + 15,
-            mensajeError: msg,
-          });
+          this.checkoutStateSvc.setResultado({ ...base, resultado: 'error', mensajeError: msg });
           this.router.navigate(['/checkout/resultado']);
         },
       });

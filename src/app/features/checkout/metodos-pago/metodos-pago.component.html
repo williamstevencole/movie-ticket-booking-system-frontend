@@ -65,7 +65,7 @@
                 <app-tarjeta />
               }
             } @else {
-              <app-efectivo [fechaHora]="fechaHoraFuncion" />
+              <app-efectivo [fechaHora]="fechaHoraFuncion()" />
             }
           </div>
         </div>
@@ -73,6 +73,7 @@
         <app-cupon
           [precioOriginal]="precioOriginal()"
           (descuentoAplicado)="onDescuentoAplicado($event)"
+          (codigoCambio)="onCodigoCambio($event)"
         />
 
         <app-agreements
@@ -90,18 +91,21 @@
           [pelicula]="pelicula()"
           [cine]="cine()"
           [sala]="sala()"
-          [fechaHora]="fechaHoraFuncion"
+          [fechaHora]="fechaHoraFuncion()"
           [asientos]="asientos()"
         />
 
         <button
           type="button"
           class="pagar-btn"
-          [disabled]="!politicaAceptada() || (metodoPago() === 'efectivo' && !efectivoDisponible())"
+          [disabled]="pagando() || !politicaAceptada() || (metodoPago() === 'efectivo' && !efectivoDisponible())"
           (click)="pagar()"
         >
-          Pagar L {{ totalFinal() + 15 }}
+          {{ pagando() ? 'Procesando...' : 'Pagar L ' + (totalFinal() + 15) }}
         </button>
+        @if (pagoError()) {
+          <p class="pago-error" role="alert">{{ pagoError() }}</p>
+        }
       </aside>
     </div>
   </div>

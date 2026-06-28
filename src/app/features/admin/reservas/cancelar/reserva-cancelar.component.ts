@@ -356,19 +356,26 @@ export class AdminReservaCancelarComponent {
     if (!reserva || this.cancelando()) return;
 
     this.cancelando.set(true);
+
     this.reservasSvc.cancelar(reserva.id).subscribe({
       next: (res) => {
         this.cancelando.set(false);
-        const monto = res.reembolso?.monto ?? this.montoReembolso();
+        const monto = res.reembolso?.monto;
         this.showToast(
           'ok',
-          `Reserva ${reserva.numero_reserva} cancelada · Reembolso L ${monto.toFixed(2)}`,
+          monto
+            ? `Reserva ${reserva.numero_reserva} cancelada · Reembolso L ${monto}`
+            : `Reserva ${reserva.numero_reserva} cancelada`,
         );
         setTimeout(() => this.router.navigate(['/admin/reservas']), 1800);
       },
       error: (err) => {
         this.cancelando.set(false);
-        this.showToast('err', extractMessage(err));
+        if (err.status === 409) {
+          this.showToast('err', 'La reserva ya fue cancelada o cambió de estado');
+        } else {
+          this.showToast('err', 'No se pudo cancelar la reserva. Intenta de nuevo.');
+        }
       },
     });
   }

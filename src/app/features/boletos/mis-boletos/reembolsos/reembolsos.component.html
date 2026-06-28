@@ -12,7 +12,7 @@
             <img class="poster" [src]="b.pelicula.poster_url ?? ''" [alt]="b.pelicula.titulo" />
             <div class="info">
               <h3>{{ b.pelicula.titulo }}</h3>
-              <p>Reserva #{{ b.numero_reserva }} · {{ r.created_at | date:'d MMM y' }}</p>
+              <p>Reserva #{{ b.numero_reserva }}</p>
               <p class="metodo">
                 @if (b.ultimos4_snapshot) {
                   Tarjeta {{ b.ultimos4_snapshot }}
@@ -24,7 +24,7 @@
           } @else {
             <div class="info">
               <h3>Reembolso #{{ r.id }}</h3>
-              <p>{{ r.created_at | date:'d MMM y' }}</p>
+              <p>Reserva #{{ r.numero_reserva }}</p>
             </div>
           }
           <div class="estado">

@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { Asiento } from '../asientos/mapa/asiento.model';
+import { ReservasService, CrearReservaInput } from '../../shared/services/reservas.service';
 import { ToastService } from '../../shared/services/toast.service';
-import { API_URL } from '../../core/config/env';
 
 export type CheckoutResultado = {
   resultado: 'exito' | 'error';
@@ -28,10 +28,8 @@ export type ReservaCreada = {
 
 @Injectable({ providedIn: 'root' })
 export class CheckoutStateService {
-  private readonly http = inject(HttpClient);
+  private readonly reservasSvc = inject(ReservasService);
   private readonly toastSvc = inject(ToastService);
-
-  private readonly reservasUrl = `${API_URL}/reservas`;
 
   private resultado: CheckoutResultado | null = null;
   private reservaPendiente: ReservaCreada | null = null;
@@ -62,16 +60,18 @@ export class CheckoutStateService {
    * Maneja el 409 (asiento ya no disponible / bloqueo expirado) para que el
    * llamador refresque el mapa.
    */
+
+  
   confirmarReserva(
     funcionId: string,
-    idsAsientoFuncion: string[],
+    asientosSeleccionados: Asiento[],
   ): Observable<ReservaCreada> {
-    const payload = {
+    const payload: CrearReservaInput = {
       id_funcion: funcionId,
-      ids_asiento_funcion: idsAsientoFuncion,
+      ids_asiento_funcion: asientosSeleccionados.map((a) => a.id),
     };
 
-    return this.http.post<ReservaCreada>(this.reservasUrl, payload).pipe(
+    return this.reservasSvc.crear(payload).pipe(
       catchError((error) => {
         if (error.status === 409) {
           this.toastSvc.show(

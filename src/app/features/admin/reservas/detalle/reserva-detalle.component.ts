@@ -97,6 +97,7 @@ export class AdminReservaDetalleComponent {
   readonly funcion = signal<Funcion | null>(null);
   readonly pelicula = signal<Pelicula | null>(null);
   readonly cine = signal<Cine | null>(null);
+  readonly cancelOpen = signal(false);
 
   readonly toastMsg = signal<string | null>(null);
 
@@ -193,47 +194,27 @@ export class AdminReservaDetalleComponent {
       this.notFound.set(true);
       return;
     }
-    this.loading.set(true);
-    this.detalleError.set(null);
-    this.notFound.set(false);
-    this.reserva.set(null);
+    this.reservasSvc.getById(id).subscribe((r) => {
+      if (!r) {
+        this.notFound.set(true);
+        return;
+      }
+      this.reserva.set(r);
 
-    this.reservasSvc.getById(id).subscribe({
-      next: (r) => {
-        this.loading.set(false);
-        if (!r) {
-          this.notFound.set(true);
-          return;
-        }
-        this.reserva.set(r);
-        // Set cliente directly from embedded usuario (no extra HTTP call)
-        this.cliente.set(r.usuario ?? null);
-        // Load full Pago (with payment method details not in the detail response)
-        this.pagosSvc.getByReserva(r.id).subscribe((ps) =>
-          this.pago.set(ps.find((p) => p.estado === 'exitoso' || p.estado === 'reembolsado') ?? ps[0] ?? null)
-        );
-        // Load Funcion by id (for salaNombre() which needs id_sala/id_cine/id_pelicula)
-        if (r.id_funcion) {
-          this.funcionesSvc.getById(r.id_funcion).subscribe({
-            next: (f) => {
-              this.funcion.set(f);
-              this.peliculasSvc.getById(f.id_pelicula).subscribe({
-                next: (pel) => this.pelicula.set(pel),
-                error: () => {},
-              });
-              this.cinesSvc.getById(f.id_cine).subscribe({
-                next: (cine) => this.cine.set(cine),
-                error: () => {},
-              });
-            },
-            error: () => {},
-          });
-        }
-      },
-      error: (err) => {
-        this.loading.set(false);
-        this.detalleError.set(extractMessage(err));
-      },
+      if (r.usuario) this.cliente.set(r.usuario);
+
+      if (r.funcion) {
+        this.funcion.set({
+          id: r.funcion.id,
+          fecha_hora: r.funcion.fecha_hora,
+        } as any);
+      }
+      if (r.pelicula) this.pelicula.set(r.pelicula as any);
+      if (r.cine) this.cine.set({ ...r.cine, salas: [] } as any);
+
+      this.pagosSvc.getByReserva(r.id).subscribe((ps) =>
+        this.pago.set(ps.find((p) => p.estado === 'exitoso' || p.estado === 'reembolsado') ?? ps[0] ?? null)
+      );
     });
   }
 
@@ -259,10 +240,7 @@ export class AdminReservaDetalleComponent {
   }
 
   salaNombre(): string {
-    const c = this.cine();
-    const f = this.funcion();
-    if (!c || !f) return '';
-    return c.salas.find((s) => s.id === f.id_sala)?.nombre ?? '';
+    return this.reserva()?.sala?.nombre ?? '—';
   }
 
   canCancel(): boolean {
@@ -294,11 +272,53 @@ export class AdminReservaDetalleComponent {
     if (r) this.reserva.set({ ...r, updated_at: new Date().toISOString() });
   }
 
+  openCancel() {
+    this.cancelOpen.set(true);
+    setTimeout(() => {
+      document
+        .querySelector('.cancel-panel')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 80);
+  }
+  closeCancel() {
+    this.cancelOpen.set(false);
+  }
+  confirmCancel() {
+    const r = this.reserva();
+    if (!r) return;
+
+    this.reservasSvc.cancelar(r.id).subscribe({
+      next: (res) => {
+        this.reserva.set({
+          ...r,
+          estado: res.reserva.estado,
+          updated_at: res.reserva.fecha_cancelacion,
+        });
+        this.cancelOpen.set(false);
+        const monto = res.reembolso?.monto;
+        this.showToast(
+          monto
+            ? `Reserva cancelada · L ${monto} reembolsados`
+            : `Reserva cancelada`,
+        );
+      },
+      error: (err) => {
+        this.cancelOpen.set(false);
+        if (err.status === 409) {
+          this.showToast('La reserva ya fue cancelada o cambió de estado');
+        } else {
+          this.showToast('No se pudo cancelar. Intenta de nuevo.');
+        }
+      },
+    });
+  }
+
   onNotasChange(r: AdminReservaDetail, event: Event) {
     const value = (event.target as HTMLTextAreaElement).value;
     this.reserva.set({ ...r, notas_internas: value });
   }
 
+  
   expiraTexto(expiraEn: string): string {
     const diff = new Date(expiraEn).getTime() - Date.now();
     if (diff <= 0) return 'expirado';

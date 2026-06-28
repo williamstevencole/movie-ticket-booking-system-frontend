@@ -22,8 +22,8 @@ import {
   AsientosService,
   AsientoFuncion,
 } from '../../../shared/services/asientos.service';
-import { ToastService } from '../../../shared/services/toast.service';
 import { CheckoutStateService } from '../../checkout/checkout-state.service';
+import { ToastService } from '../../../shared/services/toast.service';
 
 // Minimal shape passed into the template seat grid
 type AsientoDisplay = {
@@ -52,12 +52,10 @@ export class MapaComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly asientosSvc = inject(AsientosService);
-  private readonly checkoutState = inject(CheckoutStateService);
   private readonly toastSvc = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
-
-  /** Evita doble envío mientras se crea la reserva. */
-  private creandoReserva = false;
+  private readonly checkoutStateSvc = inject(CheckoutStateService);
+  readonly cargando = signal(false);
 
   readonly funcionId = signal<string | null>(null);
 
@@ -201,25 +199,27 @@ export class MapaComponent implements OnInit {
   }
 
   continuarAPago(): void {
-    const idFuncion = this.funcionId();
+    const funcionId = this.funcionId();
     const seleccionados = this.asientosSeleccionados();
-    if (!idFuncion || seleccionados.length === 0 || this.creandoReserva) return;
+    if (!funcionId || seleccionados.length === 0) return;
 
-    this.creandoReserva = true;
-    // Convierte los asientos bloqueados en una reserva pendiente de pago.
-    this.checkoutState
-      .confirmarReserva(idFuncion, seleccionados.map((a) => a.id))
+    this.cargando.set(true);
+
+    this.checkoutStateSvc
+      .confirmarReserva(funcionId, seleccionados)
       .subscribe({
         next: (reserva) => {
-          this.creandoReserva = false;
-          this.checkoutState.setReservaPendiente(reserva);
-          this.router.navigate(['/checkout/metodos-pago']);
+          this.cargando.set(false);
+          this.checkoutStateSvc.setReservaPendiente(reserva);
+          this.router.navigate(['/checkout/metodos-pago'], {
+            queryParams: { reserva: reserva.id_reserva },
+          });
         },
         error: (err) => {
-          this.creandoReserva = false;
+          this.cargando.set(false);
           if (err?.code === 'SEAT_CONFLICT' || err?.status === 409) {
             this.mostrarModalConflicto.set(true);
-            this.cargarMapa(idFuncion, false);
+            this.cargarMapa(funcionId, false);
           } else {
             this.toastSvc?.show?.('No se pudo crear la reserva. Intentá de nuevo.');
           }

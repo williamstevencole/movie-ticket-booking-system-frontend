@@ -35,6 +35,7 @@ export type AdminReservaDetail = AdminReservaRow & {
   asientos: AdminAsientoDetail[];
   notas_internas?: string | null;
   expira_en?: string | null;
+  sala?: { id: string; nombre: string };
 };
 
 export type UsuarioReserva = {
@@ -70,6 +71,7 @@ export type ReservaCobrarDetail = {
   num_asientos: number;
   monto_total: number;
 };
+
 
 type BackendReservaRow = {
   id: string;
@@ -220,6 +222,9 @@ function mapBackendAdminReservaDetail(r: BackendAdminReservaDetail): AdminReserv
       : undefined,
     cine: r.funcion?.cine
       ? { id: toStr(r.funcion.cine.id), nombre: r.funcion.cine.nombre }
+      : undefined,
+    sala: r.funcion?.sala
+      ? { id: toStr(r.funcion.sala.id), nombre: r.funcion.sala.nombre }
       : undefined,
     // num_asientos derived from asientos array
     num_asientos: r.asientos?.length ?? 0,

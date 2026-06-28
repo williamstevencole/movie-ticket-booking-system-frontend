@@ -326,7 +326,7 @@ export class AdminReservasListadoComponent {
     this.loading.set(true);
     this.listError.set(null);
     this.rows.set([]);
-    this.reservasSvc.list({ limit: 200 }).subscribe({
+    this.reservasSvc.list({ limit: 100 }).subscribe({
       next: (res) => {
         this.rows.set(res.data);
         this.serverTotal.set(res.total);
