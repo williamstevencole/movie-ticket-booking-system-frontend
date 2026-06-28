@@ -7,37 +7,36 @@
             <button (click)="cerrarModal()">✕</button>
         </header>
 
-
         <div class="content">
 
-            <p>
-                Antes de cancelar tu boleto toma en cuenta las siguientes reglas:
-            </p>
+            <p>Antes de cancelar tu boleto toma en cuenta las siguientes reglas:</p>
 
-            <ul>
-                <li>
-                    Cancelaciones con más de 24 horas:
-                    <strong>100% de reembolso</strong>
-                </li>
-
-                <li>
-                    Entre 12 y 24 horas:
-                    <strong>50% de reembolso</strong>
-                </li>
-
-                <li>
-                    Menos de 12 horas:
-                    <strong>No aplica reembolso</strong>
-                </li>
-
-            </ul>
+            @if (politica?.reglas?.length) {
+              <ul>
+                @for (r of politica!.reglas!; track r.id) {
+                  <li>
+                    @if (r.horas_antes_maximo === null) {
+                      Más de {{ r.horas_antes_minimo }}h antes:
+                    } @else {
+                      Entre {{ r.horas_antes_minimo }}h y {{ r.horas_antes_maximo }}h antes:
+                    }
+                    <strong>{{ r.porcentaje_reembolso }}% de reembolso</strong>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <ul>
+                <li>Cancelaciones con más de 24 horas: <strong>100% de reembolso</strong></li>
+                <li>Entre 12 y 24 horas: <strong>50% de reembolso</strong></li>
+                <li>Menos de 12 horas: <strong>No aplica reembolso</strong></li>
+              </ul>
+            }
 
             <p class="warning">
                 Una vez confirmada la cancelación no podrás recuperar la reserva.
             </p>
 
         </div>
-
 
         <footer>
             <button class="secondary" (click)="cerrarModal()">
@@ -48,7 +47,6 @@
                 Continuar cancelación
             </button>
         </footer>
-
 
     </section>
 
