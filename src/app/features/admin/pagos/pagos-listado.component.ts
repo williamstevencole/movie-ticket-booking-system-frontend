@@ -181,7 +181,7 @@ export class AdminPagosListadoComponent {
   cargarPagos(): void {
     this.pagosLoading.set(true);
     this.pagosError.set(null);
-    this.pagosSvc.list({ limit: 500 }).subscribe({
+    this.pagosSvc.list({ limit: 100 }).subscribe({
       next: (res) => {
         this.pagos.set(res.data);
         this.pagosLoading.set(false);

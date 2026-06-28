@@ -381,7 +381,6 @@ export class AdminReembolsosComponent {
   }
 
   onProcesar(r: ReembolsoAdmin) {
-    // Reembolsos en efectivo requieren confirmación explícita.
     if (r.estado === 'pendiente' && r.metodo === 'efectivo') {
       this.confirmTarget.set(r);
       return;
