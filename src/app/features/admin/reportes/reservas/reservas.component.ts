@@ -233,12 +233,12 @@ export class AdminReporteReservasComponent {
     let pagadas = 0;
     let reembolsadas = 0;
     for (const r of rows) {
-      if (r.estado === 'pagada') {
+      if (r.estado === 'pagada' || r.estado === 'reembolsada') {
         cobrado += r.monto_total;
-        pagadas++;
+        if (r.estado === 'pagada') pagadas++;
       }
       if (r.estado === 'reembolsada') {
-        reembolsado += r.monto_total;
+        reembolsado += r.monto_reembolsado;
         reembolsadas++;
       }
     }

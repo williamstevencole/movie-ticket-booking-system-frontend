@@ -26,6 +26,7 @@ export type ReporteReservaRow = {
   nombre_sala: string;
   num_asientos: number;
   monto_total: number;
+  monto_reembolsado: number;
   estado: 'pendiente_pago' | 'pagada' | 'cancelada' | 'reembolsada' | 'expirada';
   created_at: string;
 };
@@ -73,6 +74,7 @@ type BackendReporteReservaItem = {
   };
   numAsientos: number;
   montoTotal: number | string;
+  montoReembolsado: number | string;
   createdAt: string;
   updatedAt: string;
 };
@@ -100,6 +102,7 @@ function mapBackendReporteReserva(
     nombre_sala: r.funcion.sala.nombre,
     num_asientos: r.numAsientos,
     monto_total: toNum(r.montoTotal),
+    monto_reembolsado: toNum(r.montoReembolsado),
     estado: r.estado as ReporteReservaRow['estado'],
     created_at: r.createdAt,
   };
