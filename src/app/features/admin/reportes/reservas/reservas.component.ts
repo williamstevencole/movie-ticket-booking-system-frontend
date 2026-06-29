@@ -16,6 +16,11 @@ import {
   ReportFiltrosValue,
 } from '../../../../shared/components/report-filtros.component';
 import { extractMessage } from '../../../../shared/utils/http-errors';
+import {
+  ExportColumn,
+  downloadReportCsv,
+  downloadReportPdf,
+} from '../../../../shared/utils/report-export';
 import { ToastService } from '../../../../shared/services/toast.service';
 
 @Component({
@@ -51,9 +56,22 @@ import { ToastService } from '../../../../shared/services/toast.service';
                 Operación comercial en el período seleccionado. Cobrado, reembolsado y neto al pie.
               </p>
             </div>
-            <button class="btn" (click)="exportarCsv()" [disabled]="exportando()">
-              {{ exportando() ? 'Exportando…' : 'Exportar CSV' }}
-            </button>
+            <div class="export-actions">
+              <button
+                class="btn"
+                (click)="exportar('csv')"
+                [disabled]="exportando() || total() === 0"
+              >
+                {{ exportando() ? 'Exportando…' : 'Exportar CSV' }}
+              </button>
+              <button
+                class="btn"
+                (click)="exportar('pdf')"
+                [disabled]="exportando() || total() === 0"
+              >
+                Exportar PDF
+              </button>
+            </div>
           </div>
 
           <section class="kpi-grid">
@@ -307,22 +325,55 @@ export class AdminReporteReservasComponent {
     this.cargar();
   }
 
-  exportarCsv() {
+  /** Columnas exportadas (alineadas con la tabla en pantalla). */
+  readonly exportColumns: ExportColumn<ReporteReservaRow>[] = [
+    { key: 'numero_reserva', label: '# Reserva', value: (r) => r.numero_reserva },
+    { key: 'cliente', label: 'Cliente', value: (r) => r.nombre_usuario },
+    { key: 'email', label: 'Email', value: (r) => r.email_usuario },
+    { key: 'pelicula', label: 'Película', value: (r) => r.titulo_pelicula },
+    { key: 'cine', label: 'Cine', value: (r) => r.nombre_cine },
+    { key: 'sala', label: 'Sala', value: (r) => r.nombre_sala },
+    {
+      key: 'funcion',
+      label: 'Función',
+      value: (r) =>
+        new Date(r.fecha_hora_funcion).toLocaleString('es-ES', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+    },
+    { key: 'asientos', label: 'Asientos', value: (r) => r.num_asientos },
+    { key: 'total', label: 'Total (L)', value: (r) => r.monto_total.toFixed(2) },
+    { key: 'estado', label: 'Estado', value: (r) => this.estadoLabel(r.estado) },
+  ];
+
+  /** Exporta TODAS las reservas del período (no solo la página actual). */
+  exportar(format: 'csv' | 'pdf') {
     if (this.exportando()) return;
     const q = this.buildQuery();
-    delete q['page'];
-    delete q['limit'];
+    q['page'] = 1;
+    q['limit'] = Math.max(this.total(), 1);
     this.exportando.set(true);
-    this.reportesSvc.reservasCsv(q).subscribe({
-      next: (blob) => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `reservas-${new Date().toISOString().slice(0, 10)}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+    this.reportesSvc.reservas(q).subscribe({
+      next: (res) => {
+        const opts = {
+          filename: `reporte-reservas-${new Date().toISOString().slice(0, 10)}`,
+          title: 'Reporte de reservas',
+          columns: this.exportColumns,
+          rows: res.data,
+        };
+        try {
+          if (format === 'csv') downloadReportCsv(opts);
+          else downloadReportPdf(opts);
+          this.toast.show(
+            `${format.toUpperCase()} descargado · ${res.data.length} registros`,
+          );
+        } catch {
+          this.toast.show(`No se pudo generar el ${format.toUpperCase()}`);
+        }
         this.exportando.set(false);
       },
       error: (err) => {
