@@ -9,13 +9,9 @@ import { FooterComponent } from '../../../shared/components/footer/footer.compon
 import { PosterBadgeComponent } from '../../../shared/components/poster-badge/poster-badge.component';
 import { RatingDisplayComponent } from '../../../shared/components/rating-display/rating-display.component';
 import { HeroCarouselComponent } from '../hero-carousel/hero-carousel.component';
-import { DayStripComponent } from '../day-strip/day-strip.component';
 import { PromosComponent } from '../promos/promos.component';
 import { ProximamenteComponent } from '../proximamente/proximamente.component';
 import { CarteleraPelicula } from '../../../mocks/data/cartelera-display.mock';
-
-const MN = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-const WD = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 @Component({
   selector: 'app-cartelera-home',
@@ -28,7 +24,6 @@ const WD = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
     PosterBadgeComponent,
     RatingDisplayComponent,
     HeroCarouselComponent,
-    DayStripComponent,
     PromosComponent,
     ProximamenteComponent,
   ],
@@ -43,14 +38,13 @@ export class CarteleraHomeComponent implements OnInit {
   readonly nav = [
     { label: 'Cartelera', route: '/', active: true },
     { label: 'Próximos estrenos', route: '/proximos-estrenos' },
-    { label: 'Promociones', route: '/cupones' },
+    { label: 'Cupones', route: '/cupones' },
     { label: 'Mis boletos', route: '/mis-boletos' },
   ];
 
   readonly peliculas = signal<CarteleraPelicula[]>([]);
   readonly cargando = signal(true);
   readonly error = signal(false);
-  readonly fechaActiva = signal(this.formatDateLabel(new Date()));
 
   ngOnInit(): void {
     const ciudadId = this.location.selection()?.cityId;
@@ -71,15 +65,7 @@ export class CarteleraHomeComponent implements OnInit {
     return this.auth.user()?.nombre?.split(' ')[0] ?? 'invitado';
   }
 
-  onDayChange(date: Date): void {
-    this.fechaActiva.set(this.formatDateLabel(date));
-  }
-
   filtered(): CarteleraPelicula[] {
     return this.peliculas();
-  }
-
-  private formatDateLabel(d: Date): string {
-    return `${WD[d.getDay()]} ${String(d.getDate()).padStart(2, '0')} ${MN[d.getMonth()]}`;
   }
 }
