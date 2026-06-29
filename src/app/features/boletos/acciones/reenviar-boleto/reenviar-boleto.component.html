@@ -1,7 +1,12 @@
-<button type="button" class="resend" (click)="reenviar()" [disabled]="reenviando">
+<button type="button" class="resend" (click)="reenviar()" [disabled]="reenviando || segundos > 0">
   @if (reenviando) {
-    <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+    <svg class="ico spin" viewBox="0 0 16 16" aria-hidden="true">
       <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="28" stroke-dashoffset="14" stroke-linecap="round"></circle>
+    </svg>
+    <span>Enviando…</span>
+  } @else if (segundos > 0) {
+    <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
     </svg>
     <span>Esperá {{ segundos }}s</span>
   } @else {
