@@ -164,8 +164,14 @@ export class MisBoletosComponent {
     return `${visibles} +${restantes}`;
   }
 
+  /** ¿La función de este boleto fue cancelada? */
+  funcionCancelada(boleto: Boleto): boolean {
+    return boleto.funcionEstado === 'cancelada';
+  }
+
   puedeReenviar(boleto: Boleto): boolean {
     if (boleto.estado !== 'pagada') return false;
+    if (this.funcionCancelada(boleto)) return false;
     return new Date(boleto.fecha_hora).getTime() > Date.now();
   }
 
@@ -175,6 +181,7 @@ export class MisBoletosComponent {
 
   puedeCancelar(boleto: Boleto): boolean {
     if (boleto.estado !== 'pagada' && boleto.estado !== 'pendiente_pago') return false;
+    if (this.funcionCancelada(boleto)) return false;
     return new Date(boleto.fecha_hora).getTime() > Date.now();
   }
 
@@ -190,11 +197,14 @@ export class MisBoletosComponent {
   }
 
   metodoPagoLabel(boleto: Boleto): string {
-    if (boleto.ultimos4_snapshot) {
-      const marca = this.formatMarca(boleto.marca_snapshot);
-      return `${marca} •••• ${boleto.ultimos4_snapshot}`;
+    if (boleto.metodo === 'tarjeta') {
+      if (boleto.ultimos4_snapshot) {
+        return `${this.formatMarca(boleto.marca_snapshot)} •••• ${boleto.ultimos4_snapshot}`;
+      }
+      return 'Tarjeta';
     }
-    return 'Efectivo · taquilla';
+    if (boleto.metodo === 'efectivo') return 'Efectivo · taquilla';
+    return 'Sin pago';
   }
 
   recargar(): void {
