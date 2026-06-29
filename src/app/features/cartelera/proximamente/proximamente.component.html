@@ -1,0 +1,45 @@
+@if (peliculas().length > 0) {
+  <section class="section wrap">
+    <div class="section-head">
+      <h2>Próximamente</h2>
+      <a class="link" routerLink="/proximos-estrenos">
+        Calendario completo <svg lucideArrowRight [size]="14"></svg>
+      </a>
+    </div>
+    <div class="movie-grid">
+      @for (p of peliculas(); track p.id) {
+        <article class="movie-card">
+          <div class="poster dim" [class]="p.poster">
+            @if (p.poster_url) {
+              <img [src]="p.poster_url" [alt]="p.titulo" loading="lazy" />
+            }
+            <app-poster-badge tipo="fecha" [fecha]="p.badgeFecha" />
+            <span class="title-overlay">{{ p.titulo }}</span>
+          </div>
+          <div class="body">
+            <h3 class="title">{{ p.titulo }}</h3>
+            <div class="meta">
+              <span>{{ p.genero }}</span>
+              <span class="sep">·</span>
+              <span>{{ p.duracion }}</span>
+            </div>
+            <button
+              type="button"
+              class="btn btn-sm notify"
+              [class.subscribed]="isSubscribed(p.id)"
+              [disabled]="isPending(p.id)"
+              (click)="toggleNotify(p.id)"
+            >
+              @if (isSubscribed(p.id)) {
+                <svg lucideCheck [size]="14"></svg>
+                Te avisaremos
+              } @else {
+                Notificarme
+              }
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+}
