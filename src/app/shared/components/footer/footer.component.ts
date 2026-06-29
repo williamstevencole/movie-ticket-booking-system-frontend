@@ -10,9 +10,9 @@ import { RouterLink } from '@angular/router';
       <div class="wrap">
         <div class="appfoot-grid">
           <div>
-            <a routerLink="/cartelera" class="brand"
-              ><span class="mark">C</span>Cinetario</a
-            >
+            <a routerLink="/" class="brand">
+              <span class="mark">C</span>Cinetario
+            </a>
             <p class="desc">
               La forma fácil de comprar boletos de cine en Honduras. Cartelera
               actualizada al instante.
@@ -21,10 +21,9 @@ import { RouterLink } from '@angular/router';
           <div>
             <h4>Cinetario</h4>
             <ul>
-              <li><a routerLink="/cartelera">Cartelera</a></li>
-              <li><a>Próximos estrenos</a></li>
-              <li><a>Promociones</a></li>
-              <li><a>Cines y salas</a></li>
+              <li><a routerLink="/">Cartelera</a></li>
+              <li><a routerLink="/proximos-estrenos">Próximos estrenos</a></li>
+              <li><a routerLink="/cupones">Cupones</a></li>
             </ul>
           </div>
           <div>
@@ -32,15 +31,7 @@ import { RouterLink } from '@angular/router';
             <ul>
               <li><a routerLink="/mis-boletos">Mis boletos</a></li>
               <li><a routerLink="/cuenta/perfil">Perfil</a></li>
-              <li><a routerLink="/cuenta/cupones">Cupones</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4>Ayuda</h4>
-            <ul>
-              <li><a>Política de cancelación</a></li>
-              <li><a>Preguntas frecuentes</a></li>
-              <li><a>Contacto</a></li>
+              <li><a routerLink="/cuenta/metodos-pago">Métodos de pago</a></li>
             </ul>
           </div>
         </div>
