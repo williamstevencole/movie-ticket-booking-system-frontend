@@ -1,16 +1,55 @@
 <div class="policy-card">
   <div class="policy-card-head">
     <span class="policy-tag">POLÍTICA DE CANCELACIÓN</span>
-    <h2>Reembolso según anticipación</h2>
-    <p>Cuanto antes canceles, mayor el reembolso.</p>
+    <h2>Tu caso</h2>
   </div>
-  <div class="reglas">
-    @for (r of reglas; track r.rango) {
-      <div class="rule">
-        <div class="rango">{{ r.rango }}</div>
-        <div class="desc">{{ r.descripcion }}</div>
-        <div class="reembolso">{{ r.reembolso }}</div>
+
+  @if (reglaActiva; as r) {
+    <div class="applicable" [class.full]="r.reembolso >= 100" [class.zero]="r.reembolso === 0">
+      <div class="applicable-percent">
+        <span class="num">{{ r.reembolso }}</span><span class="sym">%</span>
       </div>
-    }
-  </div>
+      <div class="applicable-text">
+        <div class="lbl">Reembolso aplicable</div>
+        <div class="desc">{{ r.descripcion }}</div>
+      </div>
+    </div>
+  } @else {
+    <p class="muted">No se pudo determinar la regla aplicable.</p>
+  }
+
+  <button type="button" class="info-btn" (click)="abrirModal()">
+    <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.3"/>
+      <circle cx="8" cy="5.2" r="0.7" fill="currentColor"/>
+      <path d="M8 7.5v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+    </svg>
+    Ver todas las políticas
+  </button>
 </div>
+
+@if (modalAbierto()) {
+  <div class="info-overlay" (click)="cerrarModal()" role="presentation">
+    <section class="info-modal" (click)="$event.stopPropagation()" role="dialog" aria-label="Políticas de cancelación">
+      <header>
+        <h3>Políticas de cancelación</h3>
+        <button type="button" class="close" (click)="cerrarModal()" aria-label="Cerrar">✕</button>
+      </header>
+      <div class="info-scroll">
+        <p class="intro">El reembolso depende de cuántas horas antes de la función canceles:</p>
+        <ul class="rules">
+          @for (r of reglas; track r.rango) {
+            <li>
+              <span class="rule-range">{{ r.rango }}</span>
+              <span class="rule-desc">{{ r.descripcion }}</span>
+              <strong class="rule-percent">{{ r.reembolso }}%</strong>
+            </li>
+          }
+        </ul>
+      </div>
+      <footer>
+        <button type="button" class="ok-btn" (click)="cerrarModal()">Entendido</button>
+      </footer>
+    </section>
+  </div>
+}

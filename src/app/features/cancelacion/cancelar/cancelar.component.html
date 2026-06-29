@@ -34,7 +34,7 @@
 
           <app-tiempo-restante [fechaHora]="reserva.fecha_hora" variante="banner" />
 
-          <app-politicas-card [politica]="politica()" />
+          <app-politicas-card [politica]="politica()" [reglaAplicable]="reglaAplicable()" />
 
           <div class="actions">
             <a class="btn secondary" [routerLink]="['/mis-boletos']">Volver</a>
@@ -57,6 +57,7 @@
       <app-politicas-cancelacion
         [boleto]="reserva!"
         [politica]="politica()"
+        [reglaAplicable]="reglaAplicable()"
         [cancelando]="cancelando()"
         (cerrar)="mostrarConfirmacion.set(false)"
         (confirmar)="ejecutarCancelacion()"

@@ -1,53 +1,61 @@
-<div class="overlay">
+<div class="overlay" (click)="cerrarModal()" role="presentation">
+  <section class="modal" (click)="$event.stopPropagation()" role="dialog" aria-labelledby="confirm-title">
+    <header>
+      <h2 id="confirm-title">Confirmar cancelación</h2>
+      <button type="button" class="close" (click)="cerrarModal()" aria-label="Cerrar" [disabled]="cancelando">✕</button>
+    </header>
 
-    <section class="modal">
-
-        <header>
-            <h2>Políticas de cancelación</h2>
-            <button (click)="cerrarModal()">✕</button>
-        </header>
-
-        <div class="content">
-
-            <p>Antes de cancelar tu boleto toma en cuenta las siguientes reglas:</p>
-
-            @if (politica?.reglas?.length) {
-              <ul>
-                @for (r of politica!.reglas!; track r.id) {
-                  <li>
-                    @if (r.horas_antes_maximo === null) {
-                      Más de {{ r.horas_antes_minimo }}h antes:
-                    } @else {
-                      Entre {{ r.horas_antes_minimo }}h y {{ r.horas_antes_maximo }}h antes:
-                    }
-                    <strong>{{ r.porcentaje_reembolso }}% de reembolso</strong>
-                  </li>
-                }
-              </ul>
-            } @else {
-              <ul>
-                <li>Cancelaciones con más de 24 horas: <strong>100% de reembolso</strong></li>
-                <li>Entre 12 y 24 horas: <strong>50% de reembolso</strong></li>
-                <li>Menos de 12 horas: <strong>No aplica reembolso</strong></li>
-              </ul>
-            }
-
-            <p class="warning">
-                Una vez confirmada la cancelación no podrás recuperar la reserva.
-            </p>
-
+    <div class="content">
+      @if (reglaActiva; as r) {
+        <div class="applicable" [class.full]="r.reembolso >= 100" [class.zero]="r.reembolso === 0">
+          <div class="applicable-percent">
+            <span class="num">{{ r.reembolso }}</span><span class="sym">%</span>
+          </div>
+          <div class="applicable-text">
+            <div class="lbl">Reembolso aplicable</div>
+            <div class="desc">{{ r.descripcion }}</div>
+          </div>
         </div>
+      } @else {
+        <p class="muted">No se pudo determinar el reembolso aplicable.</p>
+      }
 
-        <footer>
-            <button class="secondary" (click)="cerrarModal()" [disabled]="cancelando">
-                Volver
-            </button>
+      <button type="button" class="info-toggle" (click)="toggleVerTodas()" [attr.aria-expanded]="verTodas()">
+        <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+          <circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.3"/>
+          <circle cx="8" cy="5.2" r="0.7" fill="currentColor"/>
+          <path d="M8 7.5v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        <span>{{ verTodas() ? 'Ocultar políticas completas' : 'Ver políticas completas' }}</span>
+        <svg class="chev" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="m5 6 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
 
-            <button class="danger" (click)="continuarCancelacion()" [disabled]="cancelando">
-                {{ cancelando ? 'Cancelando...' : 'Continuar cancelación' }}
-            </button>
-        </footer>
+      @if (verTodas()) {
+        <ul class="rules">
+          @for (r of reglas; track r.rango) {
+            <li>
+              <span class="rule-range">{{ r.rango }}</span>
+              <span class="rule-desc">{{ r.descripcion }}</span>
+              <strong class="rule-percent">{{ r.reembolso }}%</strong>
+            </li>
+          }
+        </ul>
+      }
 
-    </section>
+      <p class="warning">
+        Una vez confirmada la cancelación no podrás recuperar la reserva.
+      </p>
+    </div>
 
+    <footer>
+      <button type="button" class="secondary" (click)="cerrarModal()" [disabled]="cancelando">
+        Volver
+      </button>
+      <button type="button" class="danger" (click)="continuarCancelacion()" [disabled]="cancelando">
+        {{ cancelando ? 'Cancelando…' : 'Confirmar cancelación' }}
+      </button>
+    </footer>
+  </section>
 </div>

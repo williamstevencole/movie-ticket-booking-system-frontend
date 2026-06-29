@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Boleto } from '../../../shared/services/boletos.service';
 import { MisReservasService } from '../../../shared/services/mis-reservas.service';
-import { PoliticasCancelacionService, PoliticaCancelacion } from '../../../shared/services/politicas-cancelacion.service';
+import { PoliticasCancelacionService, PoliticaCancelacion, ReglaPolitica } from '../../../shared/services/politicas-cancelacion.service';
 import { ToastService } from '../../../shared/services/toast.service';
 import { PoliticasComponent } from '../politicas/politicas.component';
 import { PoliticasCardComponent } from '../politicas-card/politicas-card.component';
@@ -40,17 +40,20 @@ export class CancelarComponent {
   readonly politica = signal<PoliticaCancelacion | null>(null);
   readonly cancelando = signal(false);
 
-  readonly porcentajeEstimado = computed(() => {
+  readonly reglaAplicable = computed<ReglaPolitica | null>(() => {
     const p = this.politica();
-    if (!this.reserva || !p?.reglas?.length) return 0;
+    if (!this.reserva || !p?.reglas?.length) return null;
     const horasAntes = (new Date(this.reserva.fecha_hora).getTime() - Date.now()) / 3_600_000;
-    const regla = p.reglas.find(
-      (r) =>
-        r.horas_antes_minimo <= horasAntes &&
-        (r.horas_antes_maximo === null || r.horas_antes_maximo > horasAntes),
+    return (
+      p.reglas.find(
+        (r) =>
+          r.horas_antes_minimo <= horasAntes &&
+          (r.horas_antes_maximo === null || r.horas_antes_maximo > horasAntes),
+      ) ?? null
     );
-    return regla?.porcentaje_reembolso ?? 0;
   });
+
+  readonly porcentajeEstimado = computed(() => this.reglaAplicable()?.porcentaje_reembolso ?? 0);
 
   constructor() {
     const numero = this.route.snapshot.paramMap.get('id') ?? '';
