@@ -46,6 +46,44 @@ export type CheckConflictosParams = {
   ignorar_id?: string;
 };
 
+export interface AdminAsientoMapaItem {
+  idAsientoFuncion: string;
+  fila: string;
+  columna: number;
+  codigo: string;
+  tipo: string;
+  color: string | null;
+  estado: 'disponible' | 'bloqueado' | 'reservado' | 'ocupado';
+  precio: number;
+  usuario: { id: string; email: string } | null;
+  bloqueadoHasta: string | null;
+}
+
+export interface AdminMapaAsientos {
+  funcionId: string;
+  sala: { filas: number; columnas: number };
+  asientos: AdminAsientoMapaItem[];
+}
+
+interface BackendAdminAsientoItem {
+  id_asiento_funcion: string;
+  fila: string;
+  columna: number;
+  codigo: string;
+  tipo: string;
+  color: string | null;
+  estado: 'disponible' | 'bloqueado' | 'reservado' | 'ocupado';
+  precio: number;
+  usuario: { id: string; email: string } | null;
+  bloqueado_hasta: string | null;
+}
+
+interface BackendAdminMapa {
+  funcion_id: string;
+  sala: { filas: number; columnas: number };
+  asientos: BackendAdminAsientoItem[];
+}
+
 type BackendFuncionBase = {
   id: string | number;
   id_pelicula: string | number;
@@ -150,5 +188,26 @@ export class FuncionesService {
         params: httpParams,
       })
       .pipe(map((arr) => arr.map(mapBackendConflicto)));
+  }
+
+  mapaAdmin(id: string): Observable<AdminMapaAsientos> {
+    return this.http.get<BackendAdminMapa>(`${this.adminBase}/${id}/asientos`).pipe(
+      map((b) => ({
+        funcionId: b.funcion_id,
+        sala: b.sala,
+        asientos: b.asientos.map((a) => ({
+          idAsientoFuncion: a.id_asiento_funcion,
+          fila: a.fila,
+          columna: a.columna,
+          codigo: a.codigo,
+          tipo: a.tipo,
+          color: a.color,
+          estado: a.estado,
+          precio: a.precio,
+          usuario: a.usuario,
+          bloqueadoHasta: a.bloqueado_hasta,
+        })),
+      })),
+    );
   }
 }
