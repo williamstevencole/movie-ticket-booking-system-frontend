@@ -17,8 +17,12 @@ export interface Boleto {
   cine: { id: string; nombre: string };
   asientos: ReservaAsiento[];
   monto_total: number;
+  /** Método del pago asociado (null si todavía no hay pago). */
+  metodo: 'tarjeta' | 'efectivo' | null;
   ultimos4_snapshot: string | null;
   marca_snapshot: 'visa' | 'master' | 'amex' | 'discover' | null;
+  /** Estado de la función (para ocultar acciones si fue cancelada). */
+  funcionEstado: string;
 }
 
 type BackendBoleto = {
@@ -34,8 +38,10 @@ type BackendBoleto = {
   cine: { id: string; nombre: string };
   asientos: Array<{ id: string; codigo: string; fila: string; columna: number; tipo_asiento: string | null; precio: string | null }>;
   monto_total: string | null;
+  metodo: string | null;
   ultimos4_snapshot: string | null;
   marca_snapshot: string | null;
+  funcion_estado: string;
 };
 
 function mapBoleto(r: BackendBoleto): Boleto {
@@ -66,8 +72,10 @@ function mapBoleto(r: BackendBoleto): Boleto {
       precio: a.precio != null ? parseFloat(a.precio) : 0,
     })),
     monto_total: r.monto_total != null ? parseFloat(r.monto_total) : 0,
+    metodo: (r.metodo as Boleto['metodo']) ?? null,
     ultimos4_snapshot: r.ultimos4_snapshot,
     marca_snapshot: r.marca_snapshot as Boleto['marca_snapshot'],
+    funcionEstado: r.funcion_estado,
   };
 }
 

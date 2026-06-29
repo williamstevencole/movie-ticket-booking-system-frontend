@@ -68,8 +68,11 @@
 
                       <div class="status-row">
                         <span class="estado-badge" [attr.data-estado]="boleto.estado">{{ estadoLabel(boleto.estado) }}</span>
-                        <span class="metodo-pago" [class.efectivo]="!boleto.ultimos4_snapshot">
-                          @if (boleto.ultimos4_snapshot) {
+                        @if (funcionCancelada(boleto)) {
+                          <span class="estado-badge" data-estado="cancelada">Función cancelada</span>
+                        }
+                        <span class="metodo-pago" [class.efectivo]="boleto.metodo !== 'tarjeta'">
+                          @if (boleto.metodo === 'tarjeta') {
                             <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
                               <rect x="1.5" y="3.5" width="13" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
                               <path d="M1.5 6.5h13" stroke="currentColor" stroke-width="1.2"></path>
