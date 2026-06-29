@@ -66,6 +66,6 @@ export class CarteleraHomeComponent implements OnInit {
   }
 
   filtered(): CarteleraPelicula[] {
-    return this.peliculas();
+    return this.peliculas().filter((p) => p.puede_reservar !== false);
   }
 }

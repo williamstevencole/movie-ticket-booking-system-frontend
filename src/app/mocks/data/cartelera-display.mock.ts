@@ -32,6 +32,7 @@ export type CarteleraPelicula = {
   badge?: BadgeTipo;
   badgeFecha?: string;
   funciones: { hora: string; asientosLibres: number }[];
+  puede_reservar?: boolean;
   rating_promedio?: number | null;
   rating_count?: number;
 };

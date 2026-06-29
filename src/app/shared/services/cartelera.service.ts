@@ -128,6 +128,7 @@ export class CarteleraService {
       poster_url: p.poster_url,
       badge: this.badgeFromEstreno(p.fecha_estreno),
       funciones: [],
+      puede_reservar: p.puede_reservar,
       rating_promedio: p.rating_promedio ?? null,
       rating_count: p.rating_count ?? 0,
     };
