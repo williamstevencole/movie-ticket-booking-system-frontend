@@ -6,6 +6,11 @@
       <span class="tag">PRÓXIMOS ESTRENOS</span>
       <h1>Lo que viene en cartelera</h1>
       <p>Películas confirmadas con fecha de estreno futura.</p>
+      @if (totalSeguidos() > 0) {
+        <a class="seguidos-pill" routerLink="/perfil/avisos">
+          Estás siguiendo {{ totalSeguidos() }} estreno{{ totalSeguidos() === 1 ? '' : 's' }} →
+        </a>
+      }
     </header>
 
     @if (proximos().length === 0) {
@@ -33,6 +38,21 @@
               {{ p.duracion_min }} min
             </p>
             <p class="estreno">Estreno {{ p.fecha_estreno | date:'d MMM y' }}</p>
+            <button
+              type="button"
+              class="notify-btn"
+              [class.subscribed]="isSubscribed(p.id)"
+              [class.pending]="isPending(p.id)"
+              [disabled]="isPending(p.id)"
+              (click)="toggleNotify(p.id)"
+            >
+              @if (isSubscribed(p.id)) {
+                <svg lucideCheck [size]="14"></svg>
+                Te avisaremos
+              } @else {
+                Notificarme
+              }
+            </button>
           </article>
         }
       </div>

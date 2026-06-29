@@ -61,3 +61,39 @@
   margin-right: 2px;
 }
 .film .estreno { font-size: 12px; font-weight: 700; color: var(--red); margin: 2px 0 0; }
+
+.seguidos-pill {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #fdf3f3;
+  color: #c8202b;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+  &:hover { background: #fbe7e7; }
+}
+
+.film .notify-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #c8202b;
+  background: #fff;
+  color: #c8202b;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background .15s ease, color .15s ease;
+
+  &:hover { background: #c8202b; color: #fff; }
+  &.subscribed { background: #c8202b; color: #fff; }
+  &.subscribed:hover { background: #a51820; }
+  &.pending { opacity: .6; cursor: progress; }
+}
