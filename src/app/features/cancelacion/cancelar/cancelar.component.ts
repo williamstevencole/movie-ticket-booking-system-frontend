@@ -90,7 +90,7 @@ export class CancelarComponent {
         const monto = res?.reembolso?.monto;
         this.toastSvc.show(
           monto
-            ? `Reserva cancelada · L ${monto} reembolsados`
+            ? `Reserva cancelada · solicitud de reembolso por L ${monto} enviada`
             : 'Reserva cancelada',
         );
         this.router.navigate(['/mis-boletos']);
