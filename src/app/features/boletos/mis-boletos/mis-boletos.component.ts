@@ -10,6 +10,7 @@ import { QrBoletoComponent } from './qr/qr.component';
 import { ReembolsosComponent } from './reembolsos/reembolsos.component';
 import { TiempoRestanteComponent } from './tiempo-restante/tiempo-restante.component';
 import { MisBoletosSidebarComponent } from './sidebar/mis-boletos-sidebar.component';
+import { CountdownPagoComponent } from '../../../shared/components/countdown-pago/countdown-pago.component';
 
 import { Boleto } from '../../../shared/services/boletos.service';
 import { MisReservasService } from '../../../shared/services/mis-reservas.service';
@@ -35,6 +36,7 @@ const PAGE_SIZE = 5;
     TiempoRestanteComponent,
     MisBoletosSidebarComponent,
     RatingDisplayComponent,
+    CountdownPagoComponent,
     DatePipe,
   ],
   templateUrl: './mis-boletos.component.html',
@@ -189,6 +191,15 @@ export class MisBoletosComponent {
       return `${marca} •••• ${boleto.ultimos4_snapshot}`;
     }
     return 'Efectivo · taquilla';
+  }
+
+  recargar(): void {
+    this.cargarPagina(this.filtroBoletos(), this.pagina());
+    this.cargarContadores();
+  }
+
+  onExpiradoBoleto(_id: string): void {
+    this.recargar();
   }
 
   private formatMarca(marca: Boleto['marca_snapshot']): string {

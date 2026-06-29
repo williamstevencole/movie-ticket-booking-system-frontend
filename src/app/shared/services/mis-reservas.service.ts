@@ -11,6 +11,7 @@ export interface Boleto {
   created_at: string;
   id_funcion: string;
   fecha_hora: string;
+  expira_en: string | null;
   pelicula: { id: string; titulo: string; poster_url: string | null; rating_promedio?: number | null; rating_count?: number };
   sala: { id: string; nombre: string };
   cine: { id: string; nombre: string };
@@ -27,6 +28,7 @@ type BackendBoleto = {
   created_at: string;
   id_funcion: string;
   fecha_hora: string;
+  expira_en: string | null;
   pelicula: { id: string; titulo: string; poster_url: string | null; rating_promedio: string | null; rating_count: number };
   sala: { id: string; nombre: string };
   cine: { id: string; nombre: string };
@@ -44,6 +46,7 @@ function mapBoleto(r: BackendBoleto): Boleto {
     created_at: r.created_at,
     id_funcion: r.id_funcion,
     fecha_hora: r.fecha_hora,
+    expira_en: r.expira_en ?? null,
     pelicula: {
       id: r.pelicula.id,
       titulo: r.pelicula.titulo,

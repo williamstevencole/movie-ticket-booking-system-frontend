@@ -146,6 +146,9 @@
                           Cancelar reserva
                         </a>
                       }
+                      @if (boleto.estado === 'pendiente_pago' && boleto.expira_en) {
+                        <app-countdown-pago [expiraEn]="boleto.expira_en" (expirado)="onExpiradoBoleto(boleto.id)" />
+                      }
                     </div>
                     <span class="reserva-num">{{ boleto.numero_reserva }}</span>
                   </div>
