@@ -1,35 +1,37 @@
-import { Injectable } from '@angular/core';
-import { of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
+
+export type CalificacionMia = {
+  elegible: boolean;
+  puntuacion: number | null;
+};
 
 export type ResultadoCalificacion = {
-  puntuacion?: number;       // ausente si DELETE
+  puntuacion?: number;
   rating_promedio: number | null;
   rating_count: number;
 };
 
 @Injectable({ providedIn: 'root' })
 export class CalificacionesService {
-  /** Devuelve { puntuacion } o null si no votó. */
-  obtenerMia(idPelicula: string) {
-    // Mock: usuario no ha calificado ninguna película
-    return of(null as { puntuacion: number } | null).pipe(delay(120));
+  private readonly http = inject(HttpClient);
+  private readonly base = '/api/peliculas';
+
+  obtenerMia(idPelicula: string): Observable<CalificacionMia> {
+    return this.http.get<CalificacionMia>(`${this.base}/${idPelicula}/calificacion-mia`);
   }
 
-  calificar(idPelicula: string, puntuacion: number) {
-    const result: ResultadoCalificacion = {
-      puntuacion,
-      rating_promedio: puntuacion,
-      rating_count: 1,
-    };
-    return of(result).pipe(delay(120));
+  calificar(idPelicula: string, puntuacion: number): Observable<ResultadoCalificacion> {
+    return this.http.patch<ResultadoCalificacion>(
+      `${this.base}/${idPelicula}/calificacion`,
+      { puntuacion },
+    );
   }
 
-  borrar(idPelicula: string) {
-    const result: ResultadoCalificacion = {
-      rating_promedio: null,
-      rating_count: 0,
-    };
-    return of(result).pipe(delay(120));
+  borrar(idPelicula: string): Observable<ResultadoCalificacion> {
+    return this.http.delete<ResultadoCalificacion>(
+      `${this.base}/${idPelicula}/calificacion`,
+    );
   }
 }

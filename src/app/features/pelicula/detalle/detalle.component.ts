@@ -71,7 +71,6 @@ export class PeliculaDetalleComponent implements OnInit {
 
   readonly esProximamente = computed(() => this.pelicula().puede_reservar === false);
 
-  // null = desconocido/cargando, true = puede calificar, false = no elegible
   readonly elegible = signal<boolean | null>(null);
   readonly miVoto = signal<number | null>(null);
 
@@ -103,24 +102,18 @@ export class PeliculaDetalleComponent implements OnInit {
     });
 
     if (!this.auth.isAuthenticated()) {
-      this.elegible.set(false);
       this.miVoto.set(null);
+      this.elegible.set(false);
       return;
     }
 
-    this.elegible.set(null);
-    this.miVoto.set(null);
     this.calificaciones.obtenerMia(id).subscribe({
       next: (r) => {
-        this.elegible.set(true);
-        this.miVoto.set(r?.puntuacion ?? null);
+        this.elegible.set(r.elegible);
+        this.miVoto.set(r.puntuacion);
       },
-      error: (e: { status?: number }) => {
-        if (e?.status === 403) {
-          this.elegible.set(false);
-        } else {
-          this.elegible.set(null);
-        }
+      error: () => {
+        this.elegible.set(false);
       },
     });
   }
