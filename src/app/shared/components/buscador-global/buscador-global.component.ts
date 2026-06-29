@@ -38,49 +38,51 @@ const RECENT_KEY = 'cinetario_busqueda_recientes';
             </button>
           </div>
 
-          @if (query().length === 0 && recientes().length > 0) {
-            <div class="section-label">Recientes</div>
-            <ul class="results">
-              @for (r of recientes(); track r) {
-                <li>
-                  <button class="result-row" (click)="goSearch(r)">{{ r }}</button>
-                </li>
-              }
-            </ul>
-          }
+          <div class="results-scroll">
+            @if (query().length === 0 && recientes().length > 0) {
+              <div class="section-label">Recientes</div>
+              <ul class="results">
+                @for (r of recientes(); track r) {
+                  <li>
+                    <button class="result-row" (click)="goSearch(r)">{{ r }}</button>
+                  </li>
+                }
+              </ul>
+            }
 
-          @if (query().length > 0) {
-            <div class="section-label">Películas</div>
-            <ul class="results">
-              @for (p of resultados(); track p.id) {
-                <li>
-                  <a
-                    class="result-row rich"
-                    [routerLink]="['/pelicula', p.id]"
-                    (click)="pick(p.titulo)"
-                  >
-                    <span class="mini-poster poster" [class]="p.poster">
-                      @if (p.poster_url) {
-                        <img [src]="p.poster_url" [alt]="p.titulo" loading="lazy" />
-                      }
-                    </span>
-                    <span>
-                      <span class="ti">{{ p.titulo }}</span>
-                      <span class="me">{{ p.genero }}</span>
-                    </span>
-                  </a>
-                </li>
-              } @empty {
-                <li class="empty">
-                  @if (cargando()) {
-                    Buscando…
-                  } @else {
-                    Sin resultados para «{{ query() }}»
-                  }
-                </li>
-              }
-            </ul>
-          }
+            @if (query().length > 0) {
+              <div class="section-label">Películas</div>
+              <ul class="results">
+                @for (p of resultados(); track p.id) {
+                  <li>
+                    <a
+                      class="result-row rich"
+                      [routerLink]="['/pelicula', p.id]"
+                      (click)="pick(p.titulo)"
+                    >
+                      <span class="mini-poster poster" [class]="p.poster">
+                        @if (p.poster_url) {
+                          <img [src]="p.poster_url" [alt]="p.titulo" loading="lazy" />
+                        }
+                      </span>
+                      <span>
+                        <span class="ti">{{ p.titulo }}</span>
+                        <span class="me">{{ p.genero }}</span>
+                      </span>
+                    </a>
+                  </li>
+                } @empty {
+                  <li class="empty">
+                    @if (cargando()) {
+                      Buscando…
+                    } @else {
+                      Sin resultados para «{{ query() }}»
+                    }
+                  </li>
+                }
+              </ul>
+            }
+          </div>
         </div>
       </div>
     }

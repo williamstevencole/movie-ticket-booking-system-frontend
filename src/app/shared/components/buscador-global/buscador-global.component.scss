@@ -27,10 +27,22 @@
 }
 .panel {
   width: min(640px, 100%);
+  max-height: 80vh;
   background: white;
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-head { flex-shrink: 0; }
+
+.results-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 .panel-head {
   display: flex;
