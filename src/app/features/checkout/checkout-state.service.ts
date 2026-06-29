@@ -24,6 +24,7 @@ export type ReservaCreada = {
   estado: string;
   asientos: Array<{ codigo: string; tipo: string }>;
   total_estimado: string;
+  expira_en?: string;
 };
 
 @Injectable({ providedIn: 'root' })

@@ -12,7 +12,16 @@
               <h3>Método de pago</h3>
               <p class="sub">Elige cómo deseas pagar tu reserva.</p>
             </div>
+            @if (expiraEn()) {
+              <app-countdown-pago [expiraEn]="expiraEn()!" (expirado)="onExpiradoCountdown()" />
+            }
           </div>
+          @if (reservaExpirada()) {
+            <div class="error-banner" role="alert">
+              Tu reserva expiró y los asientos se liberaron. Volvé a la cartelera para reservar de nuevo.
+              <a routerLink="/cartelera" class="btn-cartelera">Cartelera</a>
+            </div>
+          }
           <div class="body">
             <div class="methods">
               <button
@@ -98,7 +107,7 @@
         <button
           type="button"
           class="pagar-btn"
-          [disabled]="pagando() || !politicaAceptada() || (metodoPago() === 'efectivo' && !efectivoDisponible())"
+          [disabled]="pagando() || !politicaAceptada() || reservaExpirada() || (metodoPago() === 'efectivo' && !efectivoDisponible())"
           (click)="pagar()"
         >
           {{ pagando() ? 'Procesando...' : 'Pagar L ' + (totalFinal() + 15) }}

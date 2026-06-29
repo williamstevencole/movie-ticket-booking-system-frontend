@@ -68,6 +68,7 @@ export type CrearReservaResponse = {
   estado: EstadoReserva;
   asientos: { codigo: string; tipo: string }[];
   total_estimado: string;
+  expira_en?: string;
 };
 
 export type CancelarReservaResponse = {

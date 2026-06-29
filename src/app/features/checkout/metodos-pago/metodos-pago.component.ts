@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TarjetaComponent } from './tarjeta/tarjeta.component';
 import { EfectivoComponent } from './efectivo/efectivo.component';
 import { CuponComponent } from '../cupon/cupon.component';
@@ -17,6 +17,8 @@ import {
 import { AuthService } from '../../../shared/services/auth.service';
 import { PagosService } from '../../../shared/services/pagos.service';
 import { MisReservasService } from '../../../shared/services/mis-reservas.service';
+import { CountdownPagoComponent } from '../../../shared/components/countdown-pago/countdown-pago.component';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-metodos-pago',
@@ -32,6 +34,8 @@ import { MisReservasService } from '../../../shared/services/mis-reservas.servic
     FooterComponent,
     LucideCreditCard,
     LucideBanknote,
+    CountdownPagoComponent,
+    RouterLink,
   ],
   templateUrl: './metodos-pago.component.html',
   styleUrl: './metodos-pago.component.scss',
@@ -44,6 +48,7 @@ export class MetodosPagoComponent implements OnInit {
   private readonly pagosSvc = inject(PagosService);
   private readonly route = inject(ActivatedRoute);
   private readonly misReservasSvc = inject(MisReservasService);
+  private readonly toastSvc = inject(ToastService);
 
   readonly pelicula = signal('');
   readonly cine = signal('');
@@ -65,6 +70,13 @@ export class MetodosPagoComponent implements OnInit {
   readonly tarjetaSeleccionadaId = signal<string | null>(null);
   readonly mostrarFormNueva = signal(false);
 
+  readonly expiraEn = signal<string | null>(null);
+  readonly reservaExpirada = signal(false);
+
+  onExpiradoCountdown(): void {
+    this.reservaExpirada.set(true);
+  }
+
   readonly efectivoDisponible = computed(() => {
     const min = (new Date(this.fechaHoraFuncion()).getTime() - Date.now()) / 60_000;
     return min >= 30;
@@ -83,6 +95,9 @@ export class MetodosPagoComponent implements OnInit {
       this.numeroReserva.set(reservaPendiente.numero_reserva);
       this.asientos.set(reservaPendiente.asientos.map((a) => a.codigo));
       this.precioOriginal.set(parseFloat(reservaPendiente.total_estimado));
+      if (reservaPendiente.expira_en) {
+        this.expiraEn.set(reservaPendiente.expira_en);
+      }
 
       this.misReservasSvc.getByNumero(reservaPendiente.numero_reserva).subscribe((boleto) => {
         if (boleto) {
@@ -133,6 +148,7 @@ export class MetodosPagoComponent implements OnInit {
   }
 
   pagar(): void {
+    if (this.reservaExpirada()) return;
     if (this.pagando()) return;
     this.pagoError.set(null);
 
@@ -177,7 +193,12 @@ export class MetodosPagoComponent implements OnInit {
         },
         error: (err) => {
           this.pagando.set(false);
-          const code = err?.error?.code;
+          const code = err?.error?.code ?? err?.error?.response?.code;
+          if (err?.status === 409 && code === 'RESERVA_EXPIRADA') {
+            this.reservaExpirada.set(true);
+            this.toastSvc.show('Tu reserva expiró. Los asientos se liberaron.');
+            return;
+          }
           if (err?.status === 409 && code === 'RESERVA_NO_PAGABLE') {
             const msg = 'La reserva expiró o ya fue pagada. Volvé al mapa para reintentar.';
             this.pagoError.set(msg);

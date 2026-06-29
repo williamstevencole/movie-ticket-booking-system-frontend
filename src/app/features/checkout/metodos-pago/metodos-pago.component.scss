@@ -67,6 +67,31 @@
   border-color: var(--red);
 }
 
+.form-card .head app-countdown-pago { margin-left: auto; }
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s4) var(--s5);
+  margin: var(--s4) 0;
+  background: var(--red-soft);
+  border: 1px solid var(--red);
+  border-radius: var(--r);
+  font-size: 13px;
+  color: var(--text-1);
+}
+.btn-cartelera {
+  margin-left: auto;
+  padding: var(--s2) var(--s4);
+  background: var(--red);
+  color: white;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .pagar-btn {
   display: flex; align-items: center; justify-content: center;
   width: 100%;
