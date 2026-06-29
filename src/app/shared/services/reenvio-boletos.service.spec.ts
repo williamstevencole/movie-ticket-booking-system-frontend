@@ -34,4 +34,14 @@ describe('ReenvioBoletosService', () => {
     });
     http.expectOne('/api/me/reservas/RES-1/reenviar-boleto').flush({ ok: false, retry_after: 42 });
   });
+
+  it('reenviarComoAdmin pega a /admin/reservas/:id/reenviar-boleto', (done) => {
+    svc.reenviarComoAdmin('99').subscribe(() => done());
+    http.expectOne('/api/admin/reservas/99/reenviar-boleto').flush({ ok: true });
+  });
+
+  it('reenviarComprobanteReembolso pega al endpoint correcto', (done) => {
+    svc.reenviarComprobanteReembolso('99').subscribe(() => done());
+    http.expectOne('/api/admin/reservas/99/reenviar-comprobante-reembolso').flush({ ok: true });
+  });
 });

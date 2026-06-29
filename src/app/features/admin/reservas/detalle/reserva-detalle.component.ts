@@ -44,6 +44,7 @@ import {
 } from '../../../../shared/services/cines.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 import { extractMessage } from '../../../../shared/utils/http-errors';
+import { ReenvioBoletosService } from '../../../../shared/services/reenvio-boletos.service';
 
 type TimelineKind = 'created' | 'blocked' | 'paid' | 'cancelled' | 'refunded' | 'expired';
 
@@ -87,6 +88,7 @@ export class AdminReservaDetalleComponent {
   private cinesSvc = inject(CinesService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private reenvio = inject(ReenvioBoletosService);
 
   readonly loading = signal(false);
   readonly detalleError = signal<string | null>(null);
@@ -249,7 +251,6 @@ export class AdminReservaDetalleComponent {
     return r.estado === 'pagada' || r.estado === 'pendiente_pago';
   }
   canSendTicket(): boolean { return this.reserva()?.estado === 'pagada'; }
-  canMarkAttendance(): boolean { return this.reserva()?.estado === 'pagada'; }
   canResendRefund(): boolean { return this.reserva()?.estado === 'reembolsada'; }
 
   back() {
@@ -257,19 +258,21 @@ export class AdminReservaDetalleComponent {
   }
 
   reenviar() {
-    const email = this.cliente()?.email ?? '';
-    this.showToast(`Boleto reenviado a ${email}`);
+    const r = this.reserva();
+    if (!r) return;
+    this.reenvio.reenviarComoAdmin(r.id.toString()).subscribe({
+      next: () => this.showToast(`Boleto reenviado a ${this.cliente()?.email ?? 'el cliente'}`),
+      error: () => this.showToast('No se pudo enviar el correo'),
+    });
   }
 
   reenviarReembolso() {
-    const email = this.cliente()?.email ?? '';
-    this.showToast(`Comprobante de reembolso reenviado a ${email}`);
-  }
-
-  marcarAsistencia() {
-    this.showToast('Asistencia marcada');
     const r = this.reserva();
-    if (r) this.reserva.set({ ...r, updated_at: new Date().toISOString() });
+    if (!r) return;
+    this.reenvio.reenviarComprobanteReembolso(r.id.toString()).subscribe({
+      next: () => this.showToast(`Comprobante de reembolso reenviado a ${this.cliente()?.email ?? 'el cliente'}`),
+      error: () => this.showToast('No se pudo enviar el correo'),
+    });
   }
 
   openCancel() {
