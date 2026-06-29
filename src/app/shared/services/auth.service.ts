@@ -4,6 +4,7 @@ import { Observable, tap } from 'rxjs';
 import { API_URL } from '../../core/config/env';
 import type { MessageResponse } from '../../core/types/api.types';
 import type { components } from '../../core/types/api.generated';
+import { SuscripcionesEstrenoService } from './suscripciones-estreno.service';
 
 // ─── tipos ────────────────────────────────────────────────────
 export type LoginRequest = components['schemas']['LoginDto'];
@@ -44,6 +45,7 @@ const USER_KEY = 'cinetario.user';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly base = `${API_URL}/auth`;
+  private readonly suscripciones = inject(SuscripcionesEstrenoService);
 
   // estado reactivo de sesión — los componentes lo leen como signal
   private readonly _token = signal<string | null>(this.readToken());
@@ -106,6 +108,7 @@ export class AuthService {
     }
     this._token.set(null);
     this._user.set(null);
+    this.suscripciones.reset();
   }
 
   updateUser(user: Partial<AuthUser>): void {
@@ -130,6 +133,7 @@ export class AuthService {
     }
     this._token.set(res.access_token);
     this._user.set(res.usuario);
+    this.suscripciones.hydrate().subscribe({ error: () => {} });
   }
 
   private readToken(): string | null {
