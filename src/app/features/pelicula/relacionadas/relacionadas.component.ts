@@ -1,6 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { MOCK_CARTELERA } from '../../../mocks/data/cartelera-display.mock';
+import { CarteleraService } from '../../../shared/services/cartelera.service';
+import { LocationService } from '../../../shared/services/location.service';
+import { CarteleraPelicula } from '../../../mocks/data/cartelera-display.mock';
 
 @Component({
   selector: 'app-peliculas-relacionadas',
@@ -13,7 +15,11 @@ import { MOCK_CARTELERA } from '../../../mocks/data/cartelera-display.mock';
         <div class="related-card-head">Más vistas hoy</div>
         @for (p of items(); track p.id) {
           <a [routerLink]="['/pelicula', p.id]" class="related-row">
-            <span class="mini-poster poster" [class]="p.poster"></span>
+            @if (p.poster_url) {
+              <img class="mini-poster" [src]="p.poster_url" [alt]="p.titulo" loading="lazy" />
+            } @else {
+              <span class="mini-poster poster"></span>
+            }
             <span>
               <span class="ti">{{ p.titulo }}</span>
               <span class="me">{{ p.genero }} · {{ p.duracion }}</span>
@@ -25,10 +31,21 @@ import { MOCK_CARTELERA } from '../../../mocks/data/cartelera-display.mock';
   `,
   styleUrl: './relacionadas.component.scss',
 })
-export class PeliculasRelacionadasComponent {
+export class PeliculasRelacionadasComponent implements OnChanges {
+  private readonly cartelera = inject(CarteleraService);
+  private readonly location = inject(LocationService);
+
   @Input({ required: true }) excludeId!: string;
 
-  items() {
-    return MOCK_CARTELERA.filter((p) => p.id !== this.excludeId).slice(0, 4);
+  readonly items = signal<CarteleraPelicula[]>([]);
+
+  ngOnChanges(): void {
+    const ciudadId = this.location.selection()?.cityId;
+    this.cartelera.listar({ ciudad_id: ciudadId || undefined, limit: 8 }).subscribe({
+      next: (list) => {
+        this.items.set(list.filter((p) => p.id !== this.excludeId).slice(0, 4));
+      },
+      error: () => this.items.set([]),
+    });
   }
 }

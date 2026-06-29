@@ -60,11 +60,16 @@ import { RatingDisplayComponent } from '../../../shared/components/rating-displa
             }
           </div>
           <div class="film-cta">
-            <button type="button" class="btn btn-primary btn-lg" (click)="scrollToFunciones()">
-              <svg lucidePlay [size]="16"></svg>
-              Ver funciones
-            </button>
-            <button type="button" class="btn btn-lg btn-trailer">Tráiler oficial</button>
+            @if (esProximamente) {
+              <button type="button" class="btn btn-lg btn-soon" disabled>
+                Próximamente
+              </button>
+            } @else {
+              <button type="button" class="btn btn-primary btn-lg" (click)="scrollToFunciones()">
+                <svg lucidePlay [size]="16"></svg>
+                Ver funciones
+              </button>
+            }
           </div>
         </div>
       </div>
@@ -74,6 +79,7 @@ import { RatingDisplayComponent } from '../../../shared/components/rating-displa
 })
 export class PeliculaHeroComponent {
   @Input({ required: true }) pelicula!: PeliculaDetalle;
+  @Input() esProximamente = false;
 
   /** Scroll a la sección de funciones (anchorScrolling del router está deshabilitado). */
   scrollToFunciones(): void {

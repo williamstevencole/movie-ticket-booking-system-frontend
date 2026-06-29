@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AppbarComponent } from '../../../shared/components/appbar/appbar.component';
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
@@ -27,8 +27,12 @@ import { ToastService } from '../../../shared/services/toast.service';
   ],
   template: `
     <app-appbar [navItems]="nav" />
-    <app-pelicula-hero [pelicula]="pelicula()" />
-    <app-pelicula-funciones [peliculaId]="peliculaId" />
+    <app-pelicula-hero [pelicula]="pelicula()" [esProximamente]="esProximamente()" />
+    <app-pelicula-funciones
+      [peliculaId]="peliculaId"
+      [fechaEstreno]="pelicula().fecha_estreno ?? null"
+      [esProximamente]="esProximamente()"
+    />
 
     <section class="calificar-section wrap">
       @if (auth.isAuthenticated()) {
@@ -59,11 +63,13 @@ export class PeliculaDetalleComponent implements OnInit {
   readonly nav = [
     { label: 'Cartelera', route: '/cartelera', active: true },
     { label: 'Próximos estrenos', route: '/proximos-estrenos' },
-    { label: 'Promociones', route: '/cupones' },
+    { label: 'Cupones', route: '/cupones' },
     { label: 'Mis boletos', route: '/mis-boletos' },
   ];
 
   readonly pelicula = signal<PeliculaDetalle>({ ...MOCK_PELICULA_DETALLE });
+
+  readonly esProximamente = computed(() => this.pelicula().puede_reservar === false);
 
   // null = desconocido/cargando, true = puede calificar, false = no elegible
   readonly elegible = signal<boolean | null>(null);

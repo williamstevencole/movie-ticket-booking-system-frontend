@@ -35,6 +35,7 @@ export type Pelicula = {
   rating_promedio?: number | null;
   rating_count: number;
   mi_calificacion?: number | null;
+  puede_reservar?: boolean;
 };
 
 export type CrearPeliculaInput = {
@@ -98,6 +99,7 @@ function mapBackendPelicula(p: BackendPelicula): Pelicula {
     rating_promedio: toNumOrNull(p.rating_promedio),
     rating_count: p.rating_count ?? 0,
     mi_calificacion: p.mi_calificacion ?? null,
+    puede_reservar: p.puede_reservar,
   };
 }
 

@@ -1,5 +1,18 @@
 <section id="funciones" class="picker-shell">
   <div class="wrap">
+    @if (esProximamente) {
+      <div class="proximamente-banner" role="status">
+        <div class="badge">PRÓXIMAMENTE</div>
+        <div class="text">
+          <h2>Aún no podés reservar</h2>
+          <p>
+            Esta película estrena el
+            <strong>{{ fechaEstreno | date:"d 'de' MMMM, y" }}</strong>.
+            Las reservas se abren la semana del estreno.
+          </p>
+        </div>
+      </div>
+    } @else {
     <div class="picker-section">
       <h2>1. Elegí el día</h2>
       <app-day-strip (dayChange)="onDayChange($event)" />
@@ -17,29 +30,17 @@
       <div class="picker-section">
         <p class="muted">Esta película aún no tiene funciones programadas.</p>
       </div>
+    } @else if (!selectedCine()) {
+      <div class="picker-section">
+        <p class="muted">
+          Esta película no se proyecta en
+          {{ cinemaName() ?? 'tu cine seleccionado' }}.
+          Cambiá de cine desde el menú superior.
+        </p>
+      </div>
     } @else {
       <div class="picker-section">
-        <h2>2. Elegí el cine</h2>
-        <div class="cine-tabs">
-          @for (cine of cines(); track cine.id) {
-            <button
-              type="button"
-              class="cine-tab"
-              [class.on]="selectedCine()?.id === cine.id"
-              (click)="selectCine(cine.id)"
-            >
-              <span class="icon">{{ cine.iconLetter }}</span>
-              <span class="lbl">
-                <span class="name">{{ cine.nombre }}</span>
-                <span class="city">{{ cine.ciudad }}</span>
-              </span>
-            </button>
-          }
-        </div>
-      </div>
-
-      <div class="picker-section">
-        <h2>3. Elegí la función</h2>
+        <h2>2. Elegí la función</h2>
         @let cine = selectedCine();
         @if (cine) {
           <div class="funciones-list">
@@ -87,6 +88,7 @@
           </div>
         }
       </div>
+    }
     }
   </div>
 </section>

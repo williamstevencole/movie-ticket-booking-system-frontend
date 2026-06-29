@@ -76,6 +76,8 @@ export type PeliculaDetalle = {
   badge: BadgeTipo | null;
   badgeLabel: string;
   estreno: string;
+  fecha_estreno?: string | null;
+  puede_reservar?: boolean;
   ficha: FichaTecnica;
   attrs: { label: string; value: string }[];
   rating_promedio?: number | null;

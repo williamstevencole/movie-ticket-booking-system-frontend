@@ -100,6 +100,8 @@ export class CarteleraService {
       badge,
       badgeLabel: badge ? 'ESTRENO' : '',
       estreno,
+      fecha_estreno: p.fecha_estreno ?? null,
+      puede_reservar: p.puede_reservar,
       ficha,
       attrs,
       rating_promedio: p.rating_promedio ?? null,

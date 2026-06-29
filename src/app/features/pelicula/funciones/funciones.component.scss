@@ -4,6 +4,53 @@
   background: white;
   padding: var(--s8) 0 var(--s6);
 }
+
+.proximamente-banner {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--s5);
+  align-items: center;
+  padding: var(--s6) var(--s6);
+  background: var(--orange-soft);
+  border: 1px solid color-mix(in oklch, var(--orange) 28%, transparent);
+  border-radius: var(--r-lg);
+}
+
+.proximamente-banner .badge {
+  align-self: start;
+  display: inline-block;
+  padding: 6px 12px;
+  background: var(--orange);
+  color: white;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.proximamente-banner .text h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--orange-ink-strong);
+}
+
+.proximamente-banner .text p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--orange-ink);
+  line-height: 1.5;
+}
+
+.proximamente-banner .text strong { color: var(--orange-ink-strong); }
+
+@media (max-width: 540px) {
+  .proximamente-banner {
+    grid-template-columns: 1fr;
+    gap: var(--s3);
+  }
+}
 .picker-section { margin-bottom: var(--s7); }
 .picker-section h2 {
   font-size: 22px;

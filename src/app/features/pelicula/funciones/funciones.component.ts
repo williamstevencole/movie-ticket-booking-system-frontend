@@ -6,6 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import {
   PeliculaCinesService,
   CineFuncionesVM,
@@ -27,7 +28,7 @@ function diaKey(d: Date): string {
 @Component({
   selector: 'app-pelicula-funciones',
   standalone: true,
-  imports: [DayStripComponent, HorarioChipComponent],
+  imports: [DayStripComponent, HorarioChipComponent, DatePipe],
   templateUrl: './funciones.component.html',
   styleUrl: './funciones.component.scss',
 })
@@ -35,7 +36,11 @@ export class PeliculaFuncionesComponent implements OnChanges {
   private cinesSvc = inject(PeliculaCinesService);
   private location = inject(LocationService);
 
+  readonly cinemaName = this.location.cinemaName;
+
   @Input({ required: true }) peliculaId!: string;
+  @Input() fechaEstreno: string | null = null;
+  @Input() esProximamente = false;
 
   readonly cines = signal<CineFuncionesVM[]>([]);
   readonly cargando = signal(true);
@@ -113,15 +118,10 @@ export class PeliculaFuncionesComponent implements OnChanges {
     });
   }
 
-  /** Preselecciona el cine guardado en la ubicación del usuario, si está disponible. */
   private resolveInitialCine(cines: CineFuncionesVM[]): string | null {
-    if (cines.length === 0) return null;
-    const saved = this.location.cinemaName();
-    if (saved) {
-      const norm = saved.toLowerCase();
-      const match = cines.find((c) => c.nombre.toLowerCase().includes(norm));
-      if (match) return match.id;
-    }
-    return cines[0]!.id;
+    const savedId = this.location.selection()?.cinemaId ?? null;
+    if (!savedId) return cines[0]?.id ?? null;
+    const match = cines.find((c) => c.id === savedId);
+    return match?.id ?? null;
   }
 }
