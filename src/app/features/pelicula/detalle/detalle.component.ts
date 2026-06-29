@@ -81,24 +81,36 @@ export class PeliculaDetalleComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
 
+  readonly peliculaIdSignal = signal<string>('');
+
   get peliculaId(): string {
-    return this.route.snapshot.paramMap.get('id') ?? this.pelicula().id;
+    return this.peliculaIdSignal();
   }
 
   ngOnInit(): void {
-    this.cartelera.detalle(this.peliculaId).subscribe({
+    this.route.paramMap.subscribe((params) => {
+      const id = params.get('id');
+      if (!id || id === this.peliculaIdSignal()) return;
+      this.peliculaIdSignal.set(id);
+      this.cargar(id);
+    });
+  }
+
+  private cargar(id: string): void {
+    this.cartelera.detalle(id).subscribe({
       next: (p) => this.pelicula.set(p),
       error: () => this.toast.show('No se pudo cargar la película'),
     });
 
     if (!this.auth.isAuthenticated()) {
       this.elegible.set(false);
+      this.miVoto.set(null);
       return;
     }
 
-    // TODO: When wired to real backend, HTTP 403 means not eligible (no ticket attended).
-    // The mock always returns null (no vote) or { puntuacion } — 403 branch won't fire in mock.
-    this.calificaciones.obtenerMia(this.peliculaId).subscribe({
+    this.elegible.set(null);
+    this.miVoto.set(null);
+    this.calificaciones.obtenerMia(id).subscribe({
       next: (r) => {
         this.elegible.set(true);
         this.miVoto.set(r?.puntuacion ?? null);
