@@ -50,9 +50,23 @@ export class HeroCarouselComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const ciudadId = this.location.selection()?.cityId;
-    this.cartelera.listar({ ciudad_id: ciudadId || undefined, limit: 5 }).subscribe({
+    this.cartelera.listar({ ciudad_id: ciudadId || undefined, limit: 24 }).subscribe({
       next: (list) => {
-        this.slides.set(list.map((p) => this.toSlide(p)));
+        const estrenos = list.filter((p) => p.badge === 'estreno');
+        const cartelera = list.filter((p) => p.badge === 'cartelera');
+        const proximos = list.filter((p) => p.badge === 'proximamente');
+
+        const ordered: CarteleraPelicula[] = [];
+        ordered.push(...estrenos.slice(0, 2));
+        ordered.push(...cartelera.slice(0, 2));
+        ordered.push(...proximos.slice(0, 2));
+
+        const restantes = proximos.slice(2);
+        while (ordered.length < 6 && restantes.length > 0) {
+          ordered.push(restantes.shift()!);
+        }
+
+        this.slides.set(ordered.map((p) => this.toSlide(p)));
         this.index.set(0);
         if (isPlatformBrowser(this.platformId) && this.slides().length > 1) {
           this.startTimer();
@@ -80,7 +94,12 @@ export class HeroCarouselComponent implements OnInit, OnDestroy {
       poster: '',
       poster_url: p.poster_url,
       badge: p.badge ?? null,
-      badgeLabel: p.badge === 'estreno' ? 'ESTRENO HOY' : 'EN CARTELERA',
+      badgeLabel:
+        p.badge === 'proximamente'
+          ? 'PRÓXIMAMENTE'
+          : p.badge === 'estreno'
+            ? 'ESTRENO'
+            : 'EN CARTELERA',
     };
   }
 

@@ -1,4 +1,4 @@
-export type BadgeTipo = 'estreno' | 'ultima' | 'vip' | 'fecha';
+export type BadgeTipo = 'estreno' | 'ultima' | 'vip' | 'fecha' | 'proximamente' | 'cartelera';
 
 export type HeroSlide = {
   id: string;

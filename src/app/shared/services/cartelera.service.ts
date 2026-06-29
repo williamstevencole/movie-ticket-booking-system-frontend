@@ -75,7 +75,7 @@ export class CarteleraService {
   private toDetalle(p: Pelicula, cat: Catalogos): PeliculaDetalle {
     const idioma = (p.id_idioma && cat.idioma.get(p.id_idioma)) || '—';
     const estreno = this.formatFecha(p.fecha_estreno);
-    const badge = this.badgeFromEstreno(p.fecha_estreno) ?? null;
+    const badge = this.badgeFromPelicula(p) ?? null;
     const ficha = (p.ficha_tecnica ?? {}) as FichaTecnica;
     const attrs: { label: string; value: string }[] = [];
     if (ficha.direccion) attrs.push({ label: 'Dirección', value: ficha.direccion });
@@ -98,7 +98,7 @@ export class CarteleraService {
       poster: '',
       poster_url: p.poster_url,
       badge,
-      badgeLabel: badge ? 'ESTRENO' : '',
+      badgeLabel: this.labelFromBadge(badge),
       estreno,
       fecha_estreno: p.fecha_estreno ?? null,
       puede_reservar: p.puede_reservar,
@@ -126,7 +126,7 @@ export class CarteleraService {
       sinopsis: p.sinopsis ?? '',
       poster: '',
       poster_url: p.poster_url,
-      badge: this.badgeFromEstreno(p.fecha_estreno),
+      badge: this.badgeFromPelicula(p),
       funciones: [],
       puede_reservar: p.puede_reservar,
       rating_promedio: p.rating_promedio ?? null,
@@ -138,14 +138,18 @@ export class CarteleraService {
    * Próximos estrenos: películas cuya fecha de estreno es futura
    * (GET /peliculas?fecha_inicio=mañana), ordenadas por fecha ascendente.
    */
-  proximos(limit = 8): Observable<ProximoEstreno[]> {
+  proximos(opts: { limit?: number; ciudad_id?: string } = {}): Observable<ProximoEstreno[]> {
     const manana = new Date();
     manana.setHours(0, 0, 0, 0);
     manana.setDate(manana.getDate() + 1);
     return this.catalogos$.pipe(
       switchMap((cat) =>
         this.peliculas
-          .list({ fecha_inicio: manana.toISOString(), limit })
+          .list({
+            fecha_inicio: manana.toISOString(),
+            limit: opts.limit ?? 8,
+            ciudad_id: opts.ciudad_id,
+          })
           .pipe(
             map((page) =>
               page.data
@@ -184,12 +188,30 @@ export class CarteleraService {
     return `${String(d.getDate()).padStart(2, '0')} ${MESES_BADGE[d.getMonth()]}`;
   }
 
-  /** Marca como "estreno" las películas estrenadas en los últimos 14 días. */
-  private badgeFromEstreno(fecha: string | null | undefined): BadgeTipo | undefined {
-    if (!fecha) return undefined;
-    const estreno = new Date(fecha).getTime();
-    if (Number.isNaN(estreno)) return undefined;
-    const dias = (Date.now() - estreno) / 86_400_000;
-    return dias >= 0 && dias <= 14 ? 'estreno' : undefined;
+  private badgeFromPelicula(p: Pelicula): BadgeTipo {
+    if (p.puede_reservar === false) return 'proximamente';
+    if (this.estrenaEnProximos2Dias(p.fecha_estreno)) return 'estreno';
+    return 'cartelera';
+  }
+
+  private labelFromBadge(b: BadgeTipo | null): string {
+    switch (b) {
+      case 'estreno': return 'ESTRENO';
+      case 'proximamente': return 'PRÓXIMAMENTE';
+      case 'cartelera': return 'EN CARTELERA';
+      default: return '';
+    }
+  }
+
+  private estrenaEnProximos2Dias(fecha: string | null | undefined): boolean {
+    if (!fecha) return false;
+    const f = new Date(fecha);
+    if (Number.isNaN(f.getTime())) return false;
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const dia = new Date(f);
+    dia.setHours(0, 0, 0, 0);
+    const dias = (dia.getTime() - hoy.getTime()) / 86_400_000;
+    return dias >= 0 && dias <= 2;
   }
 }

@@ -32,13 +32,6 @@
                 <svg lucidePlay [size]="16"></svg>
                 Comprar boletos
               </a>
-              @if (s.trailerUrl) {
-                <a [href]="s.trailerUrl" target="_blank" rel="noopener" class="btn btn-lg btn-trailer">
-                  Ver tráiler
-                </a>
-              } @else {
-                <button type="button" class="btn btn-lg btn-trailer">Ver tráiler</button>
-              }
             </div>
           </div>
           <a [routerLink]="['/pelicula', s.id]" class="hero-poster poster" [class]="s.poster">

@@ -27,7 +27,7 @@ import { RatingDisplayComponent } from '../../../shared/components/rating-displa
         </div>
         <div>
           <div class="film-meta-row">
-            @if (pelicula.badgeLabel) {
+            @if (pelicula.badgeLabel && pelicula.badge !== 'proximamente') {
               <span class="pill red">★ {{ pelicula.badgeLabel }}</span>
             }
             <span class="pill">{{ pelicula.genero }}</span>

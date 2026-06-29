@@ -32,6 +32,16 @@ import { BadgeTipo } from '../../../mocks/data/cartelera-display.mock';
     .ultima { background: var(--ink); color: white; }
     .vip { background: var(--orange); color: white; }
     .fecha { background: rgba(0, 0, 0, 0.7); color: white; }
+    .proximamente {
+      background: var(--orange);
+      color: white;
+      letter-spacing: 0.06em;
+    }
+    .cartelera {
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--ink);
+      letter-spacing: 0.06em;
+    }
     .mini-hidden { display: none; }
   `,
 })
@@ -48,6 +58,8 @@ export class PosterBadgeComponent {
       ultima: { label: 'ÚLT. SEM', cls: 'ultima' },
       vip: { label: 'VIP', cls: 'vip' },
       fecha: { label: this.fecha ?? '', cls: 'fecha' },
+      proximamente: { label: 'PRÓXIMAMENTE', cls: 'proximamente' },
+      cartelera: { label: 'EN CARTELERA', cls: 'cartelera' },
     };
     const b = map[t];
     if (t === 'fecha' && !this.fecha) return null;
