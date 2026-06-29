@@ -1,0 +1,93 @@
+<div class="admin-body">
+  <app-admin-sidebar />
+  <main class="admin-main">
+    <div class="shell">
+      <div class="crumb">
+        <a routerLink="/admin">Admin</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/admin/funciones">Funciones</a>
+        <span aria-hidden="true">·</span>
+        <span class="crumb-current">Asientos</span>
+      </div>
+
+      <div class="head-row">
+        <div>
+          <h1>Mapa de asientos</h1>
+          <p class="lead">Función <span class="funcion-id tnum">{{ funcionId }}</span></p>
+        </div>
+        <button class="btn btn-ghost" (click)="reload()" [disabled]="loading()">
+          <svg lucideRefreshCw [size]="15"></svg>
+          Recargar
+        </button>
+      </div>
+
+      @if (loading()) {
+        <p class="status-msg">Cargando mapa…</p>
+      } @else if (error(); as msg) {
+        <p class="status-msg error">{{ msg }}</p>
+      } @else if (mapa(); as m) {
+        <div class="layout">
+          <section class="grid-wrap card">
+            <div class="screen-zone">
+              <div class="screen-bar"></div>
+              <span class="screen-lbl">PANTALLA</span>
+            </div>
+
+            <div class="seats">
+              @for (fila of filas(); track fila.letra) {
+                <div class="row">
+                  <span class="row-letra">{{ fila.letra }}</span>
+                  @for (a of fila.asientos; track a.idAsientoFuncion) {
+                    <button
+                      type="button"
+                      class="seat"
+                      [class.disponible]="a.estado === 'disponible'"
+                      [class.bloqueado]="a.estado === 'bloqueado'"
+                      [class.reservado]="a.estado === 'reservado'"
+                      [class.ocupado]="a.estado === 'ocupado'"
+                      [style.--seat-color]="a.color || '#94a3b8'"
+                      (mouseenter)="hovered.set(a)"
+                      (mouseleave)="hovered.set(null)"
+                      (click)="onSeatClick(a)"
+                      [attr.aria-label]="a.codigo + ' — ' + a.estado">
+                      {{ a.columna }}
+                    </button>
+                  }
+                  <span class="row-letra">{{ fila.letra }}</span>
+                </div>
+              }
+            </div>
+
+            <ul class="legend">
+              <li><span class="dot disponible"></span> Disponible</li>
+              <li><span class="dot bloqueado"></span> Bloqueado</li>
+              <li><span class="dot reservado"></span> Reservado</li>
+              <li><span class="dot ocupado"></span> Ocupado</li>
+            </ul>
+          </section>
+
+          @if (tooltipItem(); as t) {
+            <aside class="tooltip card">
+              <h3>{{ t.codigo }}</h3>
+              <span class="tooltip-estado" [class]="'estado-' + t.estado">{{ t.estado }}</span>
+              <dl>
+                <dt>Tipo</dt><dd>{{ t.tipo }}</dd>
+                <dt>Precio</dt><dd class="tnum">Q{{ t.precio.toFixed(2) }}</dd>
+                @if (t.usuario) {
+                  <dt>Usuario</dt><dd>{{ t.usuario.email }}</dd>
+                }
+                @if (t.bloqueadoHasta) {
+                  <dt>Bloqueado hasta</dt>
+                  <dd class="tnum">{{ t.bloqueadoHasta | date:'dd/MM/yy HH:mm' }}</dd>
+                }
+              </dl>
+              @if (selected()) {
+                <button class="btn-clear" (click)="selected.set(null)">Cerrar</button>
+              }
+            </aside>
+          }
+        </div>
+      }
+    </div>
+  </main>
+</div>
