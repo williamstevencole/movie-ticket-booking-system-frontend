@@ -103,14 +103,6 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'mis-boletos/:numero',
-    canActivate: [authGuard, locationGuard],
-    loadComponent: () =>
-      import('./features/boletos/detalle/reserva-detalle-cliente.component').then(
-        (m) => m.ReservaDetalleClienteComponent,
-      ),
-  },
-  {
     path: 'cancelar/:id',
     canActivate: [authGuard, locationGuard],
     loadComponent: () =>
