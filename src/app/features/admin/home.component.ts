@@ -19,6 +19,8 @@ import { PeriodPickerComponent, PeriodValue } from '../../shared/components/peri
 import { AdminReservasService, AdminReservaRow } from '../../shared/services/admin-reservas.service';
 import { PagosService, PagoAdminRow } from '../../shared/services/pagos.service';
 import { extractMessage } from '../../shared/utils/http-errors';
+import { ExportButtonComponent } from '../../shared/components/export-button.component';
+import { ExportColumn } from '../../shared/utils/report-export';
 
 interface Stat {
   label: string;
@@ -50,9 +52,9 @@ interface QuickAction {
     RouterLink,
     AdminSidebarComponent,
     PeriodPickerComponent,
+    ExportButtonComponent,
     LucideDynamicIcon,
     LucidePlus,
-    LucideDownload,
     LucideTrendingUp,
     LucideTrendingDown,
     LucideAlertCircle,
@@ -85,14 +87,16 @@ interface QuickAction {
             <h1>{{ greeting() }}, {{ firstName() }}</h1>
           </div>
           <div class="actions">
-            <button class="btn">
-              <svg lucideDownload [size]="16"></svg>
-              <span>Exportar día</span>
-            </button>
-            <button class="btn btn-primary">
+            <app-export-button
+              filename="reservas-periodo"
+              title="Reservas del período"
+              [columns]="exportColumns"
+              [rows]="reservasEnRango()"
+            />
+            <a class="btn btn-primary" routerLink="/admin/funciones/crear">
               <svg lucidePlus [size]="16"></svg>
               <span>Nueva función</span>
-            </button>
+            </a>
           </div>
         </div>
 
@@ -272,6 +276,34 @@ export class AdminHomeComponent implements OnInit {
   private fmtQ(n: number): string {
     return 'L ' + n.toLocaleString('es-HN', { maximumFractionDigits: 0 });
   }
+
+  /** Reservas dentro del período seleccionado (lo que se exporta). */
+  readonly reservasEnRango = computed<AdminReservaRow[]>(() => {
+    const { from, to } = this.rangeDates();
+    return this.reservas().filter((r) => this.inRange(r.created_at, from, to));
+  });
+
+  readonly exportColumns: ExportColumn<AdminReservaRow>[] = [
+    { key: 'numero', label: '# Reserva', value: (r) => r.numero_reserva },
+    { key: 'cliente', label: 'Cliente', value: (r) => r.usuario?.nombre ?? '—' },
+    { key: 'pelicula', label: 'Película', value: (r) => r.pelicula?.titulo ?? '—' },
+    { key: 'cine', label: 'Cine', value: (r) => r.cine?.nombre ?? '—' },
+    { key: 'asientos', label: 'Asientos', value: (r) => r.num_asientos },
+    { key: 'total', label: 'Total (L)', value: (r) => r.monto_total.toFixed(2) },
+    { key: 'estado', label: 'Estado', value: (r) => r.estado },
+    {
+      key: 'fecha',
+      label: 'Fecha',
+      value: (r) =>
+        new Date(r.created_at).toLocaleString('es-ES', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+    },
+  ];
 
   statsComputed = computed<Stat[]>(() => {
     const { from, to } = this.rangeDates();
