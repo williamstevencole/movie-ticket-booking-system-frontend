@@ -214,7 +214,7 @@
       </div>
 
       <!-- sticky action bar -->
-      @if (canSendTicket() || canMarkAttendance() || canCancel() || canResendRefund()) {
+      @if (canSendTicket() || canCancel() || canResendRefund()) {
         <aside class="action-bar">
           <div class="action-bar-inner">
             <div class="ab-summary">
@@ -226,12 +226,6 @@
                 <button type="button" class="btn" (click)="reenviar()">
                   <svg lucideMail [size]="14"></svg>
                   Reenviar boleto
-                </button>
-              }
-              @if (canMarkAttendance()) {
-                <button type="button" class="btn" (click)="marcarAsistencia()">
-                  <svg lucideCheckCircle2 [size]="14"></svg>
-                  Marcar asistencia
                 </button>
               }
               @if (canResendRefund()) {
