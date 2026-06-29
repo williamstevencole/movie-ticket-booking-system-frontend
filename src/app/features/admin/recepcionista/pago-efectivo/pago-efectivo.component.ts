@@ -16,7 +16,6 @@ import {
   LucideBanknote,
   LucideCalendar,
   LucideCheckCheck,
-  LucideClock,
   LucideMail,
   LucidePhone,
   LucidePrinter,
@@ -24,6 +23,7 @@ import {
   LucideX,
 } from '@lucide/angular';
 
+import { CountdownPagoComponent } from '../../../../shared/components/countdown-pago/countdown-pago.component';
 import {
   AdminReservasService,
   ReservaCobrarDetail,
@@ -55,12 +55,12 @@ import { extractMessage } from '../../../../shared/utils/http-errors';
     LucideBanknote,
     LucideCalendar,
     LucideCheckCheck,
-    LucideClock,
     LucideMail,
     LucidePhone,
     LucidePrinter,
     LucideTriangleAlert,
     LucideX,
+    CountdownPagoComponent,
   ],
   template: `
     <div class="admin-body">
@@ -241,12 +241,12 @@ import { extractMessage } from '../../../../shared/utils/http-errors';
                     </div>
                   </div>
                 } @else if (r.expira_en) {
-                  <div class="alert info">
-                    <svg lucideClock [size]="16"></svg>
-                    <span>
-                      La reserva expira <strong>{{ fmtRelativo(r.expira_en) }}</strong>.
-                      Cobrá antes de esa hora.
-                    </span>
+                  <app-countdown-pago [expiraEn]="r.expira_en" (expirado)="onExpiradoCountdown()" />
+                }
+                @if (reservaExpirada()) {
+                  <div class="error-banner" role="alert">
+                    La reserva expiró durante el cobro. Los asientos se liberaron.
+                    <a routerLink="/admin/reservas" class="btn">Volver al listado</a>
                   </div>
                 }
 
@@ -412,7 +412,7 @@ import { extractMessage } from '../../../../shared/utils/http-errors';
                     type="button"
                     class="btn btn-primary btn-confirm"
                     (click)="confirmar()"
-                    [disabled]="!canConfirm() || procesando()"
+                    [disabled]="!canConfirm() || procesando() || reservaExpirada()"
                   >
                     <svg lucideBanknote [size]="18"></svg>
                     {{ procesando() ? 'Procesando…' : 'Confirmar pago en efectivo' }}
@@ -457,6 +457,7 @@ export class RecepcionistaPagoEfectivoComponent {
   readonly exito = signal<boolean>(false);
   readonly pagoCreado = signal<Pago | null>(null);
   readonly vueltoFinal = signal<number>(0);
+  readonly reservaExpirada = signal(false);
 
   // ── Computeds ───────────────────────────────────────────────────────────
   readonly subtotal = computed(
@@ -537,6 +538,10 @@ export class RecepcionistaPagoEfectivoComponent {
     this.doLoad(this.numero());
   }
 
+  onExpiradoCountdown() {
+    this.reservaExpirada.set(true);
+  }
+
   // ── Acciones ────────────────────────────────────────────────────────────
   aplicarCupon(): void {
     const codigo = this.cuponInput.trim().toUpperCase();
@@ -572,6 +577,7 @@ export class RecepcionistaPagoEfectivoComponent {
   }
 
   confirmar(): void {
+    if (this.reservaExpirada()) return;
     if (!this.canConfirm() || this.procesando()) return;
     const r = this.reserva();
     if (!r) return;
@@ -594,6 +600,13 @@ export class RecepcionistaPagoEfectivoComponent {
           this.procesando.set(false);
         },
         error: (err) => {
+          const code = err?.error?.code ?? err?.error?.response?.code;
+          if (err?.status === 409 && code === 'RESERVA_EXPIRADA') {
+            this.reservaExpirada.set(true);
+            this.toast.show('La reserva expiró durante el cobro.');
+            this.procesando.set(false);
+            return;
+          }
           this.toast.show(extractMessage(err));
           this.procesando.set(false);
         },
