@@ -144,16 +144,29 @@ import {
               </div>
 
               @if (tendencia30d().length > 0) {
-                <svg class="trend-chart" viewBox="0 0 600 220" role="img" aria-label="Cancelaciones por día">
+                <svg class="trend-chart" viewBox="0 0 600 260" role="img" aria-label="Cancelaciones por día">
+                  <g class="y-axis">
+                    <text x="0" y="184" class="bar-label">0</text>
+                    <text x="0" y="109" class="bar-label">{{ (maxCount() / 2) | number:'1.0-0' }}</text>
+                    <text x="0" y="34" class="bar-label">{{ maxCount() | number:'1.0-0' }}</text>
+                  </g>
                   @for (b of tendencia30d(); track b.fecha; let i = $index) {
-                    <g [attr.transform]="'translate(' + (i * (600 / tendencia30d().length)) + ', 0)'">
+                    <g [attr.transform]="'translate(' + (30 + i * ((600 - 30) / tendencia30d().length)) + ', 0)'">
                       <rect [attr.x]="2"
                             [attr.y]="180 - (maxCount() > 0 ? (b.count / maxCount() * 150) : 0)"
-                            [attr.width]="Math.max(2, (600 / tendencia30d().length) - 4)"
+                            [attr.width]="Math.max(2, ((600 - 30) / tendencia30d().length) - 4)"
                             [attr.height]="maxCount() > 0 ? (b.count / maxCount() * 150) : 0"
                             rx="2" class="bar">
-                        <title>{{ b.fecha }} — {{ b.count }} cancelaciones</title>
+                        <title>{{ b.fecha | date:'d MMM' }} — {{ b.count }} cancelaciones</title>
                       </rect>
+                      @if (esTickX(i)) {
+                        <text [attr.x]="((600 - 30) / tendencia30d().length) / 2"
+                              y="200"
+                              text-anchor="middle"
+                              class="bar-label">
+                          {{ b.fecha | date:'d MMM' }}
+                        </text>
+                      }
                     </g>
                   }
                 </svg>
@@ -186,7 +199,11 @@ export class AdminReporteEstadisticasCancelacionComponent {
     Math.max(1, ...this.tendencia30d().map((b) => b.count)),
   );
 
-  // Expose Math to template
+  esTickX(i: number): boolean {
+    const len = this.tendencia30d().length;
+    return i % 5 === 0 || i === len - 1;
+  }
+
   readonly Math = Math;
 
   constructor() {
