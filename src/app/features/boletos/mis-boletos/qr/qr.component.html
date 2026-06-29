@@ -14,11 +14,13 @@
 
 
     <div class="qr-code">
-        <qrcode
-            [qrdata]="codigoQR"
-            [width]="88"
-            [errorCorrectionLevel]="'M'">
-        </qrcode>
+        @if (codigoQR()) {
+            <qrcode
+                [qrdata]="codigoQR()"
+                [width]="88"
+                [errorCorrectionLevel]="'M'">
+            </qrcode>
+        }
     </div>
 
 
