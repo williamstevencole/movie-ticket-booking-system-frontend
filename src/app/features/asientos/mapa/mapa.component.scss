@@ -63,6 +63,14 @@
   border-color: var(--border-2);
   color: transparent;
 }
+.seat.fuera-servicio {
+  background: repeating-linear-gradient(45deg, var(--text-3), var(--text-3) 4px, var(--surface-2) 4px, var(--surface-2) 8px);
+  cursor: not-allowed;
+  border-color: var(--text-3);
+  color: var(--bg);
+  font-size: 12px;
+}
+.seat.fuera-servicio:hover { transform: none; border-color: var(--text-3); }
 
 .leyenda {
   display: flex; gap: var(--s4); flex-wrap: wrap;
@@ -84,6 +92,10 @@
 .leyenda .sw.accesible { background: oklch(0.65 0.15 240); border-color: oklch(0.65 0.15 240); }
 .leyenda .sw.bloqueado {
   background: repeating-linear-gradient(45deg, var(--surface-2), var(--surface-2) 3px, var(--border) 3px, var(--border) 6px);
+}
+.leyenda .sw.fuera-servicio {
+  background: repeating-linear-gradient(45deg, var(--text-3), var(--text-3) 3px, var(--surface-2) 3px, var(--surface-2) 6px);
+  border-color: var(--text-3);
 }
 
 .side { display: flex; flex-direction: column; gap: var(--s4); position: sticky; top: calc(var(--appbar-h) + var(--s4)); }

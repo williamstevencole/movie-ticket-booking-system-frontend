@@ -3,7 +3,8 @@ export type EstadoAsiento =
   | 'ocupado'
   | 'seleccionado'
   | 'reservado'
-  | 'bloqueado';
+  | 'bloqueado'
+  | 'fuera_servicio';
 
 export interface Asiento {
   id: string;

@@ -49,6 +49,13 @@ export type ResultadoBloqueo = {
   expira_en: string;
 };
 
+/** Nombre del tipo reservado para asientos deshabilitados (mal estado, etc.). */
+const TIPO_FUERA_DE_SERVICIO = 'fuera de servicio';
+
+function esFueraDeServicio(tipo: string): boolean {
+  return (tipo ?? '').trim().toLowerCase() === TIPO_FUERA_DE_SERVICIO;
+}
+
 /** Normaliza el nombre del tipo de asiento del backend a la categoría de UI. */
 function mapTipo(tipo: string): TipoAsiento {
   const n = (tipo ?? '').toLowerCase();
@@ -100,7 +107,11 @@ export class AsientosService {
         fila: a.fila,
         numero: a.columna,
         tipo: mapTipo(a.tipo),
-        estado: mapEstado(a.estado, a.es_mio),
+        // Un asiento "Fuera de servicio" se muestra deshabilitado sin importar
+        // su estado real en la función.
+        estado: esFueraDeServicio(a.tipo)
+          ? 'fuera_servicio'
+          : mapEstado(a.estado, a.es_mio),
         version: 1,
       })),
     };

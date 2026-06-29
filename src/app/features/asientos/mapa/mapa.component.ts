@@ -29,7 +29,7 @@ import { ToastService } from '../../../shared/services/toast.service';
 type AsientoDisplay = {
   codigo: string;
   numero: number;
-  estado: 'disponible' | 'ocupado' | 'bloqueado';
+  estado: 'disponible' | 'ocupado' | 'bloqueado' | 'fuera_servicio';
   tipo: TipoAsiento;
 };
 
@@ -143,6 +143,7 @@ export class MapaComponent implements OnInit {
   }
 
   toggle(asiento: AsientoDisplay): void {
+    if (asiento.estado === 'fuera_servicio') return;
     if (asiento.estado === 'bloqueado') return;
     if (asiento.estado === 'ocupado') {
       this.errorAsiento.set(asiento.codigo);
