@@ -161,6 +161,13 @@ export const routes: Routes = [
             (m) => m.MetodosPagoPageComponent,
           ),
       },
+      {
+        path: 'avisos',
+        loadComponent: () =>
+          import('./features/perfil/avisos/avisos.component').then(
+            (m) => m.AvisosComponent,
+          ),
+      },
     ],
   },
   {

@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
+  LucideBell,
   LucideCreditCard,
   LucideShield,
   LucideUser,
@@ -19,6 +20,7 @@ import { AppbarComponent } from '../../shared/components/appbar/appbar.component
     LucideUser,
     LucideCreditCard,
     LucideShield,
+    LucideBell,
   ],
   templateUrl: './account-shell.component.html',
   styleUrl: './account-shell.component.scss',

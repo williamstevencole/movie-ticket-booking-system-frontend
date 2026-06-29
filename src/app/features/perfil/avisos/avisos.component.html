@@ -1,0 +1,36 @@
+<section class="avisos">
+  <header class="head">
+    <h2>Avisos de estreno</h2>
+    <p>Te enviamos un correo cuando una película que seguís queda lista para reservar.</p>
+  </header>
+
+  @if (seguidas().length === 0) {
+    <div class="empty">
+      <p>Aún no seguís ningún estreno.</p>
+      <a routerLink="/proximos-estrenos" class="cta">Ver próximos estrenos →</a>
+    </div>
+  } @else {
+    <ul class="lista">
+      @for (s of seguidas(); track s.id) {
+        <li class="row">
+          <div class="poster">
+            @if (s.poster_url) {
+              <img [src]="s.poster_url" [alt]="s.titulo" />
+            }
+          </div>
+          <div class="info">
+            <h3>{{ s.titulo }}</h3>
+            <span class="meta" [class.estrenada]="s.yaEstrenada">
+              {{ s.relativa }}
+            </span>
+          </div>
+          @if (s.yaEstrenada) {
+            <a class="btn primario" [routerLink]="['/pelicula', s.id]">Ver funciones</a>
+          } @else {
+            <button type="button" class="btn ghost" (click)="quitar(s.id)">Quitar</button>
+          }
+        </li>
+      }
+    </ul>
+  }
+</section>
