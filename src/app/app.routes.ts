@@ -15,6 +15,13 @@ export const routes: Routes = [
   },
   { path: 'cartelera', redirectTo: '', pathMatch: 'full' },
   {
+    path: 'proximos-estrenos',
+    loadComponent: () =>
+      import('./features/cartelera/proximos-estrenos/proximos-estrenos.component').then(
+        (m) => m.ProximosEstrenosComponent,
+      ),
+  },
+  {
     path: 'elegir-cine',
     loadComponent: () =>
       import('./features/onboarding/location-selector.component').then(

@@ -1,8 +1,10 @@
 import { Component, OnInit, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { LucideArrowRight, LucideCheck } from '@lucide/angular';
 import { ProximoEstreno } from '../../../mocks/data/cartelera-display.mock';
 import { CarteleraService } from '../../../shared/services/cartelera.service';
+import { LocationService } from '../../../shared/services/location.service';
 import { PosterBadgeComponent } from '../../../shared/components/poster-badge/poster-badge.component';
 import { ToastService } from '../../../shared/services/toast.service';
 
@@ -11,13 +13,15 @@ const SUBS_KEY = 'cinetario_proximamente_subs';
 @Component({
   selector: 'app-proximamente',
   standalone: true,
-  imports: [LucideArrowRight, LucideCheck, PosterBadgeComponent],
+  imports: [LucideArrowRight, LucideCheck, PosterBadgeComponent, RouterLink],
   template: `
     @if (peliculas().length > 0) {
       <section class="section wrap">
         <div class="section-head">
           <h2>Próximamente</h2>
-          <a class="link">Calendario completo <svg lucideArrowRight [size]="14"></svg></a>
+          <a class="link" routerLink="/proximos-estrenos">
+            Calendario completo <svg lucideArrowRight [size]="14"></svg>
+          </a>
         </div>
         <div class="movie-grid">
           @for (p of peliculas(); track p.id) {
@@ -61,6 +65,7 @@ const SUBS_KEY = 'cinetario_proximamente_subs';
 export class ProximamenteComponent implements OnInit {
   private toast = inject(ToastService);
   private cartelera = inject(CarteleraService);
+  private location = inject(LocationService);
   private platformId = inject(PLATFORM_ID);
 
   readonly peliculas = signal<ProximoEstreno[]>([]);
@@ -76,7 +81,8 @@ export class ProximamenteComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.cartelera.proximos().subscribe({
+    const ciudadId = this.location.selection()?.cityId;
+    this.cartelera.proximos({ ciudad_id: ciudadId || undefined }).subscribe({
       next: (list) => this.peliculas.set(list),
       error: () => this.peliculas.set([]),
     });
