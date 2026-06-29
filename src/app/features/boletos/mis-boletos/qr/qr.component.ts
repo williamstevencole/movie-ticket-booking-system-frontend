@@ -16,11 +16,8 @@ export class QrBoletoComponent implements OnInit {
   readonly codigoQR = signal<string>('');
 
   ngOnInit(): void {
-    this.boletos.obtenerCodigoFirmado(this.numeroReserva).subscribe({
-      next: (codigo) => {
-        const url = new URL(this.boletos.urlPdf(codigo, 'inline'), window.location.origin).toString();
-        this.codigoQR.set(url);
-      },
+    this.boletos.codigoYUrl(this.numeroReserva).subscribe({
+      next: ({ url }) => this.codigoQR.set(url),
       error: () => this.codigoQR.set(this.numeroReserva),
     });
   }
