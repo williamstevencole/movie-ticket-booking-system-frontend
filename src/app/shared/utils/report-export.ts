@@ -55,10 +55,12 @@ function triggerDownload(blob: Blob, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
-/** Descarga un CSV (UTF-8 con BOM) con un encabezado de reporte y la tabla. */
+/**
+ * Descarga un CSV tabular simple (UTF-8 con BOM): fila de encabezados + datos.
+ * Sin metadatos arriba, para que las columnas queden alineadas en Excel.
+ */
 export function downloadReportCsv<T>(opts: ReportExportOptions<T>): void {
   const { filename, columns, rows } = opts;
-  const title = reportTitle(filename, opts.title);
 
   const escape = (v: unknown): string => {
     const s = fmt(v);
@@ -68,17 +70,11 @@ export function downloadReportCsv<T>(opts: ReportExportOptions<T>): void {
     return s;
   };
 
-  const meta = [
-    ['Cinetario', title].map(escape).join(','),
-    ['Generado', generatedAt()].map(escape).join(','),
-    ['Registros', String(rows.length)].map(escape).join(','),
-    '',
-  ];
   const header = columns.map((c) => escape(c.label)).join(',');
   const lines = rows.map((row) =>
     columns.map((c) => escape(c.value(row))).join(','),
   );
-  const csv = '﻿' + [...meta, header, ...lines].join('\r\n');
+  const csv = '﻿' + [header, ...lines].join('\r\n');
 
   triggerDownload(
     new Blob([csv], { type: 'text/csv;charset=utf-8' }),
