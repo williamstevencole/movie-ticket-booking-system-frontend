@@ -137,7 +137,9 @@
 
                   <div class="actions">
                     <div class="actions-buttons">
-                      <app-descargar-boleto [boleto]="boleto" />
+                      @if (puedeDescargar(boleto)) {
+                        <app-descargar-boleto [boleto]="boleto" />
+                      }
                       @if (puedeReenviar(boleto)) {
                         <app-reenviar-boleto [boleto]="boleto" />
                       }

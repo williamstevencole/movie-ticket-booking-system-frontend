@@ -169,6 +169,10 @@ export class MisBoletosComponent {
     return new Date(boleto.fecha_hora).getTime() > Date.now();
   }
 
+  puedeDescargar(boleto: Boleto): boolean {
+    return boleto.estado === 'pagada';
+  }
+
   puedeCancelar(boleto: Boleto): boolean {
     if (boleto.estado !== 'pagada' && boleto.estado !== 'pendiente_pago') return false;
     return new Date(boleto.fecha_hora).getTime() > Date.now();
