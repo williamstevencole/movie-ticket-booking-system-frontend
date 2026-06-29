@@ -95,6 +95,7 @@ type BackendFuncionBase = {
 
 type BackendFuncion = BackendFuncionBase & {
   salas?: { id_cine: string | number } | null;
+  _count?: { asientosFuncions?: number };
 };
 
 function mapBackendFuncion(f: BackendFuncion): Funcion {
@@ -105,7 +106,7 @@ function mapBackendFuncion(f: BackendFuncion): Funcion {
     id_sala: toStr(f.id_sala),
     fecha_hora: f.fecha_hora,
     estado: f.estado as EstadoFuncion,
-    boletos_vendidos: 0,
+    boletos_vendidos: f._count?.asientosFuncions ?? 0,
     created_at: f.created_at,
   };
 }
