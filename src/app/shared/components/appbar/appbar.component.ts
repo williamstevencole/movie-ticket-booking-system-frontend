@@ -129,7 +129,7 @@ export class AppbarComponent {
   @Input() navItems: AppNavItem[] = [
     { label: 'Cartelera', route: '/' },
     { label: 'Próximos estrenos', route: '/proximos-estrenos' },
-    { label: 'Promociones', route: '/cupones' },
+    { label: 'Cupones', route: '/cupones' },
     { label: 'Mis boletos', route: '/mis-boletos' },
   ];
   @Input() showLogout = true;
@@ -197,6 +197,6 @@ export class AppbarComponent {
     this.locationSvc.clear();
     this.auth.clearSession();
     this.loggedOut.emit();
-    this.router.navigate(['/elegir-cine']);
+    this.router.navigate(['/']);
   }
 }

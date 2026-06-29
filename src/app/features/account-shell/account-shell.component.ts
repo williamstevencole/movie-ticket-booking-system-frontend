@@ -31,7 +31,7 @@ export class AccountShellComponent {
   readonly nav = [
     { label: 'Cartelera', route: '/' },
     { label: 'Próximos estrenos', route: '/proximos-estrenos' },
-    { label: 'Promociones', route: '/cupones' },
+    { label: 'Cupones', route: '/cupones' },
     { label: 'Mis boletos', route: '/mis-boletos' },
   ];
 
