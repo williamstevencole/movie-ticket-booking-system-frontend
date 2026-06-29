@@ -21,6 +21,7 @@ import {
   AdminReservasService,
   AdminReservaRow,
 } from '../../../../shared/services/admin-reservas.service';
+import { ReenvioBoletosService } from '../../../../shared/services/reenvio-boletos.service';
 import { EstadoReserva } from '../../../../shared/services/reservas.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 import { PagerComponent } from '../../../../shared/components/pager.component';
@@ -250,6 +251,7 @@ interface Toast {
 export class AdminReservasListadoComponent {
   private reservasSvc = inject(AdminReservasService);
   private router = inject(Router);
+  private reenvio = inject(ReenvioBoletosService);
 
   readonly rows = signal<AdminReservaRow[]>([]);
   readonly loading = signal(false);
@@ -388,8 +390,10 @@ export class AdminReservasListadoComponent {
   }
 
   reenviar(r: AdminReservaRow) {
-    const email = r.usuario?.email ?? '';
-    this.pushToast(`Boleto reenviado a ${email}`);
+    this.reenvio.reenviarComoAdmin(r.id.toString()).subscribe({
+      next: () => this.pushToast(`Boleto reenviado a ${r.usuario?.email ?? 'el cliente'}`),
+      error: () => this.pushToast('No se pudo enviar el correo', 'err'),
+    });
   }
 
   private pushToast(msg: string, kind: 'ok' | 'err' = 'ok') {
