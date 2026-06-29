@@ -6,7 +6,7 @@ import { API_URL } from '../../core/config/env';
 @Injectable({ providedIn: 'root' })
 export class SuscripcionesEstrenoService {
   private readonly http = inject(HttpClient);
-  readonly _subscritas = signal<Set<string>>(new Set());
+  private readonly _subscritas = signal<Set<string>>(new Set());
 
   readonly subscritas = this._subscritas.asReadonly();
   readonly totalSeguidas = computed(() => this._subscritas().size);

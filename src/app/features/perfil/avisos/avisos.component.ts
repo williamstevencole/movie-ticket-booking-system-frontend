@@ -1,7 +1,8 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, WritableSignal, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { SuscripcionesEstrenoService } from '../../../shared/services/suscripciones-estreno.service';
 import { PeliculasService, Pelicula } from '../../../shared/services/peliculas.service';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -27,29 +28,36 @@ export class AvisosComponent {
   private readonly peliculasSvc = inject(PeliculasService);
   private readonly toast = inject(ToastService);
 
-  private readonly catalogo = toSignal(this.peliculasSvc.list({ limit: 200 }), {
-    initialValue: { data: [] as Pelicula[], total: 0, page: 1, limit: 200 },
-  });
+  readonly seguidas: WritableSignal<SuscripcionVista[]> = signal([]);
 
-  readonly seguidas = computed<SuscripcionVista[]>(() => {
-    const ids = this.suscripciones.subscritas();
-    const todas: Pelicula[] = this.catalogo().data;
-    return todas
-      .filter((p) => ids.has(p.id))
-      .map((p) => {
-        const ts = p.fecha_estreno ? new Date(p.fecha_estreno).getTime() : null;
-        const ya = ts !== null && ts <= Date.now();
-        return {
-          id: p.id,
-          titulo: p.titulo,
-          poster_url: p.poster_url,
-          fecha_estreno: p.fecha_estreno ?? null,
-          relativa: this.relativa(ts),
-          yaEstrenada: ya,
-        };
-      })
-      .sort((a, b) => (a.fecha_estreno ?? '').localeCompare(b.fecha_estreno ?? ''));
-  });
+  constructor() {
+    effect(() => {
+      const ids = Array.from(this.suscripciones.subscritas());
+      if (ids.length === 0) {
+        this.seguidas.set([]);
+        return;
+      }
+      forkJoin(ids.map((id) => this.peliculasSvc.getById(id).pipe(catchError(() => of(null))))).subscribe({
+        next: (results) => {
+          const vistas = (results.filter((p): p is Pelicula => p !== null))
+            .map((p) => {
+              const ts = p.fecha_estreno ? new Date(p.fecha_estreno).getTime() : null;
+              const ya = ts !== null && ts <= Date.now();
+              return {
+                id: p.id,
+                titulo: p.titulo,
+                poster_url: p.poster_url,
+                fecha_estreno: p.fecha_estreno ?? null,
+                relativa: this.relativa(ts),
+                yaEstrenada: ya,
+              };
+            })
+            .sort((a, b) => (a.fecha_estreno ?? '').localeCompare(b.fecha_estreno ?? ''));
+          this.seguidas.set(vistas);
+        },
+      });
+    });
+  }
 
   quitar(id: string) {
     this.suscripciones.unsubscribe(id).subscribe({
