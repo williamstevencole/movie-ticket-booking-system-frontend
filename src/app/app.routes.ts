@@ -358,6 +358,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'admin/funciones/:id/asientos',
+    canActivate: [authGuard, roleGuard(['admin'])],
+    loadComponent: () =>
+      import('./features/admin/funciones/asientos/asientos.component').then(
+        (m) => m.AdminFuncionAsientosComponent,
+      ),
+  },
+  {
     path: 'admin/funciones/:id/editar',
     canActivate: [authGuard, roleGuard(['admin'])],
     loadComponent: () =>

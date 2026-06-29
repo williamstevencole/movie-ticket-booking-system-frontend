@@ -7,6 +7,7 @@ import {
   LucideX,
   LucideClapperboard,
   LucideRefreshCw,
+  LucideArmchair,
 } from '@lucide/angular';
 
 import { extractMessage } from '../../../../shared/utils/http-errors';
@@ -47,6 +48,7 @@ type Filtro = 'todas' | 'hoy' | 'proximas' | 'pasadas';
     LucideX,
     LucideClapperboard,
     LucideRefreshCw,
+    LucideArmchair,
   ],
   template: `
     <div class="admin-body">
@@ -224,6 +226,13 @@ type Filtro = 'todas' | 'hoy' | 'proximas' | 'pasadas';
                         </td>
                         <td class="col-acc">
                           <div class="row-acc">
+                            <a
+                              class="icon-btn"
+                              [routerLink]="['/admin/funciones', f.id, 'asientos']"
+                              title="Ver asientos"
+                            >
+                              <svg lucideArmchair [size]="15"></svg>
+                            </a>
                             <a
                               class="icon-btn"
                               [routerLink]="['/admin/funciones', f.id, 'editar']"
