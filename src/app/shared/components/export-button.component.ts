@@ -13,12 +13,13 @@ import {
   LucideFileText,
 } from '@lucide/angular';
 import { ToastService } from '../services/toast.service';
+import {
+  ExportColumn,
+  downloadReportCsv,
+  downloadReportPdf,
+} from '../utils/report-export';
 
-export type ExportColumn<T> = {
-  key: string;
-  label: string;
-  value: (row: T) => string | number | null | undefined;
-};
+export type { ExportColumn } from '../utils/report-export';
 
 @Component({
   selector: 'app-export-button',
@@ -61,7 +62,7 @@ export type ExportColumn<T> = {
               <svg lucideFileText [size]="18"></svg>
               <span class="label">
                 <span class="label-title">PDF</span>
-                <span class="label-sub">Genera el documento</span>
+                <span class="label-sub">Documento con formato</span>
               </span>
             </button>
           </div>
@@ -78,6 +79,8 @@ export class ExportButtonComponent {
   @Input({ required: true }) filename!: string;
   @Input({ required: true }) columns!: ExportColumn<any>[];
   @Input({ required: true }) rows!: any[];
+  /** Título mostrado en el encabezado del documento. Si no se pasa, se deriva del filename. */
+  @Input() title?: string;
 
   readonly open = signal(false);
   readonly exporting = signal(false);
@@ -102,13 +105,18 @@ export class ExportButtonComponent {
     this.exporting.set(true);
     setTimeout(() => {
       try {
-        this.downloadCsv();
+        downloadReportCsv({
+          filename: this.filename,
+          title: this.title,
+          columns: this.columns,
+          rows: this.rows,
+        });
         this.toast.show(`CSV descargado · ${this.rows.length} registros`);
       } catch {
         this.toast.show('No se pudo generar el CSV');
       }
       this.exporting.set(false);
-    }, 600);
+    }, 300);
   }
 
   exportPdf() {
@@ -116,35 +124,18 @@ export class ExportButtonComponent {
     this.formatLabel.set('PDF');
     this.exporting.set(true);
     setTimeout(() => {
-      this.toast.show(`PDF listo · ${this.rows.length} registros (simulado)`);
-      this.exporting.set(false);
-    }, 900);
-  }
-
-  private downloadCsv() {
-    const escape = (v: unknown): string => {
-      if (v === null || v === undefined) return '';
-      const s = String(v);
-      if (s.includes('"') || s.includes(',') || s.includes('\n')) {
-        return `"${s.replace(/"/g, '""')}"`;
+      try {
+        downloadReportPdf({
+          filename: this.filename,
+          title: this.title,
+          columns: this.columns,
+          rows: this.rows,
+        });
+        this.toast.show(`PDF descargado · ${this.rows.length} registros`);
+      } catch {
+        this.toast.show('No se pudo generar el PDF');
       }
-      return s;
-    };
-
-    const header = this.columns.map((c) => escape(c.label)).join(',');
-    const lines = this.rows.map((row) =>
-      this.columns.map((c) => escape(c.value(row))).join(','),
-    );
-    const csv = '﻿' + [header, ...lines].join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${this.filename}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+      this.exporting.set(false);
+    }, 300);
   }
 }

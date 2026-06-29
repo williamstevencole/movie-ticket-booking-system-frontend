@@ -52,6 +52,12 @@
   gap: var(--s5);
   flex-wrap: wrap;
   margin-bottom: var(--s6);
+
+  .export-actions {
+    display: inline-flex;
+    gap: var(--s2);
+    flex-shrink: 0;
+  }
   h1 {
     font-size: clamp(26px, 3vw, 34px);
     font-weight: 800;
