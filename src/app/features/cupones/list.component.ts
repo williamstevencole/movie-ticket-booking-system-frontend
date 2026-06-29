@@ -1,11 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
-  LucideMapPin,
-  LucideLogOut,
-  LucideSearch,
   LucideCopy,
   LucideCheck,
   LucideTicket,
@@ -14,7 +10,7 @@ import {
 } from '@lucide/angular';
 import { AuthService } from '../../shared/services/auth.service';
 import { Cupon, CuponesService } from '../../shared/services/cupones.service';
-import { LocationService } from '../../shared/services/location.service';
+import { AppbarComponent, AppNavItem } from '../../shared/components/appbar/appbar.component';
 
 interface CuponView extends Cupon {
   diasRestantes: number;
@@ -29,10 +25,7 @@ interface CuponView extends Cupon {
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
-    LucideMapPin,
-    LucideLogOut,
-    LucideSearch,
+    AppbarComponent,
     LucideCopy,
     LucideCheck,
     LucideTicket,
@@ -40,38 +33,7 @@ interface CuponView extends Cupon {
     LucideAlertCircle,
   ],
   template: `
-    <!-- HEADER -->
-    <header class="appbar">
-      <div class="appbar-inner">
-        <a class="brand" routerLink="/cartelera"><span class="mark">C</span>Cinetario</a>
-        <nav class="appnav">
-          <a routerLink="/cartelera">Cartelera</a>
-          <a>Próximos estrenos</a>
-          <a routerLink="/cupones" class="on">Cupones</a>
-          <a>Cines</a>
-          <a>Mis boletos</a>
-        </nav>
-        <div class="app-right">
-          <button class="search-mini" aria-label="Buscar">
-            <svg lucideSearch [size]="16"></svg>
-            <span>Buscar</span>
-          </button>
-          <a class="citychip" routerLink="/elegir-cine" title="Cambiar cine">
-            <svg lucideMapPin [size]="14"></svg>
-            <span class="citychip-name">{{ cinemaName() ?? 'Elegí un cine' }}</span>
-            @if (cityName(); as city) {
-              <span class="citychip-city">· {{ city }}</span>
-            }
-          </a>
-          <div class="user">
-            <span class="avatar">{{ initials() }}</span>
-            <button class="logout" (click)="logout()" title="Cerrar sesión" aria-label="Cerrar sesión">
-              <svg lucideLogOut [size]="16"></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </header>
+    <app-appbar [navItems]="nav" />
 
     <!-- HERO de la página -->
     <section class="page-hero">
@@ -240,12 +202,15 @@ interface CuponView extends Cupon {
 export class CuponesListComponent implements OnInit {
   private cuponesSvc = inject(CuponesService);
   private auth = inject(AuthService);
-  private locationSvc = inject(LocationService);
-  private router = inject(Router);
 
   readonly user = this.auth.user;
-  readonly cinemaName = this.locationSvc.cinemaName;
-  readonly cityName = this.locationSvc.cityName;
+
+  readonly nav: AppNavItem[] = [
+    { label: 'Cartelera', route: '/' },
+    { label: 'Próximos estrenos', route: '/proximos-estrenos' },
+    { label: 'Cupones', route: '/cupones', active: true },
+    { label: 'Mis boletos', route: '/mis-boletos' },
+  ];
 
   readonly loading = signal(true);
   readonly errorMsg = signal<string | null>(null);
@@ -333,26 +298,4 @@ export class CuponesListComponent implements OnInit {
     });
   }
 
-  initials(): string {
-    const name = this.user()?.nombre ?? '?';
-    return name
-      .split(' ')
-      .filter((p) => p.length > 0)
-      .slice(0, 2)
-      .map((p) => p[0]!.toUpperCase())
-      .join('');
-  }
-
-  logout(): void {
-    this.auth.logoutRemote().subscribe({
-      next: () => this.finishLogout(),
-      error: () => this.finishLogout(),
-    });
-  }
-
-  private finishLogout(): void {
-    this.locationSvc.clear();
-    this.auth.clearSession();
-    this.router.navigate(['/login']);
-  }
 }
