@@ -1,29 +1,31 @@
+:host { display: inline-flex; }
+
 .download {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  height: 34px;
+  padding: 0 var(--s4);
+  border-radius: var(--r);
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: white;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  transition:
+    background-color 180ms var(--ease),
+    border-color 180ms var(--ease),
+    transform 120ms var(--ease);
+}
 
-    height: 36px;
+.download:hover { background: #000; border-color: #000; }
+.download:active { transform: translateY(1px); }
 
-    padding: 0 16px;
-
-    border-radius: 999px;
-
-    border: 1px solid var(--border);
-
-    background: white;
-
-    color: var(--text);
-
-    font-weight: 700;
-
-    cursor: pointer;
-
-
-    transition: .2s ease;
-
-
-    &:hover {
-
-        background: var(--bg-soft);
-
-    }
-
+.ico {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
 }

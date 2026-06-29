@@ -73,12 +73,27 @@ export class MisReservasService {
   private readonly http = inject(HttpClient);
   private readonly base = `${API_URL}/me/reservas`;
 
-  list(estado?: string): Observable<Boleto[]> {
+  list(opts: {
+    estado?: string;
+    page?: number;
+    limit?: number;
+    vista?: 'proximos' | 'pasados' | 'cancelados';
+  } = {}): Observable<MisReservasPage> {
     let params = new HttpParams();
-    if (estado) params = params.set('estado', estado);
+    if (opts.estado) params = params.set('estado', opts.estado);
+    if (opts.vista) params = params.set('vista', opts.vista);
+    if (opts.page) params = params.set('page', String(opts.page));
+    if (opts.limit) params = params.set('limit', String(opts.limit));
     return this.http
-      .get<BackendBoleto[]>(this.base, { params })
-      .pipe(map((rows) => rows.map(mapBoleto)));
+      .get<{ data: BackendBoleto[]; total: number; page: number; limit: number }>(this.base, { params })
+      .pipe(
+        map((res) => ({
+          data: res.data.map(mapBoleto),
+          total: res.total,
+          page: res.page,
+          limit: res.limit,
+        })),
+      );
   }
 
   getByNumero(numero: string): Observable<Boleto | null> {
@@ -97,6 +112,13 @@ export class MisReservasService {
     );
   }
 }
+
+export type MisReservasPage = {
+  data: Boleto[];
+  total: number;
+  page: number;
+  limit: number;
+};
 
 export type CancelarMiReservaResponse = {
   reserva: {

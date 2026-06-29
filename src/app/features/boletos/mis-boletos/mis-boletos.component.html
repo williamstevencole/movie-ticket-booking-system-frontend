@@ -4,78 +4,181 @@
   <div class="wrap">
     <div class="account-grid">
       <app-mis-boletos-sidebar
-        [userName]="userName"
-        [userEmail]="userEmail"
-        [countProximos]="proximos().length"
-        [countPasados]="pasados().length"
-        [countCancelados]="cancelados().length"
+        [userName]="userName()"
+        [userEmail]="userEmail()"
+        [countProximos]="countProximos()"
+        [countPasados]="countPasados()"
+        [countCancelados]="countCancelados()"
         [activeView]="vistaActual()"
         (viewChange)="cambiarVista($event)"
       />
 
       <div class="main">
         @if (vistaActual() === 'boletos') {
-          <h1 class="page-title">Mis boletos</h1>
+          <header class="page-head">
+            <h1 class="page-title">Mis boletos</h1>
+            <p class="page-sub">Tu historial de funciones y los próximos a usar.</p>
+          </header>
 
-          <div class="ticket-tabs">
-            <button class="ticket-tab" [class.on]="filtroBoletos() === 'proximos'" (click)="cambiarFiltro('proximos')">
-              Próximos <span class="ct">{{ proximos().length }}</span>
+          <div class="ticket-tabs" role="tablist">
+            <button class="ticket-tab" role="tab" [attr.aria-selected]="filtroBoletos() === 'proximos'" [class.on]="filtroBoletos() === 'proximos'" (click)="cambiarFiltro('proximos')">
+              Próximos <span class="ct">{{ countProximos() }}</span>
             </button>
-            <button class="ticket-tab" [class.on]="filtroBoletos() === 'pasados'" (click)="cambiarFiltro('pasados')">
-              Pasados <span class="ct">{{ pasados().length }}</span>
+            <button class="ticket-tab" role="tab" [attr.aria-selected]="filtroBoletos() === 'pasados'" [class.on]="filtroBoletos() === 'pasados'" (click)="cambiarFiltro('pasados')">
+              Pasados <span class="ct">{{ countPasados() }}</span>
             </button>
-            <button class="ticket-tab" [class.on]="filtroBoletos() === 'cancelados'" (click)="cambiarFiltro('cancelados')">
-              Cancelados <span class="ct">{{ cancelados().length }}</span>
+            <button class="ticket-tab" role="tab" [attr.aria-selected]="filtroBoletos() === 'cancelados'" [class.on]="filtroBoletos() === 'cancelados'" (click)="cambiarFiltro('cancelados')">
+              Cancelados <span class="ct">{{ countCancelados() }}</span>
             </button>
           </div>
 
-          @if (boletosFiltrados().length === 0) {
+          @if (cargando() && boletos().length === 0) {
             <div class="empty-state">
-              <p>No hay boletos en esta categoría.</p>
-              <a class="btn primary" (click)="irCartelera()">Ver cartelera</a>
+              <p>Cargando…</p>
+            </div>
+          } @else if (total() === 0) {
+            <div class="empty-state">
+              <div class="empty-art" aria-hidden="true">🎬</div>
+              <h3>No hay boletos aquí</h3>
+              <p>Cuando reservés una función la vas a ver en esta categoría.</p>
+              <button type="button" class="btn primary" (click)="irCartelera()">Ver cartelera</button>
             </div>
           } @else {
             <div class="tickets">
-              @for (boleto of boletosFiltrados(); track boleto.id) {
+              @for (boleto of boletos(); track boleto.id) {
                 <article class="ticket">
-                  <div class="film">
+                  <div class="ticket-body">
                     @if (boleto.pelicula.poster_url) {
-                      <img class="poster" [src]="boleto.pelicula.poster_url" [alt]="boleto.pelicula.titulo" />
+                      <img class="poster" [src]="boleto.pelicula.poster_url" [alt]="boleto.pelicula.titulo" loading="lazy" />
                     } @else {
-                      <div class="poster placeholder"></div>
+                      <div class="poster placeholder" aria-hidden="true">
+                        <span>{{ boleto.pelicula.titulo.charAt(0) }}</span>
+                      </div>
                     }
+
                     <div class="meta">
-                      <h3>{{ boleto.pelicula.titulo }}</h3>
-                      <app-rating-display
-                        [promedio]="boleto.pelicula.rating_promedio"
-                        [count]="boleto.pelicula.rating_count ?? 0"
-                        size="sm"
-                      />
-                      <p class="where">{{ boleto.cine.nombre }} · {{ boleto.sala.nombre }}</p>
-                      <p class="when">{{ boleto.fecha_hora | date:'EEE d MMM, h:mm a' }}</p>
-                      <div class="seats">
-                        @for (a of boleto.asientos; track a.id) {
-                          <span class="seat-chip">{{ a.codigo }} <span class="seat-meta">({{ a.tipo_asiento }} — L{{ a.precio }})</span></span>
+                      <div class="head">
+                        <h3 class="title">{{ boleto.pelicula.titulo }}</h3>
+                        <app-rating-display
+                          [promedio]="boleto.pelicula.rating_promedio"
+                          [count]="boleto.pelicula.rating_count ?? 0"
+                          size="sm"
+                        />
+                      </div>
+
+                      <div class="status-row">
+                        <span class="estado-badge" [attr.data-estado]="boleto.estado">{{ estadoLabel(boleto.estado) }}</span>
+                        <span class="metodo-pago" [class.efectivo]="!boleto.ultimos4_snapshot">
+                          @if (boleto.ultimos4_snapshot) {
+                            <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+                              <rect x="1.5" y="3.5" width="13" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+                              <path d="M1.5 6.5h13" stroke="currentColor" stroke-width="1.2"></path>
+                            </svg>
+                          } @else {
+                            <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+                              <rect x="1.5" y="4.5" width="13" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
+                              <circle cx="8" cy="8" r="1.4" fill="none" stroke="currentColor" stroke-width="1.2"></circle>
+                            </svg>
+                          }
+                          {{ metodoPagoLabel(boleto) }}
+                        </span>
+                      </div>
+
+                      <p class="where">
+                        <span class="venue">{{ boleto.cine.nombre }}</span>
+                        <span class="dot-sep" aria-hidden="true">·</span>
+                        <span class="room">{{ boleto.sala.nombre }}</span>
+                      </p>
+
+                      <div class="when">
+                        <span class="when-date">{{ boleto.fecha_hora | date:'EEE d MMM' }}</span>
+                        <span class="when-sep" aria-hidden="true"></span>
+                        <span class="when-time">{{ boleto.fecha_hora | date:'h:mm a' }}</span>
+                        @if (filtroBoletos() === 'proximos') {
+                          <app-tiempo-restante [fechaHora]="boleto.fecha_hora" variante="pill" />
                         }
                       </div>
-                      @if (filtroBoletos() === 'proximos') {
-                        <app-tiempo-restante [fechaHora]="boleto.fecha_hora" variante="pill" />
-                      }
                     </div>
+
                     <app-qr [numeroReserva]="boleto.numero_reserva" />
                   </div>
-                  <div class="actions">
-                    <app-descargar-boleto [boleto]="boleto" />
-                    @if (puedeReenviar(boleto)) {
-                      <app-reenviar-boleto [boleto]="boleto" />
+
+                  <div class="seats-collapsible">
+                    <button
+                      type="button"
+                      class="seats-toggle"
+                      [attr.aria-expanded]="seatsAbiertos(boleto.id)"
+                      (click)="toggleSeats(boleto.id)"
+                    >
+                      <span class="seats-count">
+                        <strong>{{ boleto.asientos.length }}</strong>
+                        {{ boleto.asientos.length === 1 ? 'asiento' : 'asientos' }}
+                      </span>
+                      @if (!seatsAbiertos(boleto.id)) {
+                        <span class="seats-preview-text">{{ seatsPreview(boleto) }}</span>
+                      }
+                      <span class="seats-action">{{ seatsAbiertos(boleto.id) ? 'Ocultar' : 'Ver detalle' }}</span>
+                      <svg class="chev" viewBox="0 0 16 16" aria-hidden="true">
+                        <path d="m5 6 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                      </svg>
+                    </button>
+                    @if (seatsAbiertos(boleto.id)) {
+                      <ul class="seats" aria-label="Asientos">
+                        @for (a of boleto.asientos; track a.id) {
+                          <li class="seat" [class.seat--vip]="a.tipo_asiento === 'VIP'">
+                            <span class="seat-code">{{ a.codigo }}</span>
+                            <span class="seat-type">{{ a.tipo_asiento }}</span>
+                            <span class="seat-price">L {{ a.precio }}</span>
+                          </li>
+                        }
+                      </ul>
                     }
-                    <span class="reserva-num">#{{ boleto.numero_reserva }}</span>
+                  </div>
+
+                  <div class="actions">
+                    <div class="actions-buttons">
+                      <app-descargar-boleto [boleto]="boleto" />
+                      @if (puedeReenviar(boleto)) {
+                        <app-reenviar-boleto [boleto]="boleto" />
+                      }
+                      @if (puedeCancelar(boleto)) {
+                        <a class="cancel-link" [routerLink]="['/cancelar', boleto.numero_reserva]">
+                          Cancelar reserva
+                        </a>
+                      }
+                    </div>
+                    <span class="reserva-num">{{ boleto.numero_reserva }}</span>
                   </div>
                 </article>
               }
             </div>
-          }
 
+            @if (totalPaginas() > 1) {
+              <nav class="pagination" aria-label="Paginación">
+                <button
+                  type="button"
+                  class="page-btn"
+                  [disabled]="pagina() === 1"
+                  (click)="irPagina(pagina() - 1)"
+                  aria-label="Página anterior"
+                >
+                  <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m10 4-4 4 4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <span class="page-info">
+                  Página <strong>{{ pagina() }}</strong> de <strong>{{ totalPaginas() }}</strong>
+                </span>
+                <button
+                  type="button"
+                  class="page-btn"
+                  [disabled]="pagina() === totalPaginas()"
+                  (click)="irPagina(pagina() + 1)"
+                  aria-label="Página siguiente"
+                >
+                  <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 4 4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </nav>
+            }
+          }
         }
 
         @if (vistaActual() === 'reembolsos') {

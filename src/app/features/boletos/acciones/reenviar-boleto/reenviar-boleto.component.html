@@ -1,16 +1,14 @@
-<button class="resend" (click)="reenviar()" [disabled]="reenviando">
-
-
-    @if(reenviando){
-
-    Espera {{segundos}}s
-
-    }
-    @else {
-
-    ✉ Reenviar
-
-    }
-
-
+<button type="button" class="resend" (click)="reenviar()" [disabled]="reenviando">
+  @if (reenviando) {
+    <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="28" stroke-dashoffset="14" stroke-linecap="round"></circle>
+    </svg>
+    <span>Esperá {{ segundos }}s</span>
+  } @else {
+    <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M2 4.5C2 3.67 2.67 3 3.5 3h9c.83 0 1.5.67 1.5 1.5v7c0 .83-.67 1.5-1.5 1.5h-9C2.67 13 2 12.33 2 11.5v-7Z" fill="none" stroke="currentColor" stroke-width="1.4"></path>
+      <path d="m3 5 5 3.5L13 5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+    <span>Reenviar</span>
+  }
 </button>

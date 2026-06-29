@@ -5,13 +5,36 @@
 }
 .reembolsos-section h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.015em; margin: 0; }
 .actualizar-btn {
-  padding: var(--s2) var(--s4);
-  background: var(--surface);
-  border-radius: var(--r-sm);
-  font-size: 12px; font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 var(--s3);
+  background: white;
+  border: 1px solid var(--border-2);
+  border-radius: var(--r);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
   color: var(--text-2);
+  cursor: pointer;
+  transition:
+    border-color 180ms var(--ease),
+    color 180ms var(--ease),
+    background-color 180ms var(--ease);
 }
-.actualizar-btn:hover { background: var(--surface-2); }
+.actualizar-btn:hover {
+  border-color: var(--text-3);
+  color: var(--text);
+  background: var(--bg-soft);
+}
+.actualizar-btn:active .ico { transform: rotate(-180deg); }
+.actualizar-btn .ico {
+  width: 13px;
+  height: 13px;
+  transition: transform 400ms var(--ease);
+}
 .lista { display: flex; flex-direction: column; gap: var(--s3); }
 .reembolso {
   background: white;

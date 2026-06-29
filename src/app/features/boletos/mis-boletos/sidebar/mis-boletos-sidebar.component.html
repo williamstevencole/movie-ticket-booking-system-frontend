@@ -9,6 +9,5 @@
   <nav class="acc-nav">
     <a [class.on]="activeView === 'boletos'" (click)="viewChange.emit('boletos')">Mis boletos <span class="ct">{{ countProximos }}</span></a>
     <a [class.on]="activeView === 'reembolsos'" (click)="viewChange.emit('reembolsos')">Reembolsos</a>
-    <a [class.on]="activeView === 'perfil'" (click)="viewChange.emit('perfil')">Mi perfil</a>
   </nav>
 </aside>

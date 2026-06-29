@@ -9,8 +9,8 @@ import { CommonModule } from '@angular/common';
   styleUrl: './mis-boletos-sidebar.component.scss',
 })
 export class MisBoletosSidebarComponent {
-  @Input() userName = 'Andrea López';
-  @Input() userEmail = 'andrea@email.com';
+  @Input() userName = '';
+  @Input() userEmail = '';
   @Input() countProximos = 0;
   @Input() countPasados = 0;
   @Input() countCancelados = 0;

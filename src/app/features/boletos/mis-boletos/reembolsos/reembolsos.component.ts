@@ -1,10 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { MiReembolso as Reembolso, MisReembolsosService } from '../../../../shared/services/mis-reembolsos.service';
 import { Boleto } from '../../../../shared/services/boletos.service';
 import { MisReservasService } from '../../../../shared/services/mis-reservas.service';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-reembolsos',
@@ -18,7 +19,10 @@ export class ReembolsosComponent {
   private readonly misReservasSvc = inject(MisReservasService);
   private readonly reembolsosSvc = inject(MisReembolsosService);
 
-  readonly boletos = toSignal(this.misReservasSvc.list(), { initialValue: [] as Boleto[] });
+  readonly boletos = toSignal(
+    this.misReservasSvc.list({ limit: 100 }).pipe(map((res) => res.data)),
+    { initialValue: [] as Boleto[] },
+  );
   readonly reembolsos = signal<Reembolso[]>([]);
 
   constructor() {

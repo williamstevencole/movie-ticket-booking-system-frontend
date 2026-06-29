@@ -1,113 +1,65 @@
-:host {
-    display: block;
-}
-
-
+:host { display: inline-block; }
 
 .pill {
-
-    display: inline-flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    padding: 6px 12px;
-
-    border-radius: 999px;
-
-    font-size: 13px;
-
-    font-weight: 800;
-
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 5px 11px 5px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  border: 1px solid transparent;
 }
-
-
 
 .dot {
-
-    width: 8px;
-
-    height: 8px;
-
-    border-radius: 50%;
-
-    background: currentColor;
-
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
 }
-
-
 
 .normal {
-
-    background: #f1f5f9;
-
-    color: #475569;
-
+  background: var(--surface);
+  color: var(--text-2);
+  border-color: var(--border);
 }
-
-
 
 .urgente {
-
-    background: #fee2e2;
-
-    color: #dc2626;
-
-}
-
-
-
-
-
-.banner {
-
-    margin-top: 24px;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 12px;
-
-
-    padding: 16px 20px;
-
-
-    border-radius: 16px;
-
-
-    background: #fff7ed;
-
-    border: 1px solid #fed7aa;
-
-
-    color: #c2410c;
-
-
-    font-weight: 700;
-
-
-
-    span {
-
-        font-size: 24px;
-
-    }
-
-
-    p {
-
-        margin: 0;
-
-    }
-
+  background: var(--red-soft);
+  color: var(--red-ink);
+  border-color: color-mix(in oklch, var(--red) 18%, transparent);
 }
 
 .muy-urgente {
+  background: var(--red);
+  color: white;
+  border-color: var(--red);
+  animation: pulse 1.6s ease-in-out infinite;
+}
 
-    background: #dc2626;
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--red) 40%, transparent); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
 
-    color: white;
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  margin-top: var(--s5);
+  padding: var(--s4) var(--s5);
+  border-radius: var(--r-lg);
+  background: var(--orange-soft);
+  border: 1px solid color-mix(in oklch, var(--orange) 25%, transparent);
+  color: var(--orange-ink-strong);
+  font-weight: 600;
+  font-size: 14px;
 
+  span {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  p { margin: 0; }
 }
