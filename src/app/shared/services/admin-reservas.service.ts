@@ -12,6 +12,7 @@ export type AdminReservaRow = {
   monto_total: number;
   created_at: string;
   updated_at: string;
+  expira_en?: string | null;
   // Compat fields used by listado consumers (buscar-cliente, etc.)
   id_usuario?: string;
   id_funcion?: string;
@@ -79,6 +80,7 @@ type BackendReservaRow = {
   estado: string;
   created_at: string;
   updated_at: string;
+  expira_en?: string | null;
   monto_total?: string | null;
   cliente: { id: string; nombre: string; email: string };
   funcion: { id: string; fecha_hora: string };
@@ -177,9 +179,9 @@ function mapBackendRow(r: BackendReservaRow): AdminReservaRow {
     estado: r.estado,
     created_at: r.created_at,
     updated_at: r.updated_at,
+    expira_en: r.expira_en ?? null,
     monto_total: toNumOrNull(r.monto_total) ?? 0,
     num_asientos: r.num_asientos,
-    // rename: backend "cliente" → frontend "usuario"
     usuario: r.cliente
       ? { id: toStr(r.cliente.id), nombre: r.cliente.nombre, email: r.cliente.email }
       : undefined,
@@ -192,7 +194,6 @@ function mapBackendRow(r: BackendReservaRow): AdminReservaRow {
     cine: r.cine
       ? { id: toStr(r.cine.id), nombre: r.cine.nombre }
       : undefined,
-    // Compat fields: derive id_usuario and id_funcion from nested objects
     id_usuario: r.cliente ? toStr(r.cliente.id) : undefined,
     id_funcion: r.funcion ? toStr(r.funcion.id) : undefined,
     asientos: r.asientos?.map((a) => ({ codigo: a.codigo, tipo: a.tipo })) ?? [],

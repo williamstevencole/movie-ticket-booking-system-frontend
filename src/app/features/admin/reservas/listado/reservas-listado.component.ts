@@ -15,7 +15,6 @@ import {
   LucideBan,
   LucideBanknote,
   LucideTicketX,
-  LucideCheckCircle2,
 } from '@lucide/angular';
 
 import {
@@ -25,6 +24,7 @@ import {
 import { EstadoReserva } from '../../../../shared/services/reservas.service';
 import { AdminSidebarComponent } from '../../../../shared/components/admin-sidebar.component';
 import { PagerComponent } from '../../../../shared/components/pager.component';
+import { CountdownPagoComponent } from '../../../../shared/components/countdown-pago/countdown-pago.component';
 import { extractMessage } from '../../../../shared/utils/http-errors';
 
 type FilterState = 'all' | EstadoReserva;
@@ -46,13 +46,13 @@ interface Toast {
     DecimalPipe,
     AdminSidebarComponent,
     PagerComponent,
+    CountdownPagoComponent,
     LucideSearch,
     LucideMail,
     LucideEye,
     LucideBan,
     LucideBanknote,
     LucideTicketX,
-    LucideCheckCircle2,
   ],
   template: `
     <div class="admin-body">
@@ -174,7 +174,11 @@ interface Toast {
                           </span>
                         </td>
                         <td class="col-hide-sm col-sub tnum">
-                          {{ r.created_at | date: 'd MMM HH:mm' }}
+                          @if (r.estado === 'pendiente_pago' && r.expira_en) {
+                            <app-countdown-pago [expiraEn]="r.expira_en" (expirado)="reload()" />
+                          } @else {
+                            {{ r.created_at | date: 'd MMM HH:mm' }}
+                          }
                         </td>
                         <td class="right" (click)="$event.stopPropagation()">
                           <div class="row-actions">
@@ -194,14 +198,6 @@ interface Toast {
                               (click)="reenviar(r)"
                             >
                               <svg lucideMail [size]="15"></svg>
-                            </button>
-                            <button
-                              type="button"
-                              title="Marcar asistencia"
-                              [disabled]="r.estado !== 'pagada'"
-                              (click)="marcarAsistencia(r)"
-                            >
-                              <svg lucideCheckCircle2 [size]="15"></svg>
                             </button>
                             <button
                               type="button"
@@ -394,10 +390,6 @@ export class AdminReservasListadoComponent {
   reenviar(r: AdminReservaRow) {
     const email = r.usuario?.email ?? '';
     this.pushToast(`Boleto reenviado a ${email}`);
-  }
-
-  marcarAsistencia(r: AdminReservaRow) {
-    this.pushToast(`Asistencia marcada · ${r.numero_reserva}`);
   }
 
   private pushToast(msg: string, kind: 'ok' | 'err' = 'ok') {
