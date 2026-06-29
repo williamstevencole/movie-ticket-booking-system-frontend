@@ -7,7 +7,7 @@
       <h1>Lo que viene en cartelera</h1>
       <p>Películas confirmadas con fecha de estreno futura.</p>
       @if (totalSeguidos() > 0) {
-        <a class="seguidos-pill" routerLink="/perfil/avisos">
+        <a class="seguidos-pill" routerLink="/cuenta/avisos">
           Estás siguiendo {{ totalSeguidos() }} estreno{{ totalSeguidos() === 1 ? '' : 's' }} →
         </a>
       }
