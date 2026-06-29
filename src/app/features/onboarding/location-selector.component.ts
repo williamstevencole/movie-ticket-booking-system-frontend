@@ -53,110 +53,104 @@ import { LocationService } from '../../shared/services/location.service';
         <span class="dot" [class.on]="selectedCityId() !== null" aria-hidden="true"></span>
       </div>
 
-      <div class="user-menu">
-        <button
-          class="avatar-btn"
-          type="button"
-          (click)="toggleMenu($event)"
-          [attr.aria-expanded]="menuOpen()"
-          aria-haspopup="menu"
-          [title]="firstName() ?? 'Mi cuenta'"
-        >
-          <span class="avatar">{{ initials() }}</span>
-        </button>
+      @if (auth.isAuthenticated()) {
+        <div class="user-menu">
+          <button
+            class="avatar-btn"
+            type="button"
+            (click)="toggleMenu($event)"
+            [attr.aria-expanded]="menuOpen()"
+            aria-haspopup="menu"
+            [title]="firstName() ?? 'Mi cuenta'"
+          >
+            <span class="avatar">{{ initials() }}</span>
+          </button>
 
-        @if (menuOpen()) {
-          <div class="menu" role="menu">
-            <div class="menu-head">
-              <div class="menu-name">{{ userName() }}</div>
-              <div class="menu-email">{{ userEmail() }}</div>
+          @if (menuOpen()) {
+            <div class="menu" role="menu">
+              <div class="menu-head">
+                <div class="menu-name">{{ userName() }}</div>
+                <div class="menu-email">{{ userEmail() }}</div>
+              </div>
+              <button class="menu-logout" type="button" (click)="logout()" role="menuitem">
+                <svg lucideLogOut [size]="16"></svg>
+                <span>Cerrar sesión</span>
+              </button>
             </div>
-            <button class="menu-logout" type="button" (click)="logout()" role="menuitem">
-              <svg lucideLogOut [size]="16"></svg>
-              <span>Cerrar sesión</span>
-            </button>
-          </div>
-        }
-      </div>
+          }
+        </div>
+      }
     </header>
 
-    <!-- HERO ─ pregunta ─ -->
-    <section class="hero">
-      <div class="hero-text">
-        <div class="kicker">Hola{{ firstName() ? ', ' + firstName() : '' }}</div>
-        <h1>
-          ¿Dónde vas a ver cine <span class="accent">hoy?</span>
-        </h1>
-        <p>
-          Elegí la ciudad donde estás y después el cine que tenés más a mano.
-          Vas a poder cambiar tu selección en cualquier momento desde el menú.
-        </p>
-      </div>
-      <div class="hero-decor" aria-hidden="true">
-        <div class="ticket-stub">
-          <div class="stub-row"><span>CINETARIO</span><span>{{ todayLabel() }}</span></div>
-          <div class="stub-sep"></div>
-          <div class="stub-section">
-            <span class="stub-label">Ciudad</span>
-            <span class="stub-value">{{ selectedCityName() ?? '—' }}</span>
-          </div>
-          <div class="stub-section">
-            <span class="stub-label">Cine</span>
-            <span class="stub-value">{{ selectedCinemaName() ?? '—' }}</span>
-          </div>
-          <div class="stub-sep"></div>
-          <div class="stub-row">
-            <span>SALA</span><span>—</span>
-          </div>
-        </div>
-      </div>
-    </section>
+    <div class="page-layout">
+      <div class="page-main">
+        <div class="sticky-top">
+          <section class="hero">
+            <div class="hero-text">
+              <div class="kicker">Hola{{ firstName() ? ', ' + firstName() : '' }}</div>
+              <h1>
+                ¿Dónde vas a ver cine <span class="accent">hoy?</span>
+              </h1>
+              <p>
+                Elegí la ciudad y después el cine. Podés cambiar tu selección
+                en cualquier momento.
+              </p>
+            </div>
+          </section>
 
-    <!-- BODY -->
+          @if (selectedCityId() !== null) {
+            <div class="city-collapsed">
+              <div class="city-collapsed-info">
+                <span class="city-collapsed-num">01</span>
+                <div>
+                  <span class="city-collapsed-label">Tu ciudad</span>
+                  <span class="city-collapsed-name">{{ selectedCityName() }}</span>
+                </div>
+              </div>
+              <button type="button" class="ghost-btn" (click)="clearCity()">Cambiar</button>
+            </div>
+          }
+        </div>
+
     <main class="body">
 
-      <!-- ─── PASO 1: ciudad ─── -->
-      <section class="step" id="paso-1">
-        <header class="step-head">
-          <span class="step-num">01</span>
-          <div>
-            <h2>Tu ciudad</h2>
-            <p>De estas {{ ciudades().length || '' }} <span>·</span> elegí la que estás visitando.</p>
-          </div>
-        </header>
+      @if (selectedCityId() === null) {
+        <section class="step" id="paso-1">
+          <header class="step-head">
+            <span class="step-num">01</span>
+            <div>
+              <h2>Tu ciudad</h2>
+              <p>De estas {{ ciudades().length || '' }} <span>·</span> elegí la que estás visitando.</p>
+            </div>
+          </header>
 
-        @if (loadingCities()) {
-          <div class="state-row">
-            <div class="state-spinner"></div>
-            <span>Cargando ciudades…</span>
-          </div>
-        } @else if (errorCities()) {
-          <div class="state-row error">
-            <svg lucideAlertCircle [size]="18"></svg>
-            <span>{{ errorCities() }}</span>
-            <button class="ghost-btn" (click)="loadCities()">Reintentar</button>
-          </div>
-        } @else {
-          <div class="city-grid">
-            @for (c of ciudades(); track c.id) {
-              <button
-                class="city-card"
-                type="button"
-                [class.on]="selectedCityId() === c.id"
-                (click)="pickCity(c)"
-              >
-                <span class="city-tag">{{ c.id }}</span>
-                <span class="city-name">{{ c.nombre }}</span>
-                @if (selectedCityId() === c.id) {
-                  <span class="city-check" aria-hidden="true">
-                    <svg lucideCheck [size]="14"></svg>
-                  </span>
-                }
-              </button>
-            }
-          </div>
-        }
-      </section>
+          @if (loadingCities()) {
+            <div class="state-row">
+              <div class="state-spinner"></div>
+              <span>Cargando ciudades…</span>
+            </div>
+          } @else if (errorCities()) {
+            <div class="state-row error">
+              <svg lucideAlertCircle [size]="18"></svg>
+              <span>{{ errorCities() }}</span>
+              <button class="ghost-btn" (click)="loadCities()">Reintentar</button>
+            </div>
+          } @else {
+            <div class="city-grid">
+              @for (c of ciudades(); track c.id) {
+                <button
+                  class="city-card"
+                  type="button"
+                  (click)="pickCity(c)"
+                >
+                  <span class="city-tag">{{ c.id }}</span>
+                  <span class="city-name">{{ c.nombre }}</span>
+                </button>
+              }
+            </div>
+          }
+        </section>
+      }
 
       <!-- ─── PASO 2: cine ─── -->
       <section class="step" id="paso-2" [class.locked]="selectedCityId() === null">
@@ -233,6 +227,23 @@ import { LocationService } from '../../shared/services/location.service';
       </section>
 
     </main>
+      </div>
+
+      <aside class="page-aside" aria-label="Resumen de tu selección">
+        <div class="ticket-stub">
+          <div class="stub-row"><span>CINETARIO</span><span>{{ todayLabel() }}</span></div>
+          <div class="stub-sep"></div>
+          <div class="stub-section">
+            <span class="stub-label">Ciudad</span>
+            <span class="stub-value">{{ selectedCityName() ?? '—' }}</span>
+          </div>
+          <div class="stub-section">
+            <span class="stub-label">Cine</span>
+            <span class="stub-value">{{ selectedCinemaName() ?? '—' }}</span>
+          </div>
+        </div>
+      </aside>
+    </div>
 
     <!-- STICKY BAR -->
     <footer class="dock" [class.ready]="canContinue()">
@@ -275,7 +286,7 @@ export class LocationSelectorComponent implements OnInit {
   private ciudadesSvc = inject(CiudadesService);
   private cinesSvc = inject(CinesService);
   private locationSvc = inject(LocationService);
-  private auth = inject(AuthService);
+  protected auth = inject(AuthService);
   private router = inject(Router);
   private host = inject(ElementRef<HTMLElement>);
 
@@ -352,6 +363,12 @@ export class LocationSelectorComponent implements OnInit {
     this.selectedCinemaId.set(null);
     this.cines.set([]);
     this.loadCines();
+  }
+
+  clearCity(): void {
+    this.selectedCityId.set(null);
+    this.selectedCinemaId.set(null);
+    this.cines.set([]);
   }
 
   loadCines(preSelectCinemaId: string | null = null): void {
