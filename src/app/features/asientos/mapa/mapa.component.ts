@@ -31,7 +31,11 @@ type AsientoDisplay = {
   numero: number;
   estado: 'disponible' | 'ocupado' | 'bloqueado' | 'fuera_servicio';
   tipo: TipoAsiento;
+  tipoLabel: string;
+  color: string | null;
 };
+
+type LeyendaTipo = { label: string; color: string | null };
 
 @Component({
   selector: 'app-mapa',
@@ -104,9 +108,28 @@ export class MapaComponent implements OnInit {
           numero: a.numero,
           estado: a.estado === 'seleccionado' ? 'disponible' : (a.estado as AsientoDisplay['estado']),
           tipo: a.tipo,
+          tipoLabel: a.tipoLabel,
+          color: a.color,
         })),
     }));
   });
+
+  /** Tipos reales presentes en la función (para la leyenda dinámica). */
+  readonly tiposLeyenda = computed<LeyendaTipo[]>(() => {
+    const seen = new Map<string, LeyendaTipo>();
+    for (const a of this.asientosRaw()) {
+      if (a.estado === 'fuera_servicio') continue;
+      if (!seen.has(a.tipoLabel)) {
+        seen.set(a.tipoLabel, { label: a.tipoLabel, color: a.color });
+      }
+    }
+    return [...seen.values()];
+  });
+
+  /** ¿Hay algún asiento fuera de servicio en esta función? */
+  readonly hayFueraServicio = computed<boolean>(() =>
+    this.asientosRaw().some((a) => a.estado === 'fuera_servicio'),
+  );
 
   readonly asientosSeleccionadosDetallados = computed(() =>
     this.asientosSeleccionados().map((a) => ({

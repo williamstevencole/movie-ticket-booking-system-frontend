@@ -42,21 +42,24 @@
   font-size: 11px; font-weight: 700; color: var(--text-3);
 }
 .seat {
+  --seat-color: var(--border-2);
   width: 28px; height: 28px;
   border-radius: 6px;
-  background: var(--surface);
-  border: 1px solid var(--border-2);
-  color: var(--text-2);
+  background: color-mix(in oklch, var(--seat-color) 28%, var(--bg));
+  border: 1px solid color-mix(in oklch, var(--seat-color) 55%, var(--text-3));
+  color: var(--text);
   font-size: 11px; font-weight: 700;
   display: inline-flex; align-items: center; justify-content: center;
   transition: transform 120ms var(--ease), background 120ms var(--ease);
 }
-.seat:not(:disabled):hover { transform: translateY(-1px); border-color: var(--red); }
+.seat:not(:disabled):hover {
+  transform: translateY(-1px);
+  border-color: var(--red);
+  background: color-mix(in oklch, var(--seat-color) 45%, var(--bg));
+}
 .seat.taken { background: var(--text-3); color: transparent; cursor: not-allowed; border-color: transparent; }
 .seat.selected { background: var(--red); color: white; border-color: var(--red); }
-.seat.vip { background: var(--orange-soft); border-color: var(--orange); color: var(--orange-ink); }
-.seat.vip.selected { background: var(--orange); color: white; }
-.seat.accesible { background: oklch(0.94 0.05 240); border-color: oklch(0.65 0.15 240); color: oklch(0.30 0.15 240); }
+.seat.selected:hover { background: var(--red); }
 .seat.bloqueado {
   background: repeating-linear-gradient(45deg, var(--surface-2), var(--surface-2) 4px, var(--border) 4px, var(--border) 8px);
   cursor: not-allowed;
@@ -88,8 +91,6 @@
 }
 .leyenda .sw.sel { background: var(--red); border-color: var(--red); }
 .leyenda .sw.taken { background: var(--text-3); border-color: transparent; }
-.leyenda .sw.vip { background: var(--orange); border-color: var(--orange); }
-.leyenda .sw.accesible { background: oklch(0.65 0.15 240); border-color: oklch(0.65 0.15 240); }
 .leyenda .sw.bloqueado {
   background: repeating-linear-gradient(45deg, var(--surface-2), var(--surface-2) 3px, var(--border) 3px, var(--border) 6px);
 }

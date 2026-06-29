@@ -11,6 +11,10 @@ export type AsientoFuncion = {
   fila: string;
   numero: number;
   tipo: TipoAsiento;
+  /** Nombre real del tipo de asiento (backend). */
+  tipoLabel: string;
+  /** Color real del tipo (hex) configurado en admin; null si no tiene. */
+  color: string | null;
   estado: EstadoAsiento;
   bloqueado_hasta?: string;
   version: number;
@@ -29,6 +33,7 @@ type BackendAsientoItem = {
   columna: number;
   codigo: string;
   tipo: string;
+  tipo_color?: string | null;
   estado: string;
   es_mio: boolean;
 };
@@ -107,6 +112,8 @@ export class AsientosService {
         fila: a.fila,
         numero: a.columna,
         tipo: mapTipo(a.tipo),
+        tipoLabel: a.tipo,
+        color: a.tipo_color ?? null,
         // Un asiento "Fuera de servicio" se muestra deshabilitado sin importar
         // su estado real en la función.
         estado: esFueraDeServicio(a.tipo)
