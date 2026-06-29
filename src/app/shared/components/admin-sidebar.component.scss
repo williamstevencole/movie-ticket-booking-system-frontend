@@ -36,6 +36,30 @@
   .sub { font-size: 11px; color: var(--text-3); font-weight: 600; }
 }
 
+.side-back {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  margin-bottom: var(--s5);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: background 180ms var(--ease), color 180ms var(--ease),
+    border-color 180ms var(--ease);
+
+  .lucide { color: var(--text-3); display: inline-flex; }
+  &:hover {
+    background: var(--red-soft);
+    color: var(--red);
+    border-color: var(--red);
+  }
+  &:hover .lucide { color: var(--red); }
+}
+
 .side-section { margin-bottom: var(--s5); }
 .side-section .h {
   font-size: 11px;

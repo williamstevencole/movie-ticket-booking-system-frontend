@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import {
+  LucideBan,
   LucideCheck,
   LucideGrid3x3,
   LucideInfo,
@@ -45,6 +46,18 @@ type GridCell = {
 };
 type GridRow = { label: string; cells: GridCell[] };
 
+/**
+ * Tipo de asiento reservado para deshabilitar asientos (mal estado, etc.).
+ * El backend lo excluye al generar los asientos de nuevas funciones, por lo
+ * que estos asientos no se ponen a la venta. Se identifica por nombre.
+ */
+const OUT_OF_SERVICE_NAME = 'Fuera de servicio';
+const OUT_OF_SERVICE_COLOR = '#57534e';
+
+function esFueraDeServicio(t: TipoAsiento): boolean {
+  return t.nombre.trim().toLowerCase() === OUT_OF_SERVICE_NAME.toLowerCase();
+}
+
 @Component({
   selector: 'app-admin-sala-distribucion',
   standalone: true,
@@ -52,6 +65,7 @@ type GridRow = { label: string; cells: GridCell[] };
     CommonModule,
     RouterLink,
     AdminSidebarComponent,
+    LucideBan,
     LucideCheck,
     LucideGrid3x3,
     LucideInfo,
@@ -140,7 +154,8 @@ type GridRow = { label: string; cells: GridCell[] };
                 Tipo a aplicar
               </span>
               <span class="palette-hint">
-                Selecciona un tipo y haz click en los asientos para reasignar.
+                Selecciona un tipo y pulsa los asientos para reasignar, o usa
+                «Fuera de servicio» para deshabilitarlos.
               </span>
             </div>
 
@@ -149,26 +164,46 @@ type GridRow = { label: string; cells: GridCell[] };
                 @for (i of [1,2,3,4]; track i) {
                   <span class="chip skel-chip"></span>
                 }
-              } @else if (tipos().length === 0) {
-                <span class="palette-empty">
-                  No hay tipos de asiento configurados.
-                </span>
               } @else {
-                @for (t of tipos(); track t.id) {
-                  <button
-                    type="button"
-                    class="chip"
-                    [class.on]="selectedTipoId() === t.id"
-                    [style.--chip-color]="tipoColor(t)"
-                    (click)="selectTipo(t.id)"
-                  >
-                    <span class="chip-dot"></span>
-                    <span class="chip-name">{{ t.nombre }}</span>
-                    <span class="chip-count tnum">
-                      {{ countByType().get(t.id) ?? 0 }}
-                    </span>
-                  </button>
+                @if (paletteTipos().length === 0) {
+                  <span class="palette-empty">
+                    No hay tipos de asiento configurados.
+                  </span>
+                } @else {
+                  @for (t of paletteTipos(); track t.id) {
+                    <button
+                      type="button"
+                      class="chip"
+                      [class.on]="selectedTipoId() === t.id"
+                      [style.--chip-color]="tipoColor(t)"
+                      (click)="selectTipo(t.id)"
+                    >
+                      <span class="chip-dot"></span>
+                      <span class="chip-name">{{ t.nombre }}</span>
+                      <span class="chip-count tnum">
+                        {{ countByType().get(t.id) ?? 0 }}
+                      </span>
+                    </button>
+                  }
                 }
+
+                <span class="chip-sep" aria-hidden="true"></span>
+                <button
+                  type="button"
+                  class="chip chip-oos"
+                  [class.on]="oosSelected()"
+                  [disabled]="creatingOos()"
+                  (click)="activarFueraDeServicio()"
+                  title="Marca asientos en mal estado: no se pondrán a la venta en nuevas funciones."
+                >
+                  <svg lucideBan [size]="14"></svg>
+                  <span class="chip-name">
+                    {{ creatingOos() ? 'Activando…' : 'Fuera de servicio' }}
+                  </span>
+                  @if (oosCount() > 0) {
+                    <span class="chip-count tnum">{{ oosCount() }}</span>
+                  }
+                </button>
               }
             </div>
           </section>
@@ -207,11 +242,16 @@ type GridRow = { label: string; cells: GridCell[] };
                         type="button"
                         class="seat"
                         [class.pending]="cell.isPending"
+                        [class.out]="isOos(cell.tipoId)"
                         [style.--seat-color]="tipoColorById(cell.tipoId)"
                         [attr.aria-label]="cell.asiento.codigo + ' · ' + tipoNameById(cell.tipoId)"
                         [title]="cell.asiento.codigo + ' — ' + tipoNameById(cell.tipoId)"
                         (click)="onSeatClick(cell.asiento)"
-                      ></button>
+                      >
+                        @if (isOos(cell.tipoId)) {
+                          <svg lucideBan [size]="13"></svg>
+                        }
+                      </button>
                     }
                     <span class="row-lbl">{{ row.label }}</span>
                   </div>
@@ -222,7 +262,7 @@ type GridRow = { label: string; cells: GridCell[] };
             <!-- Live legend -->
             @if (tipos().length > 0 && !loading()) {
               <div class="legend">
-                @for (t of tipos(); track t.id) {
+                @for (t of paletteTipos(); track t.id) {
                   <span class="legend-item">
                     <span
                       class="legend-sw"
@@ -232,6 +272,15 @@ type GridRow = { label: string; cells: GridCell[] };
                     <span class="legend-count tnum">
                       {{ countByType().get(t.id) ?? 0 }}
                     </span>
+                  </span>
+                }
+                @if (oosCount() > 0) {
+                  <span class="legend-item">
+                    <span class="legend-sw legend-sw-oos">
+                      <svg lucideBan [size]="11"></svg>
+                    </span>
+                    <span class="legend-name">Fuera de servicio</span>
+                    <span class="legend-count tnum">{{ oosCount() }}</span>
                   </span>
                 }
                 <span class="legend-item legend-total">
@@ -316,6 +365,7 @@ export class AdminSalaDistribucionComponent implements OnDestroy {
   readonly saving = signal<boolean>(false);
   readonly lastSaveAt = signal<Date | null>(null);
   readonly lastWarning = signal<string | null>(null);
+  readonly creatingOos = signal<boolean>(false);
 
   // Ticks every second so the "Guardado · hace Xs" label refreshes.
   readonly nowTick = signal<number>(Date.now());
@@ -328,8 +378,24 @@ export class AdminSalaDistribucionComponent implements OnDestroy {
     return map;
   });
 
+  // El tipo especial "Fuera de servicio" (si existe en el catálogo).
+  readonly outOfServiceTipo = computed<TipoAsiento | null>(
+    () => this.tipos().find((t) => esFueraDeServicio(t)) ?? null,
+  );
+
+  // Tipos mostrados en la paleta normal (excluye "Fuera de servicio").
+  readonly paletteTipos = computed<TipoAsiento[]>(() =>
+    this.tipos().filter((t) => !esFueraDeServicio(t)),
+  );
+
   // ── Computeds ───────────────────────────────────────────────────
   readonly pendingCount = computed<number>(() => this.assignments().size);
+
+  // ¿Está activo el modo "fuera de servicio"?
+  readonly oosSelected = computed<boolean>(() => {
+    const oos = this.outOfServiceTipo();
+    return oos !== null && this.selectedTipoId() === oos.id;
+  });
 
   readonly gridRows = computed<GridRow[]>(() => {
     const list = this.asientos();
@@ -372,6 +438,12 @@ export class AdminSalaDistribucionComponent implements OnDestroy {
     return counts;
   });
 
+  // Cantidad de asientos efectivamente marcados como fuera de servicio.
+  readonly oosCount = computed<number>(() => {
+    const oos = this.outOfServiceTipo();
+    return oos ? (this.countByType().get(oos.id) ?? 0) : 0;
+  });
+
   readonly skeletonRows = computed<number[][]>(() => {
     const s = this.sala();
     const rows = s?.filas ?? 5;
@@ -393,9 +465,9 @@ export class AdminSalaDistribucionComponent implements OnDestroy {
   });
 
   constructor() {
-    // Default selected tipo to first available once tipos load.
+    // Default selected tipo to first regular (no "Fuera de servicio") once tipos load.
     effect(() => {
-      const list = this.tipos();
+      const list = this.tipos().filter((t) => !esFueraDeServicio(t));
       if (list.length > 0 && this.selectedTipoId() === null) {
         this.selectedTipoId.set(list[0]!.id);
       }
@@ -448,6 +520,42 @@ export class AdminSalaDistribucionComponent implements OnDestroy {
   // ── Interactions ────────────────────────────────────────────────
   selectTipo(id: string): void {
     this.selectedTipoId.set(id);
+  }
+
+  /** ¿Esta celda quedó marcada como fuera de servicio? */
+  isOos(tipoId: string): boolean {
+    const oos = this.outOfServiceTipo();
+    return oos !== null && tipoId === oos.id;
+  }
+
+  /**
+   * Activa el modo "fuera de servicio": selecciona el tipo especial para que
+   * al pulsar asientos queden deshabilitados. Si el tipo aún no existe en el
+   * catálogo, lo crea una sola vez.
+   */
+  activarFueraDeServicio(): void {
+    const existing = this.outOfServiceTipo();
+    if (existing) {
+      this.selectedTipoId.set(existing.id);
+      return;
+    }
+    if (this.creatingOos()) return;
+
+    this.creatingOos.set(true);
+    this.tiposAsientoSvc
+      .create({ nombre: OUT_OF_SERVICE_NAME, color: OUT_OF_SERVICE_COLOR })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (tipo) => {
+          this.tipos.set([...this.tipos(), tipo]);
+          this.selectedTipoId.set(tipo.id);
+          this.creatingOos.set(false);
+        },
+        error: (err) => {
+          this.toast.show(extractMessage(err));
+          this.creatingOos.set(false);
+        },
+      });
   }
 
   onSeatClick(asiento: SalaAsiento): void {

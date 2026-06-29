@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, switchMap, of, map } from 'rxjs';
+import { Observable, switchMap, of, map, catchError, throwError } from 'rxjs';
 import { API_URL } from '../../core/config/env';
 import type { components } from '../../core/types/api.generated';
 import { toStr, toStrOrNull, toNumOrNull } from '../../core/api/normalize';
@@ -171,16 +171,46 @@ export class PeliculasService {
     );
   }
 
+  /** Tamaño y tipos aceptados por el backend para el poster. */
+  private readonly POSTER_MAX_BYTES = 5 * 1024 * 1024;
+  private readonly POSTER_TYPES = /^image\/(jpeg|png|webp)$/;
+
+  /** Devuelve un mensaje de error si el archivo no es un poster válido; null si lo es. */
+  private validarPoster(file: File): string | null {
+    if (!this.POSTER_TYPES.test(file.type)) {
+      return 'El poster debe ser una imagen JPG, PNG o WEBP.';
+    }
+    if (file.size > this.POSTER_MAX_BYTES) {
+      return 'El poster supera el tamaño máximo de 5 MB.';
+    }
+    return null;
+  }
+
   /**
    * Variante de `create` que adicionalmente sube el poster cuando el form provee un File.
    * Si `posterFile` es null, equivale a `create`.
+   *
+   * Garantiza que la película NO quede registrada si el poster es inválido:
+   * - se valida el archivo antes de crear (no se crea nada si es inválido);
+   * - si la subida falla en el servidor, se borra la película recién creada (rollback).
    */
   createWithPoster(input: CrearPeliculaInput, posterFile: File | null): Observable<Pelicula> {
+    if (posterFile) {
+      const error = this.validarPoster(posterFile);
+      if (error) return throwError(() => new Error(error));
+    }
     return this.create(input).pipe(
       switchMap((p) =>
         posterFile
           ? this.uploadPoster(p.id, posterFile).pipe(
               map((res) => ({ ...p, poster_url: res.poster_url })),
+              catchError((uploadErr) =>
+                // Rollback: deshace la película creada para no dejar duplicados.
+                this.delete(p.id).pipe(
+                  catchError(() => of(void 0)),
+                  switchMap(() => throwError(() => uploadErr)),
+                ),
+              ),
             )
           : of(p),
       ),
@@ -189,6 +219,10 @@ export class PeliculasService {
 
   /** Variante de `update` que también sube poster si vino archivo. */
   updateWithPoster(id: string, input: EditarPeliculaInput, posterFile: File | null): Observable<Pelicula> {
+    if (posterFile) {
+      const error = this.validarPoster(posterFile);
+      if (error) return throwError(() => new Error(error));
+    }
     return this.update(id, input).pipe(
       switchMap((p) =>
         posterFile

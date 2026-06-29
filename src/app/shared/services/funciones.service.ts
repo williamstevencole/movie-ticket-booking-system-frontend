@@ -119,8 +119,14 @@ export class FuncionesService {
   }
 
   update(id: string, input: EditarFuncionInput): Observable<Funcion> {
+    // El backend solo admite estos campos (id_cine es solo del UI para
+    // filtrar las salas, y su DTO lo rechaza con forbidNonWhitelisted).
+    const body: Partial<components['schemas']['CreateFuncionDto']> = {};
+    if (input.id_pelicula !== undefined) body.id_pelicula = input.id_pelicula;
+    if (input.id_sala !== undefined) body.id_sala = input.id_sala;
+    if (input.fecha_hora !== undefined) body.fecha_hora = input.fecha_hora;
     return this.http
-      .patch<BackendFuncion>(`${this.base}/${id}`, input)
+      .patch<BackendFuncion>(`${this.base}/${id}`, body)
       .pipe(map(mapBackendFuncion));
   }
 

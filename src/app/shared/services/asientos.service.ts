@@ -11,6 +11,10 @@ export type AsientoFuncion = {
   fila: string;
   numero: number;
   tipo: TipoAsiento;
+  /** Nombre real del tipo de asiento (backend). */
+  tipoLabel: string;
+  /** Color real del tipo (hex) configurado en admin; null si no tiene. */
+  color: string | null;
   estado: EstadoAsiento;
   bloqueado_hasta?: string;
   version: number;
@@ -29,6 +33,7 @@ type BackendAsientoItem = {
   columna: number;
   codigo: string;
   tipo: string;
+  tipo_color?: string | null;
   estado: string;
   es_mio: boolean;
 };
@@ -48,6 +53,13 @@ export type ResultadoBloqueo = {
   /** ISO hasta el que los asientos quedan bloqueados (alias para el timer del UI). */
   expira_en: string;
 };
+
+/** Nombre del tipo reservado para asientos deshabilitados (mal estado, etc.). */
+const TIPO_FUERA_DE_SERVICIO = 'fuera de servicio';
+
+function esFueraDeServicio(tipo: string): boolean {
+  return (tipo ?? '').trim().toLowerCase() === TIPO_FUERA_DE_SERVICIO;
+}
 
 /** Normaliza el nombre del tipo de asiento del backend a la categoría de UI. */
 function mapTipo(tipo: string): TipoAsiento {
@@ -100,7 +112,13 @@ export class AsientosService {
         fila: a.fila,
         numero: a.columna,
         tipo: mapTipo(a.tipo),
-        estado: mapEstado(a.estado, a.es_mio),
+        tipoLabel: a.tipo,
+        color: a.tipo_color ?? null,
+        // Un asiento "Fuera de servicio" se muestra deshabilitado sin importar
+        // su estado real en la función.
+        estado: esFueraDeServicio(a.tipo)
+          ? 'fuera_servicio'
+          : mapEstado(a.estado, a.es_mio),
         version: 1,
       })),
     };

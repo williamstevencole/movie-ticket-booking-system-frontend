@@ -24,6 +24,7 @@ import {
   LucideUserSearch,
   LucideNotebookText,
   LucideLogOut,
+  LucideStore,
   type LucideIconInput,
 } from '@lucide/angular';
 import { AuthService } from '../services/auth.service';
@@ -51,6 +52,7 @@ interface SideSection {
     RouterLinkActive,
     LucideDynamicIcon,
     LucideLogOut,
+    LucideStore,
   ],
   template: `
     <aside class="admin-side">
@@ -61,6 +63,11 @@ interface SideSection {
           <div class="sub">OPERADORES</div>
         </div>
       </div>
+
+      <a class="side-back" routerLink="/">
+        <svg lucideStore [size]="17"></svg>
+        <span>Ir a la cartelera</span>
+      </a>
 
       @for (sec of sidebar; track sec.title) {
         <div class="side-section">

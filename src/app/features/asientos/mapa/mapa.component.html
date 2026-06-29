@@ -26,16 +26,17 @@
               <button
                 type="button"
                 class="seat"
+                [style.--seat-color]="asiento.color"
                 [class.taken]="asiento.estado === 'ocupado'"
                 [class.selected]="estaSeleccionado(asiento.codigo)"
-                [class.vip]="asiento.tipo === 'vip'"
-                [class.accesible]="asiento.tipo === 'accesible'"
                 [class.bloqueado]="asiento.estado === 'bloqueado'"
-                [disabled]="asiento.estado === 'ocupado' || asiento.estado === 'bloqueado'"
-                [attr.aria-label]="'Asiento ' + asiento.codigo"
+                [class.fuera-servicio]="asiento.estado === 'fuera_servicio'"
+                [disabled]="asiento.estado === 'ocupado' || asiento.estado === 'bloqueado' || asiento.estado === 'fuera_servicio'"
+                [attr.aria-label]="asiento.estado === 'fuera_servicio' ? 'Asiento ' + asiento.codigo + ' fuera de servicio' : 'Asiento ' + asiento.codigo"
                 (click)="toggle(asiento)"
               >
-                @if (asiento.tipo === 'accesible') { ♿ }
+                @if (asiento.estado === 'fuera_servicio') { ✕ }
+                @else if (asiento.tipo === 'accesible') { ♿ }
                 @else if (asiento.tipo === 'vip') { ★ }
                 @else { {{ asiento.numero }} }
               </button>
@@ -46,12 +47,22 @@
       </div>
 
       <div class="leyenda">
-        <span class="chip"><span class="sw"></span>Disponible</span>
+        @for (t of tiposLeyenda(); track t.label) {
+          <span class="chip">
+            <span
+              class="sw"
+              [style.background]="t.color || 'var(--surface)'"
+              [style.border-color]="t.color || 'var(--border-2)'"
+            ></span>
+            {{ t.label }}
+          </span>
+        }
         <span class="chip"><span class="sw sel"></span>Seleccionado</span>
         <span class="chip"><span class="sw taken"></span>Ocupado</span>
-        <span class="chip"><span class="sw vip"></span>VIP · L 180</span>
-        <span class="chip"><span class="sw accesible"></span>Accesible · L 90</span>
         <span class="chip"><span class="sw bloqueado"></span>Bloqueado</span>
+        @if (hayFueraServicio()) {
+          <span class="chip"><span class="sw fuera-servicio"></span>Fuera de servicio</span>
+        }
       </div>
     </div>
 

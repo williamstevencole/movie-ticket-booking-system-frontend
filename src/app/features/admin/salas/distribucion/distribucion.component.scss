@@ -171,6 +171,22 @@
   color: var(--text);
 }
 
+/* separador entre la paleta normal y la acción "fuera de servicio" */
+.chip-sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border-2);
+  margin: 2px 4px;
+}
+
+/* botón "fuera de servicio" */
+.chip-oos {
+  --chip-color: #57534e;
+  svg { color: var(--text-3); display: inline-flex; }
+  &.on svg { color: var(--text); }
+  &:disabled { opacity: 0.6; cursor: default; }
+}
+
 /* ───── stage / screen ───── */
 .stage {
   padding: var(--s7) var(--s6) var(--s6);
@@ -288,6 +304,36 @@
   box-shadow: 0 1px 3px rgba(28, 25, 23, 0.35);
 }
 
+/* icono centrado dentro del asiento (fuera de servicio) */
+.seat svg {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  pointer-events: none;
+}
+
+/* fuera de servicio — patrón rayado + icono de prohibido */
+.seat.out {
+  background: repeating-linear-gradient(
+    45deg,
+    color-mix(in oklch, var(--seat-color) 40%, var(--bg)),
+    color-mix(in oklch, var(--seat-color) 40%, var(--bg)) 3px,
+    color-mix(in oklch, var(--seat-color) 18%, var(--bg)) 3px,
+    color-mix(in oklch, var(--seat-color) 18%, var(--bg)) 6px
+  );
+  border-color: color-mix(in oklch, var(--seat-color) 80%, var(--text));
+  color: color-mix(in oklch, var(--seat-color) 30%, var(--text));
+}
+.seat.out:hover {
+  background: repeating-linear-gradient(
+    45deg,
+    color-mix(in oklch, var(--seat-color) 55%, var(--bg)),
+    color-mix(in oklch, var(--seat-color) 55%, var(--bg)) 3px,
+    color-mix(in oklch, var(--seat-color) 30%, var(--bg)) 3px,
+    color-mix(in oklch, var(--seat-color) 30%, var(--bg)) 6px
+  );
+}
+
 /* loading skeleton seat */
 .seat-skel {
   cursor: default;
@@ -351,6 +397,18 @@
   border-radius: 5px 5px 3px 3px;
   border: 1.5px solid rgba(28, 25, 23, 0.18);
   flex-shrink: 0;
+}
+.legend-sw-oos {
+  display: inline-grid;
+  place-items: center;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--surface-2),
+    var(--surface-2) 2px,
+    var(--surface) 2px,
+    var(--surface) 4px
+  );
+  svg { color: var(--text-2); }
 }
 .legend-name { color: var(--text); font-weight: 600; }
 .legend-count {
