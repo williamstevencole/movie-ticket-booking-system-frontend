@@ -9,25 +9,26 @@ import { CarteleraPelicula } from '../../../mocks/data/cartelera-display.mock';
   standalone: true,
   imports: [RouterLink],
   template: `
-    <div class="related-block">
-      <h3>También en cartelera</h3>
-      <div class="related-card">
-        <div class="related-card-head">Más vistas hoy</div>
-        @for (p of items(); track p.id) {
-          <a [routerLink]="['/pelicula', p.id]" class="related-row">
-            @if (p.poster_url) {
-              <img class="mini-poster" [src]="p.poster_url" [alt]="p.titulo" loading="lazy" />
-            } @else {
-              <span class="mini-poster poster"></span>
-            }
-            <span>
-              <span class="ti">{{ p.titulo }}</span>
-              <span class="me">{{ p.genero }} · {{ p.duracion }}</span>
-            </span>
-          </a>
-        }
+    @if (items().length > 0) {
+      <div class="related-block">
+        <h3>También en cartelera</h3>
+        <div class="related-card">
+          @for (p of items(); track p.id) {
+            <a [routerLink]="['/pelicula', p.id]" class="related-row">
+              @if (p.poster_url) {
+                <img class="mini-poster" [src]="p.poster_url" [alt]="p.titulo" loading="lazy" />
+              } @else {
+                <span class="mini-poster poster"></span>
+              }
+              <span>
+                <span class="ti">{{ p.titulo }}</span>
+                <span class="me">{{ p.genero }} · {{ p.duracion }}</span>
+              </span>
+            </a>
+          }
+        </div>
       </div>
-    </div>
+    }
   `,
   styleUrl: './relacionadas.component.scss',
 })
